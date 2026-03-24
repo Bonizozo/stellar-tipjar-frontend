@@ -1,51 +1,80 @@
-type QueueTask = () => Promise<unknown>;
+const sleep = (delayMs: number) => new Promise<void>((resolve) => setTimeout(resolve, delayMs));
 
-interface QueuedRequest {
-  task: QueueTask;
+export interface RequestQueueOptions {
+  maxRetries?: number;
+  baseDelayMs?: number;
+}
+
+interface QueueTask<T> {
+  task: () => Promise<T>;
+  maxRetries: number;
+  baseDelayMs: number;
   resolve: (value: unknown) => void;
-  reject: (reason?: unknown) => void;
+  reject: (error: unknown) => void;
 }
 
 export class RequestQueue {
-  private queue: QueuedRequest[] = [];
-  private running = false;
+  private queue: Array<QueueTask<unknown>> = [];
 
-  async enqueue<T>(task: () => Promise<T>): Promise<T> {
+  private processing = false;
+
+  enqueue<T>(task: () => Promise<T>, options?: RequestQueueOptions): Promise<T> {
+    const maxRetries = options?.maxRetries ?? 3;
+    const baseDelayMs = options?.baseDelayMs ?? 250;
+
     return new Promise<T>((resolve, reject) => {
-      const resolveUnknown = (value: unknown) => resolve(value as T);
       this.queue.push({
-        task,
-        resolve: resolveUnknown,
+        task: task as () => Promise<unknown>,
+        maxRetries,
+        baseDelayMs,
+        resolve: resolve as (value: unknown) => void,
         reject,
       });
 
-      void this.drain();
+      if (!this.processing) {
+        void this.processNext();
+      }
     });
   }
 
-  get size(): number {
+  size(): number {
     return this.queue.length;
   }
 
-  private async drain(): Promise<void> {
-    if (this.running) {
-      return;
-    }
+  private async processNext(): Promise<void> {
+    this.processing = true;
 
-    this.running = true;
     while (this.queue.length > 0) {
-      const next = this.queue.shift();
-      if (!next) {
-        continue;
-      }
+      const queueTask = this.queue.shift() as QueueTask<unknown>;
 
       try {
-        const result = await next.task();
-        next.resolve(result);
+        const result = await this.runWithRetries(queueTask);
+        queueTask.resolve(result);
       } catch (error) {
-        next.reject(error);
+        queueTask.reject(error);
       }
     }
-    this.running = false;
+
+    this.processing = false;
+  }
+
+  private async runWithRetries<T>(queueTask: QueueTask<T>): Promise<T> {
+    let attempt = 0;
+
+    while (attempt <= queueTask.maxRetries) {
+      try {
+        return await queueTask.task();
+      } catch (error) {
+        if (attempt === queueTask.maxRetries) {
+          throw error;
+        }
+
+        const delayMs = queueTask.baseDelayMs * 2 ** attempt;
+        await sleep(delayMs);
+        attempt += 1;
+      }
+    }
+
+    throw new Error("Request queue unexpectedly exceeded retry loop.");
   }
 }

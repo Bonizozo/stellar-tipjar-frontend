@@ -1,37 +1,31 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  getApiRateLimitStatus,
+  subscribeToApiRateLimit,
+  type ApiRateLimitStatus,
+} from "@/services/api";
 
-import { getApiRateLimitState } from "@/services/api";
-import { formatRetryAfter } from "@/utils/rateLimiter";
+/**
+ * Exposes live API rate-limit status and keeps retry countdown in sync.
+ */
+export function useRateLimit() {
+  const [status, setStatus] = useState<ApiRateLimitStatus>(() => getApiRateLimitStatus());
 
-export interface UseRateLimitResult {
-  remaining: number;
-  limit: number;
-  used: number;
-  retryAfterMs: number;
-  countdownLabel: string | null;
-  isLimited: boolean;
-}
-
-export function useRateLimit(pollIntervalMs = 1000): UseRateLimitResult {
-  const [state, setState] = useState(() => getApiRateLimitState());
+  useEffect(() => subscribeToApiRateLimit(setStatus), []);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setState(getApiRateLimitState());
-    }, pollIntervalMs);
-    return () => clearInterval(timer);
-  }, [pollIntervalMs]);
+    if (status.retryAfterMs <= 0) {
+      return;
+    }
 
-  return useMemo(() => {
-    return {
-      remaining: state.remaining,
-      limit: state.limit,
-      used: state.used,
-      retryAfterMs: state.retryAfterMs,
-      countdownLabel: state.retryAfterMs > 0 ? formatRetryAfter(state.retryAfterMs) : null,
-      isLimited: state.retryAfterMs > 0,
-    };
-  }, [state]);
+    const interval = setInterval(() => {
+      setStatus(getApiRateLimitStatus());
+    }, 1_000);
+
+    return () => clearInterval(interval);
+  }, [status.retryAfterMs]);
+
+  return status;
 }
