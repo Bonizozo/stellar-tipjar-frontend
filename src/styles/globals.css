@@ -10,6 +10,20 @@
   --accent: #ff785a;
   --accent-alt: #0f6c7b;
   --ring: #1c3942;
+  --ink: #151515;
+  --wave: #0f6c7b;
+}
+
+.dark {
+  --background: #0d1117;
+  --surface: #161b22;
+  --foreground: #e6edf3;
+  --muted: #8b949e;
+  --accent: #ff785a;
+  --accent-alt: #58a6ff;
+  --ring: #1f6feb;
+  --ink: #e6edf3;
+  --wave: #58a6ff;
 }
 
 * {
@@ -61,4 +75,10 @@ a {
     linear-gradient(rgba(21, 21, 21, 0.06) 1px, transparent 1px),
     linear-gradient(90deg, rgba(21, 21, 21, 0.06) 1px, transparent 1px);
   background-size: 24px 24px;
+}
+
+.dark .soft-grid {
+  background-image:
+    linear-gradient(rgba(230, 237, 243, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(230, 237, 243, 0.06) 1px, transparent 1px);
 }

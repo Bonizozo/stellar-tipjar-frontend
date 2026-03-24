@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { WalletConnector } from "@/components/WalletConnector";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const navLinks = [
   { href: "/", label: "Home" },

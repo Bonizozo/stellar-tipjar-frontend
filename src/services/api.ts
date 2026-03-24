@@ -2,6 +2,9 @@ import { RequestQueue } from "@/utils/requestQueue";
 import { RateLimiter } from "@/utils/rateLimiter";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const DEFAULT_RETRIES = 3;
+const RATE_LIMITER = new RateLimiter(10, 60_000, 200);
+const REQUEST_QUEUE = new RequestQueue();
 
 export interface CreatorProfile {
   username: string;
@@ -110,11 +113,31 @@ async function executeFetch<T>(path: string, init?: RequestInit, throttleMs?: nu
     next: { revalidate: 30 },
   });
 
-  if (!response.ok) {
     throw new Error(`API request failed: ${response.status} ${response.statusText}`);
   }
 
-  return (await response.json()) as T;
+  throw new Error("API request failed after retries.");
+}
+
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const method = init?.method?.toUpperCase() ?? "GET";
+  const check = RATE_LIMITER.canMakeRequest();
+
+  if (!check.allowed) {
+    if (isSafeToQueue(method)) {
+      await sleep(check.retryAfterMs);
+      return REQUEST_QUEUE.enqueue(async () => request<T>(path, init));
+    }
+
+    throw new ApiRateLimitError(check.retryAfterMs);
+  }
+
+  RATE_LIMITER.recordRequest();
+  return executeRequest<T>(path, init);
+}
+
+export function getApiRateLimitState() {
+  return RATE_LIMITER.getState();
 }
 
 /**
