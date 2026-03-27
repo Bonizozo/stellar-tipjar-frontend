@@ -15,7 +15,10 @@ export const creatorSchema = z.object({
   username: creatorUsernameSchema,
   categories: z.array(z.string()).optional().default([]),
   tags: z.array(z.string()).max(10).optional().default([]),
+  goalAmount: z.number().optional(),
+  milestones: z.array(z.number()).optional().default([]),
 });
 
 export type CreatorSchemaValues = z.infer<typeof creatorSchema>;
 export type CreatorWithCategoriesTags = z.infer<typeof creatorSchema>;
+

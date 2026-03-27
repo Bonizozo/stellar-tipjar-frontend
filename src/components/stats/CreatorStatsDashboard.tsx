@@ -1,9 +1,11 @@
 "use client";
 
 import { useCreatorStats } from "@/hooks/queries/useCreatorStats";
+import { GoalProgressBar } from "./GoalProgressBar";
 import { StatsCard } from "./StatsCard";
 import { TipChart } from "./TipChart";
 import { TopSupporters } from "./TopSupporters";
+
 
 interface CreatorStatsDashboardProps {
   username: string;
@@ -34,6 +36,12 @@ export function CreatorStatsDashboard({ username }: CreatorStatsDashboardProps) 
 
   return (
     <div className="space-y-4">
+      {/* Goal Progress Bar - Prominent full-width */}
+      <GoalProgressBar 
+        currentAmount={data.totalAmountXlm} 
+        goalAmount={10000} 
+      />
+      
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatsCard
           title="Total Tips"
@@ -55,3 +63,4 @@ export function CreatorStatsDashboard({ username }: CreatorStatsDashboardProps) 
     </div>
   );
 }
+
