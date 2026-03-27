@@ -225,3 +225,146 @@ export async function createTipIntent(payload: {
     },
   );
 }
+
+// ─── Comments ────────────────────────────────────────────────────────────────
+
+export interface Comment {
+  id: string;
+  username: string;
+  displayName: string;
+  avatarUrl: string;
+  body: string;
+  createdAt: string;
+  parentId: string | null;
+  /** Whether the comment is hidden by moderation */
+  hidden: boolean;
+  reactions: Record<string, number>; // emoji → count
+  /** Emoji reactions the current viewer has added */
+  myReactions: string[];
+}
+
+export interface CommentsPage {
+  comments: Comment[];
+  nextCursor: string | null;
+}
+
+function mockComments(creatorUsername: string): Comment[] {
+  const now = Date.now();
+  return [
+    {
+      id: "c1",
+      username: "stellar-fan",
+      displayName: "Stellar Fan",
+      avatarUrl: `https://api.dicebear.com/7.x/thumbs/svg?seed=stellar-fan`,
+      body: `Love your work, ${creatorUsername}! Keep it up 🚀`,
+      createdAt: new Date(now - 3_600_000).toISOString(),
+      parentId: null,
+      hidden: false,
+      reactions: { "❤️": 4, "🔥": 2 },
+      myReactions: [],
+    },
+    {
+      id: "c2",
+      username: "xlm-lover",
+      displayName: "XLM Lover",
+      avatarUrl: `https://api.dicebear.com/7.x/thumbs/svg?seed=xlm-lover`,
+      body: "Sent a small tip — you deserve it!",
+      createdAt: new Date(now - 7_200_000).toISOString(),
+      parentId: null,
+      hidden: false,
+      reactions: { "⭐": 3 },
+      myReactions: [],
+    },
+    {
+      id: "c3",
+      username: "crypto-alice",
+      displayName: "Crypto Alice",
+      avatarUrl: `https://api.dicebear.com/7.x/thumbs/svg?seed=crypto-alice`,
+      body: "Replying to say this community is awesome!",
+      createdAt: new Date(now - 1_800_000).toISOString(),
+      parentId: "c1",
+      hidden: false,
+      reactions: {},
+      myReactions: [],
+    },
+    {
+      id: "c4",
+      username: "spam-bot",
+      displayName: "Spam Bot",
+      avatarUrl: `https://api.dicebear.com/7.x/thumbs/svg?seed=spam-bot`,
+      body: "Buy cheap XLM here!!!",
+      createdAt: new Date(now - 500_000).toISOString(),
+      parentId: null,
+      hidden: true,
+      reactions: {},
+      myReactions: [],
+    },
+  ];
+}
+
+export async function getComments(
+  creatorUsername: string,
+  cursor?: string,
+): Promise<CommentsPage> {
+  try {
+    const path = `/creators/${creatorUsername}/comments${cursor ? `?cursor=${cursor}` : ""}`;
+    return await request<CommentsPage>(path, undefined, { critical: false });
+  } catch {
+    return { comments: mockComments(creatorUsername), nextCursor: null };
+  }
+}
+
+export async function postComment(payload: {
+  creatorUsername: string;
+  body: string;
+  parentId?: string;
+}): Promise<Comment> {
+  try {
+    return await request<Comment>(
+      `/creators/${payload.creatorUsername}/comments`,
+      { method: "POST", body: JSON.stringify({ body: payload.body, parentId: payload.parentId }) },
+      { critical: true, throttleMs: 500 },
+    );
+  } catch {
+    // Optimistic mock response
+    return {
+      id: `c-${Date.now()}`,
+      username: "you",
+      displayName: "You",
+      avatarUrl: `https://api.dicebear.com/7.x/thumbs/svg?seed=you`,
+      body: payload.body,
+      createdAt: new Date().toISOString(),
+      parentId: payload.parentId ?? null,
+      hidden: false,
+      reactions: {},
+      myReactions: [],
+    };
+  }
+}
+
+export async function toggleReaction(payload: {
+  commentId: string;
+  emoji: string;
+}): Promise<void> {
+  try {
+    await request(
+      `/comments/${payload.commentId}/reactions`,
+      { method: "POST", body: JSON.stringify({ emoji: payload.emoji }) },
+      { critical: false },
+    );
+  } catch {
+    // silently handled optimistically in the hook
+  }
+}
+
+export async function reportComment(commentId: string): Promise<void> {
+  try {
+    await request(
+      `/comments/${commentId}/report`,
+      { method: "POST" },
+      { critical: false },
+    );
+  } catch {
+    // best-effort
+  }
+}

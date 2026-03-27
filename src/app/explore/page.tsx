@@ -10,6 +10,8 @@ import { generateAvatarUrl } from "@/utils/imageUtils";
 import { useDebounce } from "@/hooks/useDebounce";
 import { usePagination } from "@/hooks/usePagination";
 import { useSearchParams } from "@/hooks/useSearchParams";
+import { RecommendedCreators } from "@/components/RecommendedCreators";
+import { useRecommendations } from "@/hooks/useRecommendations";
 
 interface Creator {
   username: string;
@@ -62,6 +64,7 @@ const sortOptions: FilterOption[] = [
 
 export default function ExplorePage() {
   const { getSearchParam, setSearchParams } = useSearchParams();
+  const { trackInteraction } = useRecommendations(0);
   
   const [search, setSearch] = useState(getSearchParam("search") || "");
   const [category, setCategory] = useState(getSearchParam("category") || "all");
@@ -166,6 +169,8 @@ export default function ExplorePage() {
         </p>
       </div>
 
+      <RecommendedCreators limit={3} />
+
       <div className="space-y-4">
         <SearchBar
           value={search}
@@ -227,6 +232,7 @@ export default function ExplorePage() {
             <li key={creator.username}>
               <Link
                 href={`/creator/${creator.username}`}
+                onClick={() => trackInteraction("click", creator.username, creator.category)}
                 className="block rounded-2xl border border-ink/10 bg-[color:var(--surface)] p-5 transition hover:border-wave/40 hover:shadow-card"
               >
                 <div className="flex items-start gap-4">
