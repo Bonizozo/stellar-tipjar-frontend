@@ -8,7 +8,9 @@ import { CreatorStatsDashboard } from "@/components/stats/CreatorStatsDashboard"
 import { creatorUsernameSchema } from "@/schemas/creatorSchema";
 import { getCreatorProfile } from "@/services/api";
 import { formatUsername } from "@/utils/format";
+import { generateAvatarUrl } from "@/utils/imageUtils";
 import { buildMetadata, creatorProfileJsonLd } from "@/utils/seo";
+import { OptimizedImage } from "@/components/OptimizedImage";
 
 interface CreatorPageProps {
   params: {
@@ -54,6 +56,15 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
         }}
       />
       <div className="rounded-3xl border border-ink/10 bg-[color:var(--surface)] p-8 shadow-card">
+        <div className="mb-6 h-24 w-24 overflow-hidden rounded-full ring-4 ring-wave/20 sm:h-32 sm:w-32">
+          <OptimizedImage
+            src={generateAvatarUrl(profile.username)}
+            alt={`Avatar for ${profile.displayName}`}
+            priority={true}
+            fill
+            sizes="(min-width: 640px) 128px, 96px"
+          />
+        </div>
         <p className="text-xs uppercase tracking-wide text-wave">Creator Profile</p>
         <h1 className="mt-2 text-3xl font-bold text-ink sm:text-4xl">{profile.displayName}</h1>
         <p className="mt-1 text-sm text-ink/60">{formatUsername(profile.username)}</p>

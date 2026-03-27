@@ -8,6 +8,18 @@ const nextConfig: NextConfig = {
   // Empty turbopack config to silence the warning
   turbopack: {},
 
+  images: {
+    formats: ["image/webp"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "api.dicebear.com",
+        port: "",
+        pathname: "/**",
+      },
+    ],
+  },
+
   async headers() {
     return [
       {

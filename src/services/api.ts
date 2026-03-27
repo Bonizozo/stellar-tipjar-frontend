@@ -3,8 +3,6 @@ import { RateLimiter } from "@/utils/rateLimiter";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 const DEFAULT_RETRIES = 3;
-const RATE_LIMITER = new RateLimiter(10, 60_000);
-const REQUEST_QUEUE = new RequestQueue();
 
 export interface CreatorProfile {
   username: string;
@@ -117,11 +115,12 @@ async function executeFetch<T>(path: string, init?: RequestInit, throttleMs?: nu
     throw new Error(`API request failed: ${response.status} ${response.statusText}`);
   }
 
-  return response.json() as Promise<T>;
+
+return response.json() as Promise<T>;
 }
 
 export function getApiRateLimitState() {
-  return RATE_LIMITER.getState();
+  return rateLimiter.getState();
 }
 
 /**

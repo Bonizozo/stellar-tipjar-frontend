@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { SearchBar } from "@/components/SearchBar";
 import { FilterDropdown, type FilterOption } from "@/components/FilterDropdown";
 import { Pagination } from "@/components/Pagination";
+import { OptimizedImage } from "@/components/OptimizedImage";
+import { generateAvatarUrl } from "@/utils/imageUtils";
 import { useDebounce } from "@/hooks/useDebounce";
 import { usePagination } from "@/hooks/usePagination";
 import { useSearchParams } from "@/hooks/useSearchParams";
@@ -227,15 +229,23 @@ export default function ExplorePage() {
                 href={`/creator/${creator.username}`}
                 className="block rounded-2xl border border-ink/10 bg-[color:var(--surface)] p-5 transition hover:border-wave/40 hover:shadow-card"
               >
-                <div className="flex items-start justify-between">
-                  <div>
+                <div className="flex items-start gap-4">
+                  <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full ring-2 ring-ink/5">
+                    <OptimizedImage
+                      src={generateAvatarUrl(creator.username)}
+                      alt={creator.displayName || creator.username}
+                      fill
+                      sizes="48px"
+                    />
+                  </div>
+                  <div className="flex-1">
                     <p className="text-xs uppercase tracking-wide text-wave">
                       {creator.category || "Creator"}
                     </p>
-                    <p className="mt-1 text-lg font-semibold text-ink">
+                    <p className="mt-1 text-lg font-semibold text-ink line-clamp-1">
                       {creator.displayName || `@${creator.username}`}
                     </p>
-                    <p className="text-sm text-ink/60">@{creator.username}</p>
+                    <p className="text-sm text-ink/60 line-clamp-1">@{creator.username}</p>
                   </div>
                   {creator.followers !== undefined && (
                     <div className="text-right">
