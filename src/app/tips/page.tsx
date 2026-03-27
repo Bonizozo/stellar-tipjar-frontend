@@ -4,9 +4,9 @@ import { useState } from "react";
 import { TipHistoryTable } from "@/components/TipHistoryTable";
 import { TipFilters } from "@/components/TipFilters";
 import { Pagination } from "@/components/Pagination";
+import { ExportModal } from "@/components/ExportModal";
 import { useTipHistory } from "@/hooks/useTipHistory";
 import { usePagination } from "@/hooks/usePagination";
-import { exportToCSV } from "@/utils/exportCSV";
 
 export default function TipsPage() {
   const {
@@ -22,6 +22,7 @@ export default function TipsPage() {
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [showExport, setShowExport] = useState(false);
 
   const pagination = usePagination({
     totalItems: tips.length,
@@ -46,29 +47,6 @@ export default function TipsPage() {
     setPage(1);
   };
 
-  const handleExportCSV = () => {
-    const columns = [
-      { key: "date", label: "Date" },
-      { key: "amount", label: "Amount (XLM)" },
-      { key: "recipient", label: "Recipient" },
-      { key: "status", label: "Status" },
-      { key: "memo", label: "Memo" },
-      { key: "transactionHash", label: "Transaction Hash" },
-    ];
-
-    const exportData = tips.map((tip) => ({
-      date: new Date(tip.date).toLocaleString(),
-      amount: tip.amount,
-      recipient: tip.recipient,
-      status: tip.status,
-      memo: tip.memo || "",
-      transactionHash: tip.transactionHash || "",
-    }));
-
-    const timestamp = new Date().toISOString().split("T")[0];
-    exportToCSV(exportData, columns, `tip-history-${timestamp}.csv`);
-  };
-
   const totalAmount = tips.reduce((sum, tip) => {
     return tip.status === "completed" ? sum + tip.amount : sum;
   }, 0);
@@ -85,8 +63,8 @@ export default function TipsPage() {
 
         <button
           type="button"
-          onClick={handleExportCSV}
-          disabled={tips.length === 0}
+          onClick={() => setShowExport(true)}
+          disabled={allTips.length === 0}
           className="inline-flex items-center gap-2 rounded-lg bg-wave px-4 py-2 text-sm font-medium text-white hover:bg-wave/90 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -97,7 +75,7 @@ export default function TipsPage() {
               d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
             />
           </svg>
-          Export CSV
+          Export
         </button>
       </div>
 
@@ -146,6 +124,10 @@ export default function TipsPage() {
             hasPrevPage={pagination.hasPrevPage}
           />
         </>
+      )}
+
+      {showExport && (
+        <ExportModal tips={allTips} onClose={() => setShowExport(false)} />
       )}
     </section>
   );
