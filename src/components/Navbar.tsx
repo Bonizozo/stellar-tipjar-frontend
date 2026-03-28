@@ -1,18 +1,24 @@
+"use client";
+
 import Link from "next/link";
 
 import { NotificationBadge } from "@/components/NotificationBadge";
 import { WalletConnector } from "@/components/WalletConnector";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { CurrencySwitcher } from "@/components/CurrencySwitcher";
-
-const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/explore", label: "Explore Creators" },
-  { href: "/tips", label: "Send Tips" },
-  { href: "/widgets", label: "Widgets" },
-] as const;
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export function Navbar() {
+  const t = useTranslation("nav");
+
+  const navLinks = [
+    { href: "/", label: t("home") },
+    { href: "/explore", label: t("exploreCreators") },
+    { href: "/tips", label: t("sendTips") },
+    { href: "/widgets", label: t("widgets") },
+  ] as const;
+
   return (
     <header className="sticky top-0 z-20 border-b border-ink/10 bg-[color:var(--surface)]/80 backdrop-blur-md">
       <nav
@@ -24,7 +30,7 @@ export function Navbar() {
           aria-label="Stellar Tip Jar — home"
           className="text-lg font-bold tracking-tight text-ink sm:text-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wave/50 rounded"
         >
-          Stellar Tip Jar
+          {t("brandName")}
         </Link>
 
         <ul
@@ -47,6 +53,7 @@ export function Navbar() {
           <div className="hidden lg:block mr-2">
             <CurrencySwitcher />
           </div>
+          <LanguageSwitcher />
           <NotificationBadge />
           <WalletConnector />
         </div>

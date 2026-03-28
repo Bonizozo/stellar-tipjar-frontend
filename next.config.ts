@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 import withPWA from "next-pwa";
 import { getSecurityHeaders } from "./src/utils/security";
 
+// i18n is handled via next-intl's NextIntlClientProvider (see src/components/I18nProvider.tsx)
+// Supported locales: en, es, fr, de, ja — preference persisted in localStorage
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   typedRoutes: true,
