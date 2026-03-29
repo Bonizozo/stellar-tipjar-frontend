@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useDebounce } from "./useDebounce";
 import { CREATOR_EXAMPLES, type Creator } from "@/utils/creatorData";
 import { CATEGORIES, TAGS_EXAMPLES } from "@/utils/categories";
+import { fuzzyMatch } from "@/utils/fuzzyMatch";
 
 export type SuggestionType = "creator" | "category" | "tag";
 
@@ -15,19 +16,38 @@ export interface SearchSuggestion {
   avatar?: string;
 }
 
+export interface SavedSearch {
+  id: string;
+  name: string;
+  query: string;
+  filters: Record<string, any>;
+  createdAt: Date;
+}
+
+export interface SearchHistoryItem {
+  query: string;
+  timestamp: Date;
+  results: SearchSuggestion[];
+}
+
 const RECENT_SEARCHES_KEY = "stellar_recent_searches";
+const SAVED_SEARCHES_KEY = "stellar_saved_searches";
+const SEARCH_HISTORY_KEY = "stellar_search_history";
 const MAX_RECENT_SEARCHES = 5;
+const MAX_HISTORY_ITEMS = 20;
 
 export function useSearch() {
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query, 300);
   const [results, setResults] = useState<SearchSuggestion[]>([]);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
+  const [savedSearches, setSavedSearches] = useState<SavedSearch[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [showResults, setShowResults] = useState(false);
 
-  // Load recent searches on mount
+  // Load recent searches, history, and saved searches on mount
   useEffect(() => {
     const stored = localStorage.getItem(RECENT_SEARCHES_KEY);
     if (stored) {
@@ -35,6 +55,24 @@ export function useSearch() {
         setRecentSearches(JSON.parse(stored));
       } catch (e) {
         console.error("Failed to parse recent searches", e);
+      }
+    }
+
+    const historyStored = localStorage.getItem(SEARCH_HISTORY_KEY);
+    if (historyStored) {
+      try {
+        setSearchHistory(JSON.parse(historyStored));
+      } catch (e) {
+        console.error("Failed to parse search history", e);
+      }
+    }
+
+    const savedStored = localStorage.getItem(SAVED_SEARCHES_KEY);
+    if (savedStored) {
+      try {
+        setSavedSearches(JSON.parse(savedStored));
+      } catch (e) {
+        console.error("Failed to parse saved searches", e);
       }
     }
   }, []);
@@ -112,6 +150,81 @@ export function useSearch() {
     });
   }, []);
 
+  // Advanced Search: Add to search history
+  const addToHistory = useCallback((searchResults: SearchSuggestion[]) => {
+    const historyItem: SearchHistoryItem = {
+      query,
+      timestamp: new Date(),
+      results: searchResults,
+    };
+
+    setSearchHistory(prev => {
+      const updated = [historyItem, ...prev].slice(0, MAX_HISTORY_ITEMS);
+      localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(updated));
+      return updated;
+    });
+  }, [query]);
+
+  // Advanced Search: Clear history
+  const clearHistory = useCallback(() => {
+    setSearchHistory([]);
+    localStorage.removeItem(SEARCH_HISTORY_KEY);
+  }, []);
+
+  // Advanced Search: Save current search
+  const saveAsSearch = useCallback((name: string, filters: Record<string, any> = {}) => {
+    if (!name.trim() || !query.trim()) return;
+
+    const newSavedSearch: SavedSearch = {
+      id: `search_${Date.now()}`,
+      name,
+      query,
+      filters,
+      createdAt: new Date(),
+    };
+
+    setSavedSearches(prev => {
+      const updated = [...prev, newSavedSearch];
+      localStorage.setItem(SAVED_SEARCHES_KEY, JSON.stringify(updated));
+      return updated;
+    });
+
+    return newSavedSearch;
+  }, [query]);
+
+  // Advanced Search: Delete saved search
+  const deleteSavedSearch = useCallback((searchId: string) => {
+    setSavedSearches(prev => {
+      const updated = prev.filter(s => s.id !== searchId);
+      localStorage.setItem(SAVED_SEARCHES_KEY, JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
+  // Advanced Search: Load saved search
+  const loadSavedSearch = useCallback((search: SavedSearch) => {
+    setQuery(search.query);
+    setShowResults(true);
+  }, []);
+
+  // Advanced Search: Get autocomplete suggestions with fuzzy matching
+  const getAutocompleteSuggestions = useCallback((input: string, limit: number = 5): string[] => {
+    if (!input.trim()) {
+      return recentSearches.slice(0, limit);
+    }
+
+    const allItems = [
+      ...recentSearches,
+      ...searchHistory.map(h => h.query),
+      ...savedSearches.map(s => s.query),
+    ];
+
+    const uniqueItems = Array.from(new Set(allItems));
+    const fuzzyResults = fuzzyMatch(input, uniqueItems);
+    
+    return fuzzyResults.slice(0, limit).map(m => m.item);
+  }, [recentSearches, searchHistory, savedSearches]);
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (results.length === 0) return;
 
@@ -156,5 +269,14 @@ export function useSearch() {
     selectSuggestion,
     saveSearch,
     removeRecentSearch,
+    // Advanced search features
+    searchHistory,
+    addToHistory,
+    clearHistory,
+    savedSearches,
+    saveAsSearch,
+    deleteSavedSearch,
+    loadSavedSearch,
+    getAutocompleteSuggestions,
   };
 }
