@@ -18,6 +18,7 @@ import { TagCloud } from "@/components/TagCloud";
 import { generateTagCloud } from "@/utils/categories";
 import { PortfolioSection } from "@/components/portfolio/PortfolioSection";
 import { ProfileCard } from "@/components/ProfileCard";
+import { CreatorShare } from "@/components/CreatorShare";
 
 
 interface CreatorPageProps {
@@ -72,6 +73,8 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
         avatarUrl={generateAvatarUrl(profile.username)}
         isVerified={profile.isVerified}
       />
+
+      <CreatorShare username={profile.username} displayName={profile.displayName} />
 
       {(profile.categories?.length || profile.tags?.length) > 0 && (
         <div className="rounded-2xl border border-ink/10 bg-[color:var(--surface)] p-6">
