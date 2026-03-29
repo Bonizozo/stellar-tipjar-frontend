@@ -13,12 +13,11 @@ import { getCreatorProfile } from "@/services/api";
 import { formatUsername } from "@/utils/format";
 import { generateAvatarUrl } from "@/utils/imageUtils";
 import { buildMetadata, creatorProfileJsonLd } from "@/utils/seo";
-import { OptimizedImage } from "@/components/OptimizedImage";
 import { TagBadge } from "@/components/TagBadge";
 import { TagCloud } from "@/components/TagCloud";
 import { generateTagCloud } from "@/utils/categories";
 import { PortfolioSection } from "@/components/portfolio/PortfolioSection";
-import { VerificationBadge } from "@/components/VerificationBadge";
+import { ProfileCard } from "@/components/ProfileCard";
 
 
 interface CreatorPageProps {
@@ -66,64 +65,49 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
           ),
         }}
       />
-      <div className="rounded-3xl border border-ink/10 bg-[color:var(--surface)] p-8 shadow-card">
-        <div className="mb-6 h-24 w-24 overflow-hidden rounded-full ring-4 ring-wave/20 sm:h-32 sm:w-32">
-          <OptimizedImage
-            src={generateAvatarUrl(profile.username)}
-            alt={`Avatar for ${profile.displayName}`}
-            priority={true}
-            fill
-            sizes="(min-width: 640px) 128px, 96px"
-          />
-        </div>
-        <p className="text-xs uppercase tracking-wide text-wave">Creator Profile</p>
-        <div className="flex items-center gap-2">
-          <h1 className="text-3xl font-bold text-ink sm:text-4xl">{profile.displayName}</h1>
-          <VerificationBadge isVerified={profile.isVerified} size="lg" />
-        </div>
-        <p className="mt-1 text-sm text-ink/60">{formatUsername(profile.username)}</p>
+      <ProfileCard
+        username={profile.username}
+        displayName={profile.displayName}
+        bio={profile.bio}
+        avatarUrl={generateAvatarUrl(profile.username)}
+        isVerified={profile.isVerified}
+      />
 
-        <p className="mt-4 max-w-2xl text-ink/75">{profile.bio}</p>
-        <p className="mt-4 inline-flex rounded-lg bg-wave/10 px-3 py-1 text-sm text-wave">
-          Preferred asset: {profile.preferredAsset}
-        </p>
-
-        {(profile.categories?.length || profile.tags?.length) > 0 && (
-          <div className="mt-6">
-            <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-wave">Categories & Tags</p>
-            <div className="flex flex-wrap gap-2 mb-4">
-              {profile.categories?.map((cat) => (
-                <TagBadge key={cat} tag={cat} variant="category" />
-              ))}
-              {profile.tags?.slice(0, 6).map((tag) => (
-                <TagBadge key={tag} tag={tag} />
-              ))}
-              {profile.tags && profile.tags.length > 6 && (
-                <span className="px-3 py-1 text-xs font-medium text-ink/60 bg-ink/10 rounded-full">
-                  +{profile.tags.length - 6} more
-                </span>
-              )}
-            </div>
-            <TagCloud tags={generateTagCloud(profile.tags || [])} className="max-w-lg" />
+      {(profile.categories?.length || profile.tags?.length) > 0 && (
+        <div className="rounded-2xl border border-ink/10 bg-[color:var(--surface)] p-6">
+          <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-wave">Categories & Tags</p>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {profile.categories?.map((cat) => (
+              <TagBadge key={cat} tag={cat} variant="category" />
+            ))}
+            {profile.tags?.slice(0, 6).map((tag) => (
+              <TagBadge key={tag} tag={tag} />
+            ))}
+            {profile.tags && profile.tags.length > 6 && (
+              <span className="px-3 py-1 text-xs font-medium text-ink/60 bg-ink/10 rounded-full">
+                +{profile.tags.length - 6} more
+              </span>
+            )}
           </div>
-        )}
-
-        <div className="mt-8 flex flex-wrap gap-3">
-          <Link href="/tips">
-            <Button>Tip This Creator</Button>
-          </Link>
-          <Link href="/explore">
-            <Button variant="ghost">Back to Explore</Button>
-          </Link>
+          <TagCloud tags={generateTagCloud(profile.tags || [])} className="max-w-lg" />
         </div>
+      )}
 
-        <div className="mt-8 rounded-2xl border border-ink/10 bg-white/70 p-5 sm:p-6">
-          <h2 className="text-xl font-semibold text-ink">Send a Tip</h2>
-          <p className="mt-2 text-sm text-ink/70">
-            Amount and asset values are validated on blur and submit before calling the API.
-          </p>
-          <TipForm username={profile.username} defaultAssetCode={profile.preferredAsset} />
-        </div>
+      <div className="flex flex-wrap gap-3">
+        <Link href="/tips">
+          <Button>Tip This Creator</Button>
+        </Link>
+        <Link href="/explore">
+          <Button variant="ghost">Back to Explore</Button>
+        </Link>
+      </div>
+
+      <div className="rounded-2xl border border-ink/10 bg-white/70 p-5 sm:p-6">
+        <h2 className="text-xl font-semibold text-ink">Send a Tip</h2>
+        <p className="mt-2 text-sm text-ink/70">
+          Amount and asset values are validated on blur and submit before calling the API.
+        </p>
+        <TipForm username={profile.username} defaultAssetCode={profile.preferredAsset} />
       </div>
 
       <div>
