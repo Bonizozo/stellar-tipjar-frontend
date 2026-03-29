@@ -23,6 +23,7 @@ import { CircularProgress } from "@/components/Progress/CircularProgress";
 import { StepProgress } from "@/components/Progress/StepProgress";
 import { UploadProgress } from "@/components/Progress/UploadProgress";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/Accordion";
+import { Tabs } from "@/components/Tabs";
 
 export default function DesignSystemPage() {
   const [progress, setProgress] = useState(0);
@@ -227,6 +228,64 @@ export default function DesignSystemPage() {
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
+          </div>
+        </section>
+
+        {/* Tabs */}
+        <section className="space-y-8">
+          <h2 className="text-2xl font-bold text-ink dark:text-canvas">Tabs</h2>
+
+          <div className="space-y-10">
+            {/* Underline */}
+            <div>
+              <p className="text-sm text-ink/50 dark:text-canvas/50 mb-4">Underline (default)</p>
+              <Tabs
+                tabs={[
+                  { id: "profile", label: "Profile", icon: <User className="h-4 w-4" />, content: <p className="text-ink/70 dark:text-canvas/70">Your public profile details and bio.</p> },
+                  { id: "settings", label: "Settings", icon: <Settings className="h-4 w-4" />, badge: 3, content: <p className="text-ink/70 dark:text-canvas/70">Manage your account settings.</p> },
+                  { id: "activity", label: "Activity", content: <p className="text-ink/70 dark:text-canvas/70">Recent tips and interactions.</p> },
+                  { id: "locked", label: "Locked", disabled: true, content: null },
+                ]}
+              />
+            </div>
+
+            {/* Pills */}
+            <div>
+              <p className="text-sm text-ink/50 dark:text-canvas/50 mb-4">Pills</p>
+              <Tabs
+                style="pills"
+                tabs={[
+                  { id: "all", label: "All", badge: 12, content: <p className="text-ink/70 dark:text-canvas/70">All creators on the platform.</p> },
+                  { id: "trending", label: "Trending", icon: <Star className="h-4 w-4" />, content: <p className="text-ink/70 dark:text-canvas/70">Trending creators this week.</p> },
+                  { id: "new", label: "New", content: <p className="text-ink/70 dark:text-canvas/70">Recently joined creators.</p> },
+                ]}
+              />
+            </div>
+
+            {/* Enclosed */}
+            <div>
+              <p className="text-sm text-ink/50 dark:text-canvas/50 mb-4">Enclosed</p>
+              <Tabs
+                style="enclosed"
+                tabs={[
+                  { id: "overview", label: "Overview", icon: <Layout className="h-4 w-4" />, content: <p className="text-ink/70 dark:text-canvas/70">High-level overview of your stats.</p> },
+                  { id: "details", label: "Details", icon: <Layers className="h-4 w-4" />, content: <p className="text-ink/70 dark:text-canvas/70">Detailed breakdown of transactions.</p> },
+                ]}
+              />
+            </div>
+
+            {/* Vertical */}
+            <div>
+              <p className="text-sm text-ink/50 dark:text-canvas/50 mb-4">Vertical</p>
+              <Tabs
+                orientation="vertical"
+                tabs={[
+                  { id: "v-profile", label: "Profile", icon: <User className="h-4 w-4" />, content: <p className="text-ink/70 dark:text-canvas/70">Your public profile details.</p> },
+                  { id: "v-settings", label: "Settings", icon: <Settings className="h-4 w-4" />, content: <p className="text-ink/70 dark:text-canvas/70">Account settings and preferences.</p> },
+                  { id: "v-messages", label: "Messages", icon: <MessageCircle className="h-4 w-4" />, badge: 5, content: <p className="text-ink/70 dark:text-canvas/70">Your messages and notifications.</p> },
+                ]}
+              />
+            </div>
           </div>
         </section>
 
