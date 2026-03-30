@@ -15,6 +15,7 @@ import { WebSocketProvider } from "@/contexts/WebSocketContext";
 import { I18nProvider } from "@/components/I18nProvider";
 import { ToastProvider } from "@/contexts/ToastContext";
 import { ToastContainer } from "@/components/Toast";
+import { Footer } from "@/components/Footer";
 import "@/styles/globals.css";
 import { buildMetadata } from "@/utils/seo";
 
@@ -61,15 +62,16 @@ export default function RootLayout({
           <ReactQueryProvider>
             <WebSocketProvider>
               <ToastProvider>
-              <div className="min-h-screen">
+              <div className="min-h-screen flex flex-col">
                 <Navbar />
                 <main
                   id="main-content"
                   tabIndex={-1}
-                  className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8 focus:outline-none"
+                  className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8 focus:outline-none flex-1"
                 >
                   <PageTransition>{children}</PageTransition>
                 </main>
+                <Footer />
               </div>
               <InstallPrompt />
               <ToastContainer />
