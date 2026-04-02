@@ -4,7 +4,7 @@ import React from 'react';
 import useAchievements from '@/hooks/useAchievements';
 import { Achievement } from '@/utils/gamification';
 
-const AchievementCard: React.FC<{ achievement: any }> = ({ achievement }) => {
+const AchievementCard: React.FC<{ achievement: Achievement }> = ({ achievement }) => {
   const isUnlocked = achievement.unlocked;
   const progressPercent = achievement.progress !== undefined ? (achievement.progress / achievement.milestone) * 100 : 0;
 
