@@ -1,0 +1,43 @@
+/* Stellar Tip Jar Brand Colors */
+
+/* Primary Colors */
+:root {
+  --color-stellar-blue: #0066ff;
+  --color-stellar-cyan: #00d4ff;
+}
+
+/* Secondary Colors */
+:root {
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+}
+
+/* Neutral Colors */
+:root {
+  --color-dark-gray: #1f2937;
+  --color-medium-gray: #6b7280;
+  --color-light-gray: #d1d5db;
+  --color-white: #ffffff;
+  --color-black: #000000;
+}
+
+/* Semantic Colors */
+:root {
+  --color-primary: var(--color-stellar-blue);
+  --color-secondary: var(--color-stellar-cyan);
+  --color-text: var(--color-dark-gray);
+  --color-text-light: var(--color-medium-gray);
+  --color-background: var(--color-white);
+  --color-surface: #f9fafb;
+}
+
+/* Dark Mode Overrides */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-text: var(--color-white);
+    --color-text-light: var(--color-light-gray);
+    --color-background: var(--color-dark-gray);
+    --color-surface: #111827;
+  }
+}
