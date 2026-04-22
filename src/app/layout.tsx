@@ -12,7 +12,7 @@ import { PageTransition } from "@/components/animations/PageTransition";
 import { WalletProvider } from "@/contexts/WalletContext";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import { WebSocketProvider } from "@/contexts/WebSocketContext";
-import { I18nProvider } from "@/components/I18nProvider";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import { ToastProvider } from "@/contexts/ToastContext";
 import { ToastContainer } from "@/components/Toast";
 import { Footer } from "@/components/Footer";
@@ -56,6 +56,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <SkipToContent />
         <PerformanceMonitor />
+        <ThemeProvider>
         <I18nProvider>
         <CurrencyProvider>
         <WalletProvider>
@@ -81,6 +82,7 @@ export default function RootLayout({
         </WalletProvider>
         </CurrencyProvider>
         </I18nProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
