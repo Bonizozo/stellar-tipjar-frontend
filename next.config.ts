@@ -38,10 +38,25 @@ const nextConfig: NextConfig = {
 
 export default withNextIntl(withPWA({
   dest: "public",
-  register: true,
+  register: false,
   skipWaiting: true,
   disable: process.env.NODE_ENV === "development",
+  fallbacks: {
+    document: "/offline",
+  },
   runtimeCaching: [
+    {
+      urlPattern: /^https:\/\/api\./i,
+      handler: "NetworkFirst",
+      options: {
+        cacheName: "api-cache",
+        expiration: {
+          maxEntries: 50,
+          maxAgeSeconds: 5 * 60,
+        },
+        networkTimeoutSeconds: 10,
+      },
+    },
     {
       urlPattern: /^https:\/\/fonts\.(?:gstatic)\.com\/.*/i,
       handler: "CacheFirst",

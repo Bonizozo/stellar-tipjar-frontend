@@ -1,9 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 
-import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { InstallPrompt } from "@/components/InstallPrompt";
-import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { Navbar } from "@/components/Navbar";
 import { PerformanceMonitor } from "@/components/PerformanceMonitor";
 import { ReactQueryProvider } from "@/components/ReactQueryProvider";
@@ -15,8 +13,9 @@ import { WebSocketProvider } from "@/contexts/WebSocketContext";
 import { ToastProvider } from "@/contexts/ToastContext";
 import { ToastContainer } from "@/components/Toast";
 import { Footer } from "@/components/Footer";
+import { UpdatePrompt } from "@/components/UpdatePrompt";
+import { PWAInitializer } from "@/components/PWAInitializer";
 import "@/styles/globals.css";
-import { buildMetadata } from "@/utils/seo";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -39,7 +38,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0066ff",
+  themeColor: "#8b5cf6",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -74,6 +73,8 @@ export default function RootLayout({
                 <Footer />
               </div>
               <InstallPrompt />
+              <UpdatePrompt />
+              <PWAInitializer />
               <ToastContainer />
               </ToastProvider>
             </WebSocketProvider>
