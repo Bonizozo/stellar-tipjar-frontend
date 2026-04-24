@@ -1,26 +1,20 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/Button";
+import { commentSchema, type CommentSchemaValues } from "@/schemas";
 
 interface CommentFormProps {
   onSubmit: (body: string) => void;
   isLoading?: boolean;
   error?: string | null;
   placeholder?: string;
-  /** When set, renders as a compact inline reply form */
   compact?: boolean;
   onCancel?: () => void;
 }
 
 const MAX_CHARS = 500;
-
-// Basic profanity/spam filter — blocks obvious patterns
-const BLOCKED = [/\bspam\b/i, /buy cheap/i, /click here/i, /free money/i];
-
-function isFlagged(text: string): boolean {
-  return BLOCKED.some((re) => re.test(text));
-}
 
 export function CommentForm({
   onSubmit,
@@ -30,44 +24,32 @@ export function CommentForm({
   compact = false,
   onCancel,
 }: CommentFormProps) {
-  const [body, setBody] = useState("");
-  const [localError, setLocalError] = useState<string | null>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const {
+    register,
+    handleSubmit,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm<CommentSchemaValues>({
+    resolver: zodResolver(commentSchema),
+    mode: "onChange",
+  });
 
+  const body = watch("body") ?? "";
   const remaining = MAX_CHARS - body.length;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = body.trim();
-    if (!trimmed) {
-      setLocalError("Message cannot be empty.");
-      return;
-    }
-    if (trimmed.length > MAX_CHARS) {
-      setLocalError(`Message must be ${MAX_CHARS} characters or fewer.`);
-      return;
-    }
-    if (isFlagged(trimmed)) {
-      setLocalError("Your message was flagged as potential spam. Please revise it.");
-      return;
-    }
-    setLocalError(null);
-    onSubmit(trimmed);
-    setBody("");
+  const onValid = (values: CommentSchemaValues) => {
+    onSubmit(values.body);
+    reset();
   };
 
-  const displayError = localError ?? error;
+  const displayError = errors.body?.message ?? error;
 
   return (
-    <form onSubmit={handleSubmit} noValidate aria-label="Post a comment">
+    <form onSubmit={handleSubmit(onValid)} noValidate aria-label="Post a comment">
       <div className="relative">
         <textarea
-          ref={textareaRef}
-          value={body}
-          onChange={(e) => {
-            setBody(e.target.value);
-            if (localError) setLocalError(null);
-          }}
+          {...register("body")}
           placeholder={placeholder}
           maxLength={MAX_CHARS}
           rows={compact ? 2 : 3}
@@ -87,11 +69,7 @@ export function CommentForm({
       </div>
 
       {displayError && (
-        <p
-          id="comment-form-error"
-          role="alert"
-          className="mt-1 text-xs text-error"
-        >
+        <p id="comment-form-error" role="alert" className="mt-1 text-xs text-error">
           {displayError}
         </p>
       )}

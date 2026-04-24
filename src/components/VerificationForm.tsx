@@ -1,43 +1,41 @@
 "use client";
 
-import { useState, useRef } from 'react';
+import { useRef } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '../Button';
 import { generateAvatarUrl } from '@/utils/imageUtils';
 import { requestVerification } from '@/services/api';
 import { useCreatorProfile } from '@/hooks/queries/useCreatorProfile';
+import { verificationSchema, type VerificationSchemaValues } from '@/schemas';
 
 export function VerificationForm() {
-  const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
-  const [message, setMessage] = useState('');
-  const [docFile, setDocFile] = useState<File | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-
   const { data: profile } = useCreatorProfile();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!profile) return;
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting, isSubmitSuccessful },
+  } = useForm<VerificationSchemaValues>({
+    resolver: zodResolver(verificationSchema),
+    mode: 'onBlur',
+  });
 
-    setStatus('submitting');
-    try {
-      await requestVerification(profile.username);
-      setStatus('success');
-      setMessage('Verification request submitted! Admin will review within 48 hours.');
-    } catch (error) {
-      setStatus('error');
-      setMessage('Failed to submit request. Please try again.');
-    }
+  const onValid = async (values: VerificationSchemaValues) => {
+    if (!profile) return;
+    await requestVerification(profile.username);
+    reset();
   };
 
-  if (status === 'success') {
+  if (isSubmitSuccessful) {
     return (
       <div className="rounded-2xl border border-green-200 bg-green-50 p-8 text-center">
-        <div className="mx-auto h-16 w-16 rounded-full bg-green-100 p-3">
-          ✓
-        </div>
+        <div className="mx-auto h-16 w-16 rounded-full bg-green-100 p-3">✓</div>
         <h3 className="mt-4 text-xl font-bold text-green-900">Request Submitted!</h3>
-        <p className="mt-2 text-green-800">{message}</p>
-        <Button variant="ghost" className="mt-4" onClick={() => setStatus('idle')}>
+        <p className="mt-2 text-green-800">Admin will review within 48 hours.</p>
+        <Button variant="ghost" className="mt-4" onClick={() => reset()}>
           Submit Another
         </Button>
       </div>
@@ -45,34 +43,38 @@ export function VerificationForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-ink/10 bg-surface p-6">
+    <form onSubmit={handleSubmit(onValid)} noValidate className="space-y-4 rounded-2xl border border-ink/10 bg-surface p-6">
       <h2 className="text-xl font-bold text-ink">Request Verification</h2>
       <p className="text-sm text-ink/60">
-        Provide evidence of your creator status (social proof, website, etc.). Admin approval within 48h.
+        Provide evidence of your creator status. Admin approval within 48h.
       </p>
 
-      <div>
-        <label className="mb-1 block text-sm font-medium text-ink/80">Creator Username</label>
-        <div className="flex items-center gap-2 rounded-lg border border-ink/20 px-3 py-2 bg-ink/5">
-          <img 
-            src={generateAvatarUrl(profile?.username || '')} 
-            alt="" 
-            className="h-8 w-8 rounded-full"
-          />
-          <span className="font-mono font-bold text-ink">{profile?.username}</span>
+      {profile && (
+        <div>
+          <label className="mb-1 block text-sm font-medium text-ink/80">Creator Username</label>
+          <div className="flex items-center gap-2 rounded-lg border border-ink/20 px-3 py-2 bg-ink/5">
+            <img src={generateAvatarUrl(profile.username)} alt="" className="h-8 w-8 rounded-full" />
+            <span className="font-mono font-bold text-ink">{profile.username}</span>
+          </div>
         </div>
-      </div>
+      )}
 
       <div>
         <label className="mb-1 block text-sm font-medium text-ink/80">
-          Proof Links (Twitter, Linktree, etc.)
+          Proof Links (one per line)
         </label>
         <textarea
-          required
+          {...register('proofLinks')}
           rows={3}
-          className="w-full rounded-xl border border-ink/20 bg-surface px-4 py-3 shadow-sm focus:border-wave focus:outline-none focus:ring-2 focus:ring-wave/20"
+          aria-invalid={!!errors.proofLinks}
+          className={`w-full rounded-xl border px-4 py-3 text-sm bg-surface shadow-sm focus:outline-none focus:ring-2 ${
+            errors.proofLinks ? 'border-error/60 focus:ring-error/20' : 'border-ink/20 focus:border-wave focus:ring-wave/20'
+          }`}
           placeholder="https://twitter.com/yourhandle&#10;https://linktr.ee/yourprofile"
         />
+        {errors.proofLinks && (
+          <p className="mt-1 text-xs text-error">{errors.proofLinks.message}</p>
+        )}
       </div>
 
       <div>
@@ -83,22 +85,13 @@ export function VerificationForm() {
           ref={fileRef}
           type="file"
           accept="image/*,.pdf"
-          onChange={(e) => setDocFile(e.target.files?.[0] ?? null)}
           className="w-full rounded-xl border border-ink/20 bg-surface px-4 py-2 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-wave/10 file:px-3 file:py-1 file:text-sm file:font-medium file:text-wave"
         />
-        {docFile && <p className="mt-1 text-xs text-ink/50">{docFile.name}</p>}
       </div>
 
-      <Button type="submit" className="w-full" disabled={status === 'submitting'}>
-        {status === 'submitting' ? 'Submitting...' : 'Submit Verification Request'}
+      <Button type="submit" className="w-full" disabled={isSubmitting}>
+        {isSubmitting ? 'Submitting…' : 'Submit Verification Request'}
       </Button>
-
-      {status === 'error' && (
-        <div className="rounded-xl bg-red-50 border border-red-200 p-4">
-          <p className="text-sm text-red-900">{message}</p>
-        </div>
-      )}
     </form>
   );
 }
-
