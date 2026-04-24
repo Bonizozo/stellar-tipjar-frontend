@@ -6,12 +6,22 @@ import { Button } from "@/components/Button";
 import { ReportButton } from "@/components/ReportButton";
 import { TipForm } from "@/components/forms/TipForm";
 import { CreatorStatsDashboard } from "@/components/stats/CreatorStatsDashboard";
+import { TipComments } from "@/components/TipComments";
+import { CreatorPageRecommendations } from "@/components/CreatorPageRecommendations";
+import { EventCalendar } from "@/components/EventCalendar";
 import { creatorUsernameSchema } from "@/schemas/creatorSchema";
 import { getCreatorProfile } from "@/services/api";
 import { formatUsername } from "@/utils/format";
 import { generateAvatarUrl } from "@/utils/imageUtils";
 import { buildMetadata, creatorProfileJsonLd } from "@/utils/seo";
-import { OptimizedImage } from "@/components/OptimizedImage";
+import { TagBadge } from "@/components/TagBadge";
+import { TagCloud } from "@/components/TagCloud";
+import { generateTagCloud } from "@/utils/categories";
+import { PortfolioSection } from "@/components/portfolio/PortfolioSection";
+import { ProfileCard } from "@/components/ProfileCard";
+import { CreatorShare } from "@/components/CreatorShare";
+import { useTipNotifications } from "@/hooks/useTipNotifications";
+
 
 interface CreatorPageProps {
   params: {
@@ -43,6 +53,14 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
   const profile = await getCreatorProfile(parsedUsername.data);
 
   return (
+    <CreatorPageClient username={parsedUsername.data} profile={profile} />
+  );
+}
+
+function CreatorPageClient({ username, profile }: { username: string; profile: any }) {
+  useTipNotifications(username);
+
+  return (
     <section className="space-y-8">
       <script
         type="application/ld+json"
@@ -52,27 +70,19 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
               username: profile.username,
               displayName: profile.displayName,
               bio: profile.bio,
+              categories: profile.categories,
+              tags: profile.tags,
             })
           ),
         }}
       />
-      <div className="rounded-3xl border border-ink/10 bg-[color:var(--surface)] p-8 shadow-card">
-        <div className="mb-6 h-24 w-24 overflow-hidden rounded-full ring-4 ring-wave/20 sm:h-32 sm:w-32">
-          <OptimizedImage
-            src={generateAvatarUrl(profile.username)}
-            alt={`Avatar for ${profile.displayName}`}
-            priority={true}
-            fill
-            sizes="(min-width: 640px) 128px, 96px"
-          />
-        </div>
-        <p className="text-xs uppercase tracking-wide text-wave">Creator Profile</p>
-        <h1 className="mt-2 text-3xl font-bold text-ink sm:text-4xl">{profile.displayName}</h1>
-        <p className="mt-1 text-sm text-ink/60">{formatUsername(profile.username)}</p>
-        <p className="mt-4 max-w-2xl text-ink/75">{profile.bio}</p>
-        <p className="mt-4 inline-flex rounded-lg bg-wave/10 px-3 py-1 text-sm text-wave">
-          Preferred asset: {profile.preferredAsset}
-        </p>
+      <ProfileCard
+        username={profile.username}
+        displayName={profile.displayName}
+        bio={profile.bio}
+        avatarUrl={generateAvatarUrl(profile.username)}
+        isVerified={profile.isVerified}
+      />
 
         <div className="mt-8 flex flex-wrap gap-3">
           <Link href="/tips">
@@ -83,20 +93,57 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
           </Link>
           <ReportButton targetUser={profile.username} />
         </div>
+      <CreatorShare username={profile.username} displayName={profile.displayName} />
 
-        <div className="mt-8 rounded-2xl border border-ink/10 bg-white/70 p-5 sm:p-6">
-          <h2 className="text-xl font-semibold text-ink">Send a Tip</h2>
-          <p className="mt-2 text-sm text-ink/70">
-            Amount and asset values are validated on blur and submit before calling the API.
-          </p>
-          <TipForm username={profile.username} defaultAssetCode={profile.preferredAsset} />
+      {(profile.categories?.length || profile.tags?.length) > 0 && (
+        <div className="rounded-2xl border border-ink/10 bg-[color:var(--surface)] p-6">
+          <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-wave">Categories & Tags</p>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {profile.categories?.map((cat) => (
+              <TagBadge key={cat} tag={cat} variant="category" />
+            ))}
+            {profile.tags?.slice(0, 6).map((tag) => (
+              <TagBadge key={tag} tag={tag} />
+            ))}
+            {profile.tags && profile.tags.length > 6 && (
+              <span className="px-3 py-1 text-xs font-medium text-ink/60 bg-ink/10 rounded-full">
+                +{profile.tags.length - 6} more
+              </span>
+            )}
+          </div>
+          <TagCloud tags={generateTagCloud(profile.tags || [])} className="max-w-lg" />
         </div>
+      )}
+
+      <div className="flex flex-wrap gap-3">
+        <Link href="/tips">
+          <Button>Tip This Creator</Button>
+        </Link>
+        <Link href="/explore">
+          <Button variant="ghost">Back to Explore</Button>
+        </Link>
+      </div>
+
+      <div className="rounded-2xl border border-ink/10 bg-white/70 p-5 sm:p-6">
+        <h2 className="text-xl font-semibold text-ink">Send a Tip</h2>
+        <p className="mt-2 text-sm text-ink/70">
+          Amount and asset values are validated on blur and submit before calling the API.
+        </p>
+        <TipForm username={profile.username} defaultAssetCode={profile.preferredAsset} />
       </div>
 
       <div>
         <h2 className="mb-4 text-xl font-semibold text-ink">Statistics</h2>
         <CreatorStatsDashboard username={profile.username} />
       </div>
+
+      <TipTiers />
+
+      <TipComments creatorUsername={profile.username} />
+
+      <EventCalendar creatorUsername={profile.username} />
+
+      <CreatorPageRecommendations username={profile.username} />
     </section>
   );
 }

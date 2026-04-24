@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "Stellar Tip Jar",
+    "slug": "stellar-tipjar",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "splash": { "resizeMode": "contain", "backgroundColor": "#f7f2e8" },
+    "ios": { "supportsTablet": false, "bundleIdentifier": "com.stellartipjar.app" },
+    "android": {
+      "adaptiveIcon": { "backgroundColor": "#f7f2e8" },
+      "package": "com.stellartipjar.app"
+    },
+    "plugins": [
+      ["expo-notifications", { "icon": "./assets/notification-icon.png", "color": "#ff785a" }]
+    ]
+  }
+}

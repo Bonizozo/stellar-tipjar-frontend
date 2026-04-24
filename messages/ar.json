@@ -1,0 +1,28 @@
+{
+  "common": {
+    "welcome": "مرحبا بك في Stellar Tip Jar",
+    "loading": "جار التحميل...",
+    "error": "حدث خطأ",
+    "submit": "إرسال",
+    "cancel": "إلغاء"
+  },
+  "nav": {
+    "home": "الرئيسية",
+    "explore": "استكشف المبدعين",
+    "tips": "إرسال إكرامية",
+    "about": "حول"
+  },
+  "wallet": {
+    "connect": "ربط المحفظة",
+    "disconnect": "فصل الاتصال",
+    "notInstalled": "محفظة Freighter غير مثبتة",
+    "balance": "الرصيد"
+  },
+  "tip": {
+    "title": "إرسال إكرامية",
+    "amount": "المبلغ (XLM)",
+    "message": "الرسالة (اختياري)",
+    "send": "إرسال الإكرامية",
+    "success": "تم إرسال الإكرامية بنجاح"
+  }
+}

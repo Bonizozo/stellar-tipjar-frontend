@@ -5,7 +5,7 @@
  * in both next.config.ts (static headers) and src/middleware.ts (dynamic headers).
  */
 
-import { buildCspHeader } from "@/lib/csp";
+import { buildCspHeader } from "../lib/csp";
 
 export interface SecurityHeader {
   key: string;

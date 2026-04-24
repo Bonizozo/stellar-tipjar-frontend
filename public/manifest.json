@@ -1,12 +1,12 @@
 {
   "name": "Stellar Tip Jar",
   "short_name": "TipJar",
-  "description": "Support creators on the Stellar network with tips",
+  "description": "Support creators with Stellar blockchain tips",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#0066ff",
-  "orientation": "portrait-primary",
+  "theme_color": "#8b5cf6",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
@@ -22,7 +22,13 @@
     }
   ],
   "categories": ["finance", "social"],
-  "screenshots": [],
+  "screenshots": [
+    {
+      "src": "/screenshots/home.png",
+      "sizes": "1280x720",
+      "type": "image/png"
+    }
+  ],
   "shortcuts": [
     {
       "name": "Explore Creators",

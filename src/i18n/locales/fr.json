@@ -1,0 +1,25 @@
+{
+  "common": {
+    "welcome": "Bienvenue sur Stellar Tip Jar",
+    "tagline": "Soutenez vos créateurs préférés avec des actifs Stellar.",
+    "loading": "Chargement...",
+    "error": "Une erreur s'est produite.",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "close": "Fermer",
+    "search": "Rechercher",
+    "submit": "Soumettre"
+  },
+  "nav": {
+    "brandName": "Stellar Tip Jar",
+    "home": "Accueil",
+    "exploreCreators": "Explorer les Créateurs",
+    "sendTips": "Envoyer des Pourboires",
+    "widgets": "Widgets"
+  },
+  "languageSwitcher": {
+    "label": "Langue",
+    "selectLanguage": "Sélectionner la langue"
+  }
+}

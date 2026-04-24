@@ -1,0 +1,25 @@
+{
+  "common": {
+    "welcome": "Willkommen bei Stellar Tip Jar",
+    "tagline": "Unterstütze deine Lieblingsersteller mit Stellar-Assets.",
+    "loading": "Wird geladen...",
+    "error": "Etwas ist schiefgelaufen.",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "confirm": "Bestätigen",
+    "close": "Schließen",
+    "search": "Suchen",
+    "submit": "Absenden"
+  },
+  "nav": {
+    "brandName": "Stellar Tip Jar",
+    "home": "Startseite",
+    "exploreCreators": "Ersteller entdecken",
+    "sendTips": "Trinkgeld senden",
+    "widgets": "Widgets"
+  },
+  "languageSwitcher": {
+    "label": "Sprache",
+    "selectLanguage": "Sprache auswählen"
+  }
+}

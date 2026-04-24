@@ -1,16 +1,21 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 
-import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { Navbar } from "@/components/Navbar";
 import { PerformanceMonitor } from "@/components/PerformanceMonitor";
 import { ReactQueryProvider } from "@/components/ReactQueryProvider";
 import { SkipToContent } from "@/components/SkipToContent";
+import { PageTransition } from "@/components/animations/PageTransition";
 import { WalletProvider } from "@/contexts/WalletContext";
+import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import { WebSocketProvider } from "@/contexts/WebSocketContext";
+import { ToastProvider } from "@/contexts/ToastContext";
+import { ToastContainer } from "@/components/Toast";
+import { Footer } from "@/components/Footer";
+import { UpdatePrompt } from "@/components/UpdatePrompt";
+import { PWAInitializer } from "@/components/PWAInitializer";
 import "@/styles/globals.css";
-import { buildMetadata } from "@/utils/seo";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -33,7 +38,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0066ff",
+  themeColor: "#8b5cf6",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -49,21 +54,35 @@ export default function RootLayout({
       <body className={inter.className}>
         <SkipToContent />
         <PerformanceMonitor />
+        <ThemeProvider>
+        <I18nProvider>
+        <CurrencyProvider>
         <WalletProvider>
           <ReactQueryProvider>
-          <div className="min-h-screen">
-            <Navbar />
-            <main
-              id="main-content"
-              tabIndex={-1}
-              className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8 focus:outline-none"
-            >
-              {children}
-            </main>
-          </div>
-          <InstallPrompt />
+            <WebSocketProvider>
+              <ToastProvider>
+              <div className="min-h-screen flex flex-col">
+                <Navbar />
+                <main
+                  id="main-content"
+                  tabIndex={-1}
+                  className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8 focus:outline-none flex-1"
+                >
+                  <PageTransition>{children}</PageTransition>
+                </main>
+                <Footer />
+              </div>
+              <InstallPrompt />
+              <UpdatePrompt />
+              <PWAInitializer />
+              <ToastContainer />
+              </ToastProvider>
+            </WebSocketProvider>
           </ReactQueryProvider>
         </WalletProvider>
+        </CurrencyProvider>
+        </I18nProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
