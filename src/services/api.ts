@@ -565,3 +565,74 @@ export async function deleteCreatorEvent(eventId: string): Promise<void> {
     // best-effort
   }
 }
+
+// ─── Creator Analytics ───────────────────────────────────────────────────────
+
+export interface CreatorAnalytics {
+  totalTips: number;
+  supporters: number;
+  avgTip: number;
+  monthlyTips: number;
+  trendData: Array<{ date: string; amount: number }>;
+  supportersData: Array<{ name: string; tips: number }>;
+  distributionData: Array<{ name: string; value: number }>;
+  prevTotalTips: number;
+  prevSupporters: number;
+  prevAvgTip: number;
+  prevMonthlyTips: number;
+}
+
+export async function getCreatorAnalytics(
+  username: string,
+  dateRange?: { start: Date; end: Date },
+): Promise<CreatorAnalytics> {
+  const params = new URLSearchParams();
+  if (dateRange) {
+    params.set("start", dateRange.start.toISOString());
+    params.set("end", dateRange.end.toISOString());
+  }
+  const query = params.size ? `?${params}` : "";
+  try {
+    return await request<CreatorAnalytics>(
+      `/creators/${username}/analytics${query}`,
+      undefined,
+      { critical: false },
+    );
+  } catch {
+    // Fallback mock until backend is ready
+    const now = Date.now();
+    const days = dateRange
+      ? Math.ceil((dateRange.end.getTime() - dateRange.start.getTime()) / 86_400_000)
+      : 90;
+    const trendData = Array.from({ length: Math.min(days, 30) }, (_, i) => ({
+      date: new Date(now - (Math.min(days, 30) - 1 - i) * 86_400_000)
+        .toISOString()
+        .slice(0, 10),
+      amount: Math.floor(Math.random() * 200 + 20),
+    }));
+    return {
+      totalTips: 12450,
+      supporters: 342,
+      avgTip: 36.4,
+      monthlyTips: 2890,
+      trendData,
+      supportersData: [
+        { name: "stellar-fan", tips: 450 },
+        { name: "xlm-lover", tips: 380 },
+        { name: "crypto-alice", tips: 320 },
+        { name: "blockchainer", tips: 290 },
+        { name: "defi-bob", tips: 250 },
+      ],
+      distributionData: [
+        { name: "Direct Tips", value: 45 },
+        { name: "Widget Tips", value: 30 },
+        { name: "Scheduled Tips", value: 15 },
+        { name: "Other", value: 10 },
+      ],
+      prevTotalTips: 10800,
+      prevSupporters: 298,
+      prevAvgTip: 34.1,
+      prevMonthlyTips: 2450,
+    };
+  }
+}

@@ -10,33 +10,55 @@ import { TopSupportersChart } from "./TopSupportersChart";
 import { DistributionChart } from "./DistributionChart";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { EmptyState } from "@/components/EmptyState";
+import { exportToCSV } from "@/utils/exportCSV";
+import { exportToExcel } from "@/utils/exportExcel";
+
+const DATE_PRESETS = [
+  { label: "7d", days: 7 },
+  { label: "30d", days: 30 },
+  { label: "90d", days: 90 },
+  { label: "All", days: 0 },
+] as const;
 
 interface DashboardProps {
-  creatorId?: string;
+  username?: string;
 }
 
-export function Dashboard({ creatorId }: DashboardProps) {
-  const [dateRange, setDateRange] = useState<{ start: Date; end: Date } | undefined>();
-  const { data, loading, error } = useDashboardData(dateRange);
+export function Dashboard({ username = "me" }: DashboardProps) {
+  const [preset, setPreset] = useState(0);
 
-  const handleExport = () => {
+  const dateRange =
+    preset > 0
+      ? { start: new Date(Date.now() - preset * 86_400_000), end: new Date() }
+      : undefined;
+
+  const { data, loading, error } = useDashboardData(username, dateRange);
+
+  const handleExportCSV = () => {
     if (!data) return;
-    const csv = [
-      ["Metric", "Value"],
-      ["Total Tips", data.totalTips],
-      ["Supporters", data.supporters],
-      ["Average Tip", data.avgTip],
-      ["This Month", data.monthlyTips],
-    ]
-      .map((row) => row.join(","))
-      .join("\n");
+    exportToCSV(
+      data.trendData,
+      [
+        { key: "date", label: "Date" },
+        { key: "amount", label: "Earnings (XLM)" },
+      ],
+      "analytics-export.csv",
+    );
+  };
 
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "dashboard-export.csv";
-    a.click();
+  const handleExportExcel = () => {
+    if (!data) return;
+    // Build tip-like rows from trendData for Excel export
+    const rows = data.trendData.map((d) => ({
+      date: d.date,
+      amount: d.amount,
+      recipient: username,
+      sender: "",
+      status: "completed" as const,
+      memo: undefined,
+      transactionHash: undefined,
+    }));
+    exportToExcel(rows as Parameters<typeof exportToExcel>[0], "analytics-export.xlsx");
   };
 
   if (error) {
@@ -45,10 +67,7 @@ export function Dashboard({ creatorId }: DashboardProps) {
         variant="error"
         title="Failed to Load Dashboard"
         description={error}
-        action={{
-          label: "Retry",
-          onClick: () => window.location.reload(),
-        }}
+        action={{ label: "Retry", onClick: () => window.location.reload() }}
       />
     );
   }
@@ -58,10 +77,7 @@ export function Dashboard({ creatorId }: DashboardProps) {
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[...Array(4)].map((_, i) => (
-            <div
-              key={i}
-              className="h-32 rounded-xl bg-ink/5 dark:bg-ink-dark/5 animate-pulse"
-            />
+            <div key={i} className="h-32 rounded-xl bg-ink/5 animate-pulse" />
           ))}
         </div>
       </div>
@@ -78,24 +94,38 @@ export function Dashboard({ creatorId }: DashboardProps) {
     );
   }
 
+  const fmt = (n: number) => (n >= 0 ? `+${n}%` : `${n}%`);
+
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-ink dark:text-ink-dark">Analytics</h1>
-          <p className="text-ink/70 dark:text-ink-dark/70 mt-1">
-            Track your tips and supporter activity
-          </p>
+          <h1 className="text-3xl font-bold text-ink">Analytics</h1>
+          <p className="text-ink/70 mt-1">Track your tips and supporter activity</p>
         </div>
-        <div className="flex gap-3">
-          <Button variant="ghost" onClick={() => setDateRange(undefined)}>
-            <Calendar size={18} />
-            <span className="ml-2">All Time</span>
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Date range filter */}
+          <div className="flex rounded-lg border border-ink/10 overflow-hidden">
+            {DATE_PRESETS.map(({ label, days }) => (
+              <button
+                key={label}
+                onClick={() => setPreset(days)}
+                className={`px-3 py-1.5 text-sm font-medium transition-colors ${
+                  preset === days ? "bg-wave text-white" : "text-ink/60 hover:bg-ink/5"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <Button variant="ghost" onClick={handleExportCSV} disabled={!data}>
+            <Download size={16} />
+            <span className="ml-1.5">CSV</span>
           </Button>
-          <Button onClick={handleExport}>
-            <Download size={18} />
-            <span className="ml-2">Export</span>
+          <Button onClick={handleExportExcel} disabled={!data}>
+            <Download size={16} />
+            <span className="ml-1.5">Excel</span>
           </Button>
         </div>
       </div>
@@ -103,53 +133,46 @@ export function Dashboard({ creatorId }: DashboardProps) {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <KPICard
-          title="Total Tips"
+          title="Total Tips (XLM)"
           value={data.totalTips}
-          change="+12%"
-          isPositive={true}
+          change={fmt(data.changes.totalTips)}
+          isPositive={data.changes.totalTips >= 0}
         />
         <KPICard
           title="Supporters"
           value={data.supporters}
-          change="+8%"
-          isPositive={true}
+          change={fmt(data.changes.supporters)}
+          isPositive={data.changes.supporters >= 0}
         />
         <KPICard
-          title="Avg Tip"
-          value={`$${data.avgTip.toFixed(2)}`}
-          change="+5%"
-          isPositive={true}
+          title="Avg Tip (XLM)"
+          value={`${data.avgTip.toFixed(1)} XLM`}
+          change={fmt(data.changes.avgTip)}
+          isPositive={data.changes.avgTip >= 0}
         />
         <KPICard
-          title="This Month"
-          value={`$${data.monthlyTips}`}
-          change="+15%"
-          isPositive={true}
+          title="This Month (XLM)"
+          value={data.monthlyTips}
+          change={fmt(data.changes.monthlyTips)}
+          isPositive={data.changes.monthlyTips >= 0}
         />
       </div>
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="rounded-xl border border-ink/10 bg-[color:var(--surface)] p-6 dark:border-ink-dark/10 dark:bg-[color:var(--surface-dark)]">
-          <h2 className="text-lg font-semibold text-ink dark:text-ink-dark mb-4">
-            Tip Trends
-          </h2>
+        <div className="rounded-xl border border-ink/10 bg-[color:var(--surface)] p-6">
+          <h2 className="text-lg font-semibold text-ink mb-4">Tip Trends</h2>
           <TipTrendChart data={data.trendData} loading={loading} />
         </div>
-
-        <div className="rounded-xl border border-ink/10 bg-[color:var(--surface)] p-6 dark:border-ink-dark/10 dark:bg-[color:var(--surface-dark)]">
-          <h2 className="text-lg font-semibold text-ink dark:text-ink-dark mb-4">
-            Top Supporters
-          </h2>
+        <div className="rounded-xl border border-ink/10 bg-[color:var(--surface)] p-6">
+          <h2 className="text-lg font-semibold text-ink mb-4">Top Supporters</h2>
           <TopSupportersChart data={data.supportersData} loading={loading} />
         </div>
       </div>
 
       {/* Distribution */}
-      <div className="rounded-xl border border-ink/10 bg-[color:var(--surface)] p-6 dark:border-ink-dark/10 dark:bg-[color:var(--surface-dark)]">
-        <h2 className="text-lg font-semibold text-ink dark:text-ink-dark mb-4">
-          Tip Distribution by Source
-        </h2>
+      <div className="rounded-xl border border-ink/10 bg-[color:var(--surface)] p-6">
+        <h2 className="text-lg font-semibold text-ink mb-4">Tip Distribution by Source</h2>
         <DistributionChart data={data.distributionData} loading={loading} />
       </div>
     </div>

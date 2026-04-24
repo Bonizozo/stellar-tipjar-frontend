@@ -1,63 +1,60 @@
-import { useState, useEffect } from "react";
+"use client";
 
-export interface DashboardData {
-  totalTips: number;
-  supporters: number;
-  avgTip: number;
-  monthlyTips: number;
-  trendData: Array<{ date: string; amount: number }>;
-  supportersData: Array<{ name: string; tips: number }>;
-  distributionData: Array<{ name: string; value: number }>;
+import { useState, useEffect } from "react";
+import { getCreatorAnalytics } from "@/services/api";
+import type { CreatorAnalytics } from "@/services/api";
+
+export interface DashboardData extends Omit<CreatorAnalytics, "prevTotalTips" | "prevSupporters" | "prevAvgTip" | "prevMonthlyTips"> {
+  changes: {
+    totalTips: number;
+    supporters: number;
+    avgTip: number;
+    monthlyTips: number;
+  };
 }
 
-export function useDashboardData(dateRange?: { start: Date; end: Date }) {
+function pctChange(current: number, prev: number): number {
+  if (prev === 0) return 0;
+  return Math.round(((current - prev) / prev) * 100 * 10) / 10;
+}
+
+export function useDashboardData(
+  username = "me",
+  dateRange?: { start: Date; end: Date },
+) {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        // Mock data - replace with actual API call
-        const mockData: DashboardData = {
-          totalTips: 12450,
-          supporters: 342,
-          avgTip: 36.4,
-          monthlyTips: 2890,
-          trendData: [
-            { date: "Jan", amount: 1200 },
-            { date: "Feb", amount: 1900 },
-            { date: "Mar", amount: 1500 },
-            { date: "Apr", amount: 2200 },
-            { date: "May", amount: 2800 },
-            { date: "Jun", amount: 2390 },
-          ],
-          supportersData: [
-            { name: "Alice", tips: 450 },
-            { name: "Bob", tips: 380 },
-            { name: "Charlie", tips: 320 },
-            { name: "Diana", tips: 290 },
-            { name: "Eve", tips: 250 },
-          ],
-          distributionData: [
-            { name: "Direct Tips", value: 45 },
-            { name: "Widget Tips", value: 30 },
-            { name: "Scheduled Tips", value: 15 },
-            { name: "Other", value: 10 },
-          ],
-        };
-        setData(mockData);
-        setError(null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to fetch dashboard data");
-      } finally {
-        setLoading(false);
-      }
-    };
+    let cancelled = false;
+    setLoading(true);
 
-    fetchData();
-  }, [dateRange]);
+    getCreatorAnalytics(username, dateRange)
+      .then((raw) => {
+        if (cancelled) return;
+        const { prevTotalTips, prevSupporters, prevAvgTip, prevMonthlyTips, ...rest } = raw;
+        setData({
+          ...rest,
+          changes: {
+            totalTips: pctChange(raw.totalTips, prevTotalTips),
+            supporters: pctChange(raw.supporters, prevSupporters),
+            avgTip: pctChange(raw.avgTip, prevAvgTip),
+            monthlyTips: pctChange(raw.monthlyTips, prevMonthlyTips),
+          },
+        });
+        setError(null);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setError(err instanceof Error ? err.message : "Failed to fetch analytics");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [username, dateRange?.start?.toISOString(), dateRange?.end?.toISOString()]);
 
   return { data, loading, error };
 }
