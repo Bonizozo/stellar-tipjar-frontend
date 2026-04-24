@@ -7,10 +7,12 @@ test.describe('Creator Profile', () => {
     await page.goto(`/creator/${MOCK_CREATOR.username}`)
   })
 
-  test('displays creator info', async ({ page }) => {
+test('displays creator info and tags/categories', async ({ page }) => {
     await expect(page.getByRole('heading', { name: MOCK_CREATOR.displayName })).toBeVisible()
     await expect(page.getByText(MOCK_CREATOR.bio)).toBeVisible()
     await expect(page.getByText(MOCK_CREATOR.preferredAsset)).toBeVisible()
+    await expect(page.getByText('Categories & Tags')).toBeVisible()
+    await expect(page.locator('[data-testid="tag-badge"]').first()).toBeVisible()
   })
 
   test('shows tip form', async ({ page }) => {

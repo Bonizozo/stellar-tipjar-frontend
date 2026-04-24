@@ -1,5 +1,15 @@
 import { z } from "zod";
 
+export const RECURRENCE_OPTIONS = ["none", "weekly", "monthly", "yearly"] as const;
+export type Recurrence = (typeof RECURRENCE_OPTIONS)[number];
+
+const tomorrow = () => {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  d.setHours(0, 0, 0, 0);
+  return d;
+};
+
 export const tipSchema = z.object({
   amount: z.coerce
     .number()
@@ -20,5 +30,16 @@ export const tipSchema = z.object({
     .transform((value) => value.toUpperCase()),
 });
 
+export const scheduledTipSchema = tipSchema.extend({
+  scheduledAt: z.coerce
+    .date()
+    .refine((d) => d >= tomorrow(), "Scheduled date must be in the future."),
+  recurrence: z.enum(RECURRENCE_OPTIONS).default("none"),
+  notifyEmail: z.string().email("Enter a valid email.").optional().or(z.literal("")),
+});
+
 export type TipSchemaInput = z.input<typeof tipSchema>;
 export type TipSchemaValues = z.output<typeof tipSchema>;
+
+export type ScheduledTipInput = z.input<typeof scheduledTipSchema>;
+export type ScheduledTipValues = z.output<typeof scheduledTipSchema>;

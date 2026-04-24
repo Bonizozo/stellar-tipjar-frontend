@@ -1,0 +1,28 @@
+{
+  "common": {
+    "welcome": "Bienvenue sur Stellar Tip Jar",
+    "loading": "Chargement...",
+    "error": "Une erreur s'est produite",
+    "submit": "Soumettre",
+    "cancel": "Annuler"
+  },
+  "nav": {
+    "home": "Accueil",
+    "explore": "Explorer les Créateurs",
+    "tips": "Envoyer un Pourboire",
+    "about": "À propos"
+  },
+  "wallet": {
+    "connect": "Connecter le Portefeuille",
+    "disconnect": "Déconnecter",
+    "notInstalled": "Le portefeuille Freighter n'est pas installé",
+    "balance": "Solde"
+  },
+  "tip": {
+    "title": "Envoyer un Pourboire",
+    "amount": "Montant (XLM)",
+    "message": "Message (Optionnel)",
+    "send": "Envoyer le Pourboire",
+    "success": "Pourboire envoyé avec succès"
+  }
+}

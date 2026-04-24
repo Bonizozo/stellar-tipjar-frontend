@@ -1,0 +1,28 @@
+{
+  "common": {
+    "welcome": "Bienvenido a Stellar Tip Jar",
+    "loading": "Cargando...",
+    "error": "Ocurrió un error",
+    "submit": "Enviar",
+    "cancel": "Cancelar"
+  },
+  "nav": {
+    "home": "Inicio",
+    "explore": "Explorar Creadores",
+    "tips": "Enviar una Propina",
+    "about": "Acerca de"
+  },
+  "wallet": {
+    "connect": "Conectar Billetera",
+    "disconnect": "Desconectar",
+    "notInstalled": "La billetera Freighter no está instalada",
+    "balance": "Saldo"
+  },
+  "tip": {
+    "title": "Enviar una Propina",
+    "amount": "Cantidad (XLM)",
+    "message": "Mensaje (Opcional)",
+    "send": "Enviar Propina",
+    "success": "Propina enviada exitosamente"
+  }
+}

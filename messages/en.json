@@ -1,0 +1,28 @@
+{
+  "common": {
+    "welcome": "Welcome to Stellar Tip Jar",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "submit": "Submit",
+    "cancel": "Cancel"
+  },
+  "nav": {
+    "home": "Home",
+    "explore": "Explore Creators",
+    "tips": "Send a Tip",
+    "about": "About"
+  },
+  "wallet": {
+    "connect": "Connect Wallet",
+    "disconnect": "Disconnect",
+    "notInstalled": "Freighter wallet is not installed",
+    "balance": "Balance"
+  },
+  "tip": {
+    "title": "Send a Tip",
+    "amount": "Amount (XLM)",
+    "message": "Message (Optional)",
+    "send": "Send Tip",
+    "success": "Tip sent successfully"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "common": {
+    "welcome": "欢迎来到 Stellar Tip Jar",
+    "loading": "加载中...",
+    "error": "发生错误",
+    "submit": "提交",
+    "cancel": "取消"
+  },
+  "nav": {
+    "home": "首页",
+    "explore": "探索创作者",
+    "tips": "发送小费",
+    "about": "关于"
+  },
+  "wallet": {
+    "connect": "连接钱包",
+    "disconnect": "断开连接",
+    "notInstalled": "Freighter 钱包未安装",
+    "balance": "余额"
+  },
+  "tip": {
+    "title": "发送小费",
+    "amount": "金额 (XLM)",
+    "message": "消息（可选）",
+    "send": "发送小费",
+    "success": "小费发送成功"
+  }
+}

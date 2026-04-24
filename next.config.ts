@@ -1,7 +1,12 @@
 import type { NextConfig } from "next";
 import withPWA from "next-pwa";
+import createNextIntlPlugin from 'next-intl/plugin';
 import { getSecurityHeaders } from "./src/utils/security";
 
+const withNextIntl = createNextIntlPlugin();
+
+// i18n is handled via next-intl with locale routing
+// Supported locales: en, es, fr, zh, ar, he — preference persisted in localStorage
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   typedRoutes: true,
@@ -31,12 +36,27 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withPWA({
+export default withNextIntl(withPWA({
   dest: "public",
-  register: true,
+  register: false,
   skipWaiting: true,
   disable: process.env.NODE_ENV === "development",
+  fallbacks: {
+    document: "/offline",
+  },
   runtimeCaching: [
+    {
+      urlPattern: /^https:\/\/api\./i,
+      handler: "NetworkFirst",
+      options: {
+        cacheName: "api-cache",
+        expiration: {
+          maxEntries: 50,
+          maxAgeSeconds: 5 * 60,
+        },
+        networkTimeoutSeconds: 10,
+      },
+    },
     {
       urlPattern: /^https:\/\/fonts\.(?:gstatic)\.com\/.*/i,
       handler: "CacheFirst",

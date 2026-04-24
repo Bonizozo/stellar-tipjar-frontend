@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stellar TipJar</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      width: 320px;
+      min-height: 200px;
+      background: #0f0f1a;
+      color: #e8e8f0;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    }
+
+    .logo {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, #7c3aed, #2563eb);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    .header h1 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .header .subtitle {
+      font-size: 11px;
+      color: rgba(255,255,255,0.45);
+      margin-top: 1px;
+    }
+
+    .content { padding: 16px; }
+
+    /* Wallet section */
+    .wallet-section {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 14px;
+    }
+
+    .wallet-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 6px;
+    }
+
+    .wallet-connected {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .wallet-info { display: flex; flex-direction: column; gap: 2px; }
+
+    .wallet-address {
+      font-family: monospace;
+      font-size: 12px;
+      color: #a78bfa;
+    }
+
+    .wallet-balance {
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 8px 14px;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+
+    .btn:hover { opacity: 0.85; }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #7c3aed, #2563eb);
+      color: #fff;
+      width: 100%;
+      padding: 10px;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: #f87171;
+      border: 1px solid rgba(248,113,113,0.3);
+      padding: 5px 10px;
+      font-size: 11px;
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+
+    /* Creator section */
+    .creator-section {
+      background: rgba(124,58,237,0.08);
+      border: 1px solid rgba(124,58,237,0.2);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 14px;
+    }
+
+    .creator-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #c4b5fd;
+      margin-bottom: 2px;
+    }
+
+    .creator-meta {
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+    }
+
+    /* Tip form */
+    .form-group { margin-bottom: 12px; }
+
+    label {
+      display: block;
+      font-size: 11px;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    input, select {
+      width: 100%;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      color: #e8e8f0;
+      font-size: 14px;
+      padding: 9px 12px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    input:focus, select:focus {
+      border-color: rgba(124,58,237,0.6);
+    }
+
+    input::placeholder { color: rgba(255,255,255,0.25); }
+
+    .amount-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+    }
+
+    .quick-amounts {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .quick-btn {
+      flex: 1;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 6px;
+      color: #e8e8f0;
+      cursor: pointer;
+      font-size: 12px;
+      padding: 6px 4px;
+      text-align: center;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .quick-btn:hover, .quick-btn.active {
+      background: rgba(124,58,237,0.2);
+      border-color: rgba(124,58,237,0.5);
+      color: #c4b5fd;
+    }
+
+    /* Status messages */
+    .status {
+      border-radius: 8px;
+      font-size: 12px;
+      margin-top: 10px;
+      padding: 9px 12px;
+      text-align: center;
+    }
+
+    .status-success {
+      background: rgba(34,197,94,0.1);
+      border: 1px solid rgba(34,197,94,0.25);
+      color: #86efac;
+    }
+
+    .status-error {
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.25);
+      color: #fca5a5;
+    }
+
+    .status-info {
+      background: rgba(59,130,246,0.1);
+      border: 1px solid rgba(59,130,246,0.25);
+      color: #93c5fd;
+    }
+
+    /* No creator state */
+    .empty-state {
+      text-align: center;
+      padding: 20px 0;
+      color: rgba(255,255,255,0.35);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .empty-state .icon { font-size: 28px; margin-bottom: 8px; }
+
+    .hidden { display: none !important; }
+
+    /* Spinner */
+    .spinner {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .footer {
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer a {
+      color: rgba(255,255,255,0.3);
+      font-size: 11px;
+      text-decoration: none;
+    }
+
+    .footer a:hover { color: rgba(255,255,255,0.6); }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">⭐</div>
+    <div>
+      <h1>Stellar TipJar</h1>
+      <div class="subtitle">Tip creators with XLM</div>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- Wallet Section -->
+    <div class="wallet-section">
+      <div class="wallet-label">Wallet</div>
+
+      <div id="wallet-disconnected">
+        <button class="btn btn-primary btn-sm" id="connect-btn">Connect Freighter</button>
+      </div>
+
+      <div id="wallet-connected" class="wallet-connected hidden">
+        <div class="wallet-info">
+          <span class="wallet-balance" id="wallet-balance">0.00 XLM</span>
+          <span class="wallet-address" id="wallet-address"></span>
+        </div>
+        <button class="btn btn-ghost" id="disconnect-btn">Disconnect</button>
+      </div>
+
+      <div id="wallet-error" class="status status-error hidden"></div>
+    </div>
+
+    <!-- Creator Detected -->
+    <div id="creator-section" class="creator-section hidden">
+      <div class="creator-name" id="creator-name"></div>
+      <div class="creator-meta" id="creator-meta">Detected on this page</div>
+    </div>
+
+    <!-- Tip Form -->
+    <div id="tip-form" class="hidden">
+      <div class="quick-amounts">
+        <button class="quick-btn" data-amount="1">1 XLM</button>
+        <button class="quick-btn" data-amount="5">5 XLM</button>
+        <button class="quick-btn" data-amount="10">10 XLM</button>
+        <button class="quick-btn" data-amount="25">25 XLM</button>
+      </div>
+
+      <div class="form-group">
+        <label for="amount-input">Amount</label>
+        <div class="amount-row">
+          <input type="number" id="amount-input" min="0.01" step="0.01" placeholder="10.00" value="5" />
+          <select id="asset-select">
+            <option value="XLM">XLM</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="message-input">Message (optional)</label>
+        <input type="text" id="message-input" maxlength="500" placeholder="Great work!" />
+      </div>
+
+      <button class="btn btn-primary" id="send-btn">Send Tip</button>
+      <div id="tip-status" class="hidden"></div>
+    </div>
+
+    <!-- No creator found -->
+    <div id="no-creator" class="empty-state hidden">
+      <div class="icon">🔍</div>
+      <div>No creator detected on this page.</div>
+      <div style="margin-top:6px;font-size:11px;">Visit a creator profile page or a page with a TipJar link.</div>
+    </div>
+
+    <!-- Not connected prompt -->
+    <div id="connect-prompt" class="empty-state hidden">
+      <div class="icon">🔗</div>
+      <div>Connect your Freighter wallet to start tipping.</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <a href="https://stellar-tipjar.app" target="_blank">stellar-tipjar.app</a>
+    <span id="detected-count" style="font-size:11px;color:rgba(255,255,255,0.3);"></span>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
