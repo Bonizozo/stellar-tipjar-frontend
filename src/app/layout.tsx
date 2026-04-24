@@ -35,6 +35,28 @@ export const metadata: Metadata = {
     icon: "/icons/icon-192x192.png",
     apple: "/icons/icon-192x192.png",
   },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://stellar-tipjar.app",
+    siteName: "Stellar Tip Jar",
+    title: "Stellar Tip Jar",
+    description: "Tip your favorite creators with Stellar assets.",
+    images: [
+      {
+        url: "/og-images/og-default.png",
+        width: 1200,
+        height: 630,
+        alt: "Stellar Tip Jar",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Stellar Tip Jar",
+    description: "Tip your favorite creators with Stellar assets.",
+    images: ["/og-images/og-default.png"],
+  },
 };
 
 export const viewport: Viewport = {
