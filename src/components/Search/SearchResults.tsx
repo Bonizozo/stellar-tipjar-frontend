@@ -1,127 +1,45 @@
 "use client";
 
-import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { SearchSuggestion as SuggestionType } from "@/hooks/useSearch";
-import { SearchSuggestion } from "./SearchSuggestion";
+import { SearchX } from "lucide-react";
+import { CreatorCard } from "@/components/CreatorCard";
+import type { Creator } from "@/utils/creatorData";
 
 interface SearchResultsProps {
-  isVisible: boolean;
-  query: string;
-  results: SuggestionType[];
-  recentSearches: string[];
-  activeIndex: number;
+  results: Creator[];
   isLoading: boolean;
-  onSelect: (suggestion: SuggestionType) => void;
-  onSelectRecent: (query: string) => void;
-  onRemoveRecent: (query: string) => void;
-  onHoverIndex: (index: number) => void;
+  query: string;
 }
 
-export function SearchResults({
-  isVisible,
-  query,
-  results,
-  recentSearches,
-  activeIndex,
-  isLoading,
-  onSelect,
-  onSelectRecent,
-  onRemoveRecent,
-  onHoverIndex,
-}: SearchResultsProps) {
-  if (!isVisible) return null;
+export function SearchResults({ results, isLoading, query }: SearchResultsProps) {
+  if (isLoading) {
+    return (
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="h-56 animate-pulse rounded-3xl bg-ink/5" />
+        ))}
+      </div>
+    );
+  }
 
-  const showRecent = !query && recentSearches.length > 0;
-  const showResults = query && results.length > 0;
-  const showEmpty = query && !isLoading && results.length === 0;
+  if (results.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <SearchX className="mb-4 h-12 w-12 text-ink/20" />
+        <p className="font-medium text-ink">
+          {query ? `No results for "${query}"` : "Start typing to search creators"}
+        </p>
+        <p className="mt-1 text-sm text-ink/50">
+          {query ? "Try different keywords or remove some filters." : "Search by name, category, or tag."}
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -10, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -10, scale: 0.95 }}
-      transition={{ type: "spring", damping: 25, stiffness: 300 }}
-      className="absolute top-full mt-2 w-full bg-[color:var(--surface)] border border-ink/10 rounded-2xl shadow-2xl overflow-hidden z-20 backdrop-blur-lg"
-    >
-      <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
-        {/* Recent Searches */}
-        {showRecent && (
-          <div className="p-2">
-            <h4 className="text-[10px] font-bold uppercase tracking-wider text-ink/40 px-3 py-2">
-              Recent Searches
-            </h4>
-            {recentSearches.map((search, i) => (
-              <div
-                key={i}
-                className="group flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-ink/5 cursor-pointer transition-colors"
-                onClick={() => onSelectRecent(search)}
-              >
-                <div className="flex items-center gap-3">
-                  <svg className="h-4 w-4 text-ink/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span className="text-sm text-ink">{search}</span>
-                </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onRemoveRecent(search);
-                  }}
-                  className="opacity-0 group-hover:opacity-100 text-ink/40 hover:text-ink transition-opacity p-1"
-                >
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Search Results */}
-        {showResults && (
-          <div className="divide-y divide-ink/5">
-            {results.map((suggestion, index) => (
-              <SearchSuggestion
-                key={suggestion.id}
-                suggestion={suggestion}
-                isActive={index === activeIndex}
-                query={query}
-                onMouseEnter={() => onHoverIndex(index)}
-                onClick={() => onSelect(suggestion)}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Empty State */}
-        {showEmpty && (
-          <div className="p-8 text-center">
-            <div className="flex justify-center mb-3 text-ink/20">
-              <svg className="h-10 w-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9.172 9.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <p className="text-sm font-medium text-ink">No results found for "{query}"</p>
-            <p className="text-xs text-ink/40 mt-1">Try a different keyword or category.</p>
-          </div>
-        )}
-
-        {/* Loading Overlay */}
-        <AnimatePresence>
-          {isLoading && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-[color:var(--surface)]/50 backdrop-blur-[2px] flex items-center justify-center pointer-events-none"
-            >
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-wave/20 border-t-wave" />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </motion.div>
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {results.map((creator) => (
+        <CreatorCard key={creator.username} creator={creator} />
+      ))}
+    </div>
   );
 }
