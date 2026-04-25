@@ -25,6 +25,20 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**",
       },
+      // CDN integration — add your CDN hostname here
+      {
+        protocol: "https",
+        hostname: "cdn.stellartipjar.app",
+        port: "",
+        pathname: "/**",
+      },
+      // Allow common avatar/image CDNs used in development
+      {
+        protocol: "https",
+        hostname: "avatars.githubusercontent.com",
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
 
