@@ -5,6 +5,7 @@ import { TipHistoryTable } from "@/components/TipHistoryTable";
 import { TipFilters } from "@/components/TipFilters";
 import { Pagination } from "@/components/Pagination";
 import { ExportModal } from "@/components/ExportModal";
+import { TipForm } from "@/components/forms/TipForm";
 import { useTipHistory } from "@/hooks/useTipHistory";
 import { usePagination } from "@/hooks/usePagination";
 
@@ -92,6 +93,11 @@ export default function TipsPage() {
           <p className="text-sm text-ink/60">Filtered Results</p>
           <p className="mt-1 text-2xl font-bold text-ink">{tips.length}</p>
         </div>
+      </div>
+
+      <div className="rounded-2xl border border-ink/10 bg-[color:var(--surface)] p-6">
+        <h2 className="mb-4 text-xl font-semibold text-ink">Send a Tip</h2>
+        <TipForm />
       </div>
 
       <TipFilters
