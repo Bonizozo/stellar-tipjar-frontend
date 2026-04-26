@@ -578,16 +578,27 @@ export interface CreatorAnalytics {
   supportersData: Array<{ name: string; tips: number }>;
   supporterInsights: Array<{ name: string; totalTips: number; tipCount: number; avgTip: number; lastTipDate: string }>;
   distributionData: Array<{ name: string; value: number }>;
+  heatmapData: Array<{ date: string; value: number }>;
   growthMetrics: {
     revenueGrowth: number;
     supporterGrowth: number;
     repeatSupporterRate: number;
     supporterRetentionRate: number;
+    avgTipGrowth?: number;
+    engagementScore?: number;
   };
   prevTotalTips: number;
   prevSupporters: number;
   prevAvgTip: number;
   prevMonthlyTips: number;
+  prevGrowthMetrics?: {
+    revenueGrowth: number;
+    supporterGrowth: number;
+    repeatSupporterRate: number;
+    supporterRetentionRate: number;
+    avgTipGrowth?: number;
+    engagementScore?: number;
+  };
 }
 
 export async function getCreatorAnalytics(
@@ -647,11 +658,25 @@ export async function getCreatorAnalytics(
         { name: "Scheduled Tips", value: 15 },
         { name: "Other", value: 10 },
       ],
+      heatmapData: Array.from({ length: 365 }, (_, i) => ({
+        date: new Date(now - (364 - i) * 86_400_000).toISOString().slice(0, 10),
+        value: Math.random() > 0.55 ? Math.floor(Math.random() * 180 + 5) : 0,
+      })),
       growthMetrics: {
         revenueGrowth: 15.3,
         supporterGrowth: 14.8,
         repeatSupporterRate: 61.4,
         supporterRetentionRate: 72.1,
+        avgTipGrowth: 6.7,
+        engagementScore: 78.2,
+      },
+      prevGrowthMetrics: {
+        revenueGrowth: 9.1,
+        supporterGrowth: 8.4,
+        repeatSupporterRate: 54.2,
+        supporterRetentionRate: 65.8,
+        avgTipGrowth: 3.2,
+        engagementScore: 61.5,
       },
       prevTotalTips: 10800,
       prevSupporters: 298,
