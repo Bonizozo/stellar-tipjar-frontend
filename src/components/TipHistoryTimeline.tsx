@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { exportToCSV } from "@/utils/exportCSV";
 import { useTipHistory } from "@/hooks/useTipHistory";
 import { TipFilters } from "@/components/TipFilters";
@@ -18,35 +18,42 @@ const STATUS_DOT: Record<Tip["status"], string> = {
   failed: "bg-red-500",
 };
 
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+function formatTime(dateStr: string) {
+  return new Date(dateStr).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
 }
 
-function TipTimelineItem({ tip }: { tip: Tip }) {
+function formatDayLabel(dateStr: string) {
+  const d = new Date(dateStr);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+
+  if (d.toDateString() === today.toDateString()) return "Today";
+  if (d.toDateString() === yesterday.toDateString()) return "Yesterday";
+  return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+}
+
+function dayKey(dateStr: string) {
+  return new Date(dateStr).toISOString().slice(0, 10);
+}
+
+function TipTimelineItem({ tip, isLast }: { tip: Tip; isLast: boolean }) {
   const [expanded, setExpanded] = useState(false);
 
   return (
     <div className="relative flex gap-4">
-      {/* Timeline dot + line */}
       <div className="flex flex-col items-center">
         <div className={`mt-1 h-3 w-3 rounded-full border-2 border-[color:var(--surface)] ring-2 ring-ink/10 shrink-0 ${STATUS_DOT[tip.status]}`} />
-        <div className="w-px flex-1 bg-ink/10 mt-1" />
+        {!isLast && <div className="w-px flex-1 bg-ink/10 mt-1" />}
       </div>
 
-      {/* Card */}
-      <div className="mb-6 flex-1 rounded-2xl border border-ink/10 bg-[color:var(--surface)] p-4 shadow-sm">
+      <div className="mb-4 flex-1 rounded-2xl border border-ink/10 bg-[color:var(--surface)] p-4 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div>
             <a href={`/creator/${tip.recipient}`} className="font-semibold text-wave hover:underline">
               @{tip.recipient}
             </a>
-            <p className="text-xs text-ink/50 mt-0.5">{formatDate(tip.date)}</p>
+            <p className="text-xs text-ink/50 mt-0.5">{formatTime(tip.date)}</p>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-lg font-bold text-ink">{tip.amount} XLM</span>
@@ -56,17 +63,11 @@ function TipTimelineItem({ tip }: { tip: Tip }) {
           </div>
         </div>
 
-        {tip.memo && (
-          <p className="mt-2 text-sm text-ink/70 italic">"{tip.memo}"</p>
-        )}
+        {tip.memo && <p className="mt-2 text-sm text-ink/70 italic">"{tip.memo}"</p>}
 
         {tip.transactionHash && (
           <div className="mt-2">
-            <button
-              type="button"
-              onClick={() => setExpanded((v) => !v)}
-              className="text-xs text-wave hover:underline"
-            >
+            <button type="button" onClick={() => setExpanded((v) => !v)} className="text-xs text-wave hover:underline">
               {expanded ? "Hide" : "Show"} transaction details
             </button>
             {expanded && (
@@ -89,18 +90,40 @@ function TipTimelineItem({ tip }: { tip: Tip }) {
   );
 }
 
+/** Groups tips by calendar day, returns sorted array of [dayKey, tips[]] */
+function groupByDay(tips: Tip[]): [string, Tip[]][] {
+  const map = new Map<string, Tip[]>();
+  for (const tip of tips) {
+    const key = dayKey(tip.date);
+    const group = map.get(key) ?? [];
+    group.push(tip);
+    map.set(key, group);
+  }
+  return [...map.entries()].sort((a, b) => b[0].localeCompare(a[0]));
+}
+
 export function TipHistoryTimeline() {
   const { tips, allTips, isLoading, filters, setFilters } = useTipHistory();
   const [search, setSearch] = useState("");
 
-  const filtered = search.trim()
-    ? tips.filter(
-        (t) =>
-          t.recipient.toLowerCase().includes(search.toLowerCase()) ||
-          t.memo?.toLowerCase().includes(search.toLowerCase()) ||
-          t.transactionHash?.toLowerCase().includes(search.toLowerCase())
-      )
-    : tips;
+  const filtered = useMemo(() => {
+    if (!search.trim()) return tips;
+    const q = search.toLowerCase();
+    return tips.filter(
+      (t) =>
+        t.recipient.toLowerCase().includes(q) ||
+        t.memo?.toLowerCase().includes(q) ||
+        t.transactionHash?.toLowerCase().includes(q)
+    );
+  }, [tips, search]);
+
+  const grouped = useMemo(() => groupByDay(filtered), [filtered]);
+
+  const stats = useMemo(() => ({
+    total: filtered.length,
+    completed: filtered.filter((t) => t.status === "completed").length,
+    volume: filtered.filter((t) => t.status === "completed").reduce((s, t) => s + t.amount, 0),
+  }), [filtered]);
 
   const handleExport = () => {
     exportToCSV(
@@ -142,19 +165,25 @@ export function TipHistoryTimeline() {
       </div>
 
       {/* Filters */}
-      <TipFilters
-        filters={filters}
-        onFiltersChange={setFilters}
-        onClear={() => setFilters({})}
-      />
+      <TipFilters filters={filters} onFiltersChange={setFilters} onClear={() => setFilters({})} />
 
-      {/* Result count */}
-      <p className="text-sm text-ink/50">
-        Showing <span className="font-semibold text-ink">{filtered.length}</span> of{" "}
-        <span className="font-semibold text-ink">{allTips.length}</span> tips
-      </p>
+      {/* Summary stats */}
+      {!isLoading && filtered.length > 0 && (
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { label: "Showing", value: `${stats.total} of ${allTips.length}` },
+            { label: "Completed", value: stats.completed },
+            { label: "Volume", value: `${stats.volume} XLM` },
+          ].map(({ label, value }) => (
+            <div key={label} className="rounded-2xl border border-ink/10 bg-[color:var(--surface)] p-3 text-center">
+              <p className="text-xs text-ink/50">{label}</p>
+              <p className="mt-0.5 text-base font-bold text-ink">{value}</p>
+            </div>
+          ))}
+        </div>
+      )}
 
-      {/* Timeline */}
+      {/* Timeline grouped by day */}
       {isLoading ? (
         <div className="space-y-4">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -170,9 +199,21 @@ export function TipHistoryTimeline() {
           <p className="mt-1 text-sm text-ink/50">Try adjusting your search or filters.</p>
         </div>
       ) : (
-        <div>
-          {filtered.map((tip) => (
-            <TipTimelineItem key={tip.id} tip={tip} />
+        <div className="space-y-8">
+          {grouped.map(([day, dayTips]) => (
+            <div key={day}>
+              {/* Day separator */}
+              <div className="mb-4 flex items-center gap-3">
+                <div className="h-px flex-1 bg-ink/10" />
+                <span className="text-xs font-semibold uppercase tracking-wider text-ink/40">
+                  {formatDayLabel(dayTips[0].date)}
+                </span>
+                <div className="h-px flex-1 bg-ink/10" />
+              </div>
+              {dayTips.map((tip, i) => (
+                <TipTimelineItem key={tip.id} tip={tip} isLast={i === dayTips.length - 1} />
+              ))}
+            </div>
           ))}
         </div>
       )}
