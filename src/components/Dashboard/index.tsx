@@ -11,6 +11,8 @@ import { useDashboardData } from "@/hooks/useDashboardData";
 import { EmptyState } from "@/components/EmptyState";
 import { exportToCSV } from "@/utils/exportCSV";
 import { exportToExcel } from "@/utils/exportExcel";
+import { TipHeatmapCalendar } from "@/components/TipHeatmapCalendar";
+import { useHeatmapData } from "@/hooks/queries/useHeatmapData";
 
 // Advanced chart components
 import {
@@ -58,6 +60,10 @@ export function Dashboard({ username = "me" }: DashboardProps) {
   }, [customStart, customEnd, preset]);
 
   const { data, loading, error } = useDashboardData(username, dateRange);
+  const { data: heatmapTips = [], isPending: heatmapPending } = useHeatmapData(
+    username,
+    1,
+  );
 
   const handleExportCSV = () => {
     if (!data) return;
@@ -325,6 +331,19 @@ export function Dashboard({ username = "me" }: DashboardProps) {
           Supporter Analytics
         </h2>
         <SupporterInsightsTable rows={data.supporterInsights} />
+      </div>
+
+      <div>
+        <h2 className="text-lg font-semibold text-ink mb-4">
+          Tip Activity Heatmap
+        </h2>
+        <TipHeatmapCalendar
+          tips={heatmapTips}
+          loading={heatmapPending}
+          title="Daily Tip Activity"
+          showStats
+          onExport={handleExportCSV}
+        />
       </div>
     </div>
   );
