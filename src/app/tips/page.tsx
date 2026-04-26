@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { TipHistoryTable } from "@/components/TipHistoryTable";
+import { VirtualTipTable } from "@/components/VirtualList/VirtualTipTable";
 import { AdvancedFilterPanel } from "@/components/AdvancedFilterPanel";
 import { Pagination } from "@/components/Pagination";
 import { ExportModal } from "@/components/ExportModal";
@@ -25,6 +26,8 @@ export default function TipsPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [showExport, setShowExport] = useState(false);
+  // Use virtual table when there are enough rows to benefit from it
+  const useVirtual = tips.length > 50;
 
   const pagination = usePagination({
     totalItems: tips.length,
@@ -57,9 +60,12 @@ export default function TipsPage() {
     <section className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-ink">Tip History</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-ink">
+            Tip History
+          </h1>
           <p className="mt-2 max-w-2xl text-ink/75">
-            View and manage all your tip transactions. Filter by date, amount, or status.
+            View and manage all your tip transactions. Filter by date, amount,
+            or status.
           </p>
         </div>
 
@@ -76,7 +82,12 @@ export default function TipsPage() {
             disabled={allTips.length === 0}
             className="inline-flex items-center gap-2 rounded-lg bg-wave px-4 py-2 text-sm font-medium text-white hover:bg-wave/90 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -109,7 +120,12 @@ export default function TipsPage() {
         <TipForm />
       </div>
 
-      <AdvancedFilterPanel onFiltersChange={(f) => { setFilters(f); setPage(1); }} />
+      <AdvancedFilterPanel
+        onFiltersChange={(f) => {
+          setFilters(f);
+          setPage(1);
+        }}
+      />
 
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
@@ -117,23 +133,35 @@ export default function TipsPage() {
         </div>
       ) : (
         <>
-          <TipHistoryTable
-            tips={paginatedTips}
-            onSort={handleSort}
-            sortBy={sortField}
-            sortOrder={sortOrder}
-          />
+          {useVirtual ? (
+            <VirtualTipTable
+              tips={tips}
+              onSort={handleSort}
+              sortBy={sortField}
+              sortOrder={sortOrder}
+              scrollRestorationKey="tip-history"
+            />
+          ) : (
+            <TipHistoryTable
+              tips={paginatedTips}
+              onSort={handleSort}
+              sortBy={sortField}
+              sortOrder={sortOrder}
+            />
+          )}
 
-          <Pagination
-            currentPage={page}
-            totalPages={pagination.totalPages}
-            onPageChange={handlePageChange}
-            pageSize={pageSize}
-            onPageSizeChange={handlePageSizeChange}
-            pageNumbers={pagination.pageNumbers}
-            hasNextPage={pagination.hasNextPage}
-            hasPrevPage={pagination.hasPrevPage}
-          />
+          {!useVirtual && (
+            <Pagination
+              currentPage={page}
+              totalPages={pagination.totalPages}
+              onPageChange={handlePageChange}
+              pageSize={pageSize}
+              onPageSizeChange={handlePageSizeChange}
+              pageNumbers={pagination.pageNumbers}
+              hasNextPage={pagination.hasNextPage}
+              hasPrevPage={pagination.hasPrevPage}
+            />
+          )}
         </>
       )}
 
