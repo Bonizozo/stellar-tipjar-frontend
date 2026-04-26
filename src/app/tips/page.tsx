@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { TipHistoryTable } from "@/components/TipHistoryTable";
-import { TipFilters } from "@/components/TipFilters";
+import { AdvancedFilterPanel } from "@/components/AdvancedFilterPanel";
 import { Pagination } from "@/components/Pagination";
 import { ExportModal } from "@/components/ExportModal";
 import { TipForm } from "@/components/forms/TipForm";
@@ -100,11 +100,7 @@ export default function TipsPage() {
         <TipForm />
       </div>
 
-      <TipFilters
-        filters={filters}
-        onFiltersChange={setFilters}
-        onClear={handleClearFilters}
-      />
+      <AdvancedFilterPanel onFiltersChange={(f) => { setFilters(f); setPage(1); }} />
 
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
