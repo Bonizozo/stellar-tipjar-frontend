@@ -15,6 +15,7 @@ interface StatCardProps {
   suffix?: string;
   decimals?: number;
   loading?: boolean;
+  confidence?: number;
 }
 
 export function StatCard({
@@ -27,6 +28,7 @@ export function StatCard({
   suffix = "",
   decimals = 0,
   loading = false,
+  confidence,
 }: StatCardProps) {
   if (loading) {
     return (
@@ -62,6 +64,11 @@ export function StatCard({
       
       <p className="text-sm font-medium text-ink/60 dark:text-gray-400 mt-1 uppercase tracking-wide">
         {label}
+        {confidence && (
+          <span className="ml-2 text-xs text-wave font-normal normal-case">
+            ({(confidence * 100).toFixed(0)}% confidence)
+          </span>
+        )}
       </p>
       
       {sparklineData && (
