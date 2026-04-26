@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useState, useEffect, useCallback } from "react";
-import { SlidersHorizontal, X } from "lucide-react";
+import { useMemo, useState, useEffect } from "react";
+import { SlidersHorizontal, X, Tag } from "lucide-react";
 import { SearchBar } from "@/components/search/SearchBar";
 import { SearchFilters, type SearchFilterState } from "@/components/search/SearchFilters";
 import { SearchResults } from "@/components/search/SearchResults";
 import { useDebounce } from "@/hooks/useDebounce";
 import { CREATOR_EXAMPLES, type Creator } from "@/utils/creatorData";
+import { CATEGORIES } from "@/utils/categories";
 
 const HISTORY_KEY = "stellar_search_history_page";
 const DEFAULT_FILTERS: SearchFilterState = { categories: [], verifiedOnly: false, sort: "popular" };
@@ -17,7 +18,7 @@ function trackSearch(query: string) {
   }
 }
 
-function applyFilters(creators: Creator[], query: string, filters: SearchFilterState): Creator[] {
+function applyFilters(creators: Creator[], query: string, filters: SearchFilterState, activeTags: string[]): Creator[] {
   let result = [...creators];
 
   if (query.trim()) {
@@ -34,6 +35,10 @@ function applyFilters(creators: Creator[], query: string, filters: SearchFilterS
 
   if (filters.categories.length > 0) {
     result = result.filter((c) => filters.categories.some((cat) => c.categories.includes(cat)));
+  }
+
+  if (activeTags.length > 0) {
+    result = result.filter((c) => activeTags.every((tag) => c.tags.includes(tag)));
   }
 
   if (filters.verifiedOnly) {
@@ -55,23 +60,39 @@ function applyFilters(creators: Creator[], query: string, filters: SearchFilterS
   return result;
 }
 
+/** Compute per-category and per-tag counts from a result set */
+function computeFacets(creators: Creator[]) {
+  const catCounts = new Map<string, number>();
+  const tagCounts = new Map<string, number>();
+
+  for (const c of creators) {
+    for (const cat of c.categories) catCounts.set(cat, (catCounts.get(cat) ?? 0) + 1);
+    for (const tag of c.tags) tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
+  }
+
+  const topTags = [...tagCounts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 12);
+
+  return { catCounts, topTags };
+}
+
 export default function SearchPage() {
   const [query, setQuery] = useState("");
   const [filters, setFilters] = useState<SearchFilterState>(DEFAULT_FILTERS);
+  const [activeTags, setActiveTags] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [history, setHistory] = useState<string[]>([]);
 
   const debouncedQuery = useDebounce(query, 300);
 
-  // Load history
   useEffect(() => {
     try {
       setHistory(JSON.parse(localStorage.getItem(HISTORY_KEY) ?? "[]"));
     } catch {}
   }, []);
 
-  // Analytics + history on debounced query change
   useEffect(() => {
     if (!debouncedQuery.trim()) return;
     trackSearch(debouncedQuery);
@@ -82,19 +103,33 @@ export default function SearchPage() {
     });
   }, [debouncedQuery]);
 
-  // Simulate loading state on query/filter change
   useEffect(() => {
     setIsLoading(true);
     const t = setTimeout(() => setIsLoading(false), 250);
     return () => clearTimeout(t);
-  }, [debouncedQuery, filters]);
+  }, [debouncedQuery, filters, activeTags]);
 
   const results = useMemo(
-    () => applyFilters(CREATOR_EXAMPLES, debouncedQuery, filters),
-    [debouncedQuery, filters]
+    () => applyFilters(CREATOR_EXAMPLES, debouncedQuery, filters, activeTags),
+    [debouncedQuery, filters, activeTags]
   );
 
-  const activeFilterCount = filters.categories.length + (filters.verifiedOnly ? 1 : 0);
+  // Facets computed from the full unfiltered-by-tags set so counts stay meaningful
+  const baseResults = useMemo(
+    () => applyFilters(CREATOR_EXAMPLES, debouncedQuery, { ...filters, categories: [] }, []),
+    [debouncedQuery, filters]
+  );
+  const { catCounts, topTags } = useMemo(() => computeFacets(baseResults), [baseResults]);
+
+  const activeFilterCount = filters.categories.length + (filters.verifiedOnly ? 1 : 0) + activeTags.length;
+
+  const toggleTag = (tag: string) =>
+    setActiveTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
+
+  const clearAll = () => {
+    setFilters(DEFAULT_FILTERS);
+    setActiveTags([]);
+  };
 
   return (
     <section className="space-y-6">
@@ -157,12 +192,96 @@ export default function SearchPage() {
         </div>
       )}
 
+      {/* Active tag chips */}
+      {activeTags.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs text-ink/40">Tags:</span>
+          {activeTags.map((tag) => (
+            <button
+              key={tag}
+              type="button"
+              onClick={() => toggleTag(tag)}
+              className="inline-flex items-center gap-1 rounded-full bg-wave/10 border border-wave/30 px-3 py-1 text-xs font-medium text-wave hover:bg-wave/20 transition-colors"
+            >
+              #{tag} <X className="h-3 w-3" />
+            </button>
+          ))}
+          <button type="button" onClick={clearAll} className="text-xs text-ink/40 hover:text-ink underline">
+            Clear all
+          </button>
+        </div>
+      )}
+
+      {/* Result count summary */}
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-ink/60">
+          {isLoading ? (
+            <span className="inline-block h-4 w-24 animate-pulse rounded bg-ink/10" />
+          ) : (
+            <>
+              <span className="font-semibold text-ink">{results.length}</span>{" "}
+              creator{results.length !== 1 ? "s" : ""} found
+              {(debouncedQuery || activeFilterCount > 0) && (
+                <button type="button" onClick={clearAll} className="ml-3 text-xs text-wave hover:underline">
+                  Clear all filters
+                </button>
+              )}
+            </>
+          )}
+        </p>
+      </div>
+
       {/* Main layout */}
       <div className="flex gap-6">
-        {/* Filter sidebar */}
+        {/* Filter + facet sidebar */}
         {showFilters && (
-          <div className="w-56 shrink-0">
+          <div className="w-60 shrink-0 space-y-6">
             <SearchFilters filters={filters} onChange={setFilters} resultCount={results.length} />
+
+            {/* Tag facets */}
+            {topTags.length > 0 && (
+              <div>
+                <h3 className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-ink/50">
+                  <Tag className="h-3.5 w-3.5" /> Tags
+                </h3>
+                <div className="flex flex-wrap gap-1.5">
+                  {topTags.map(([tag, count]) => (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => toggleTag(tag)}
+                      className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
+                        activeTags.includes(tag)
+                          ? "bg-wave text-white"
+                          : "bg-ink/5 text-ink/70 hover:bg-ink/10"
+                      }`}
+                    >
+                      #{tag}{" "}
+                      <span className={activeTags.includes(tag) ? "text-white/70" : "text-ink/40"}>
+                        {count}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Category facets with counts */}
+            <div>
+              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-ink/50">
+                Category counts
+              </h3>
+              <div className="space-y-1">
+                {CATEGORIES.filter((cat) => catCounts.has(cat)).map((cat) => (
+                  <div key={cat} className="flex items-center justify-between px-3 py-1 text-sm text-ink/60">
+                    <span className="capitalize">{cat}</span>
+                    <span className="rounded-full bg-ink/5 px-2 py-0.5 text-xs font-medium text-ink/50">
+                      {catCounts.get(cat)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
@@ -174,3 +293,4 @@ export default function SearchPage() {
     </section>
   );
 }
+

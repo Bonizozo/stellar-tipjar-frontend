@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '../Button';
 import { generateAvatarUrl } from '@/utils/imageUtils';
+import { AvatarImage } from '@/components/OptimizedImage';
 import { requestVerification } from '@/services/api';
 import { useCreatorProfile } from '@/hooks/queries/useCreatorProfile';
 import { verificationSchema, type VerificationSchemaValues } from '@/schemas';
@@ -53,7 +54,7 @@ export function VerificationForm() {
         <div>
           <label className="mb-1 block text-sm font-medium text-ink/80">Creator Username</label>
           <div className="flex items-center gap-2 rounded-lg border border-ink/20 px-3 py-2 bg-ink/5">
-            <img src={generateAvatarUrl(profile.username)} alt="" className="h-8 w-8 rounded-full" />
+            <AvatarImage src={generateAvatarUrl(profile.username)} alt="" size={32} />
             <span className="font-mono font-bold text-ink">{profile.username}</span>
           </div>
         </div>
