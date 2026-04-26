@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import Link from "next/link";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useSearchParams } from "@/hooks/useSearchParams";
 import { useRecommendations } from "@/hooks/useRecommendations";
@@ -138,12 +139,25 @@ export default function ExplorePage() {
           animate={{ opacity: 1, y: 0 }}
           className="max-w-3xl"
         >
-          <h1 className="text-4xl md:text-5xl font-black tracking-tight text-ink mb-4">
-            Explore <span className="text-wave">Creators</span>
-          </h1>
-          <p className="text-lg text-ink/60 leading-relaxed translate-y-[-4px]">
-            Discover amazing builders, artists, and community leaders on Stellar. Support your favorites and help the ecosystem grow.
-          </p>
+          <div className="flex items-start justify-between">
+            <div>
+              <h1 className="text-4xl md:text-5xl font-black tracking-tight text-ink mb-4">
+                Explore <span className="text-wave">Creators</span>
+              </h1>
+              <p className="text-lg text-ink/60 leading-relaxed translate-y-[-4px]">
+                Discover amazing builders, artists, and community leaders on Stellar. Support your favorites and help the ecosystem grow.
+              </p>
+            </div>
+            <Link
+              href="/compare"
+              className="hidden md:flex items-center gap-2 px-4 py-2 bg-wave/10 text-wave rounded-xl hover:bg-wave/20 transition-colors text-sm font-medium"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              Compare Creators
+            </Link>
+          </div>
         </motion.div>
       </section>
 

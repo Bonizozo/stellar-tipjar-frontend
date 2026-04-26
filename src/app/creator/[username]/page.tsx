@@ -11,6 +11,7 @@ import { CreatorStatsDashboard } from "@/components/stats/CreatorStatsDashboard"
 import { TipComments } from "@/components/TipComments";
 import { CreatorPageRecommendations } from "@/components/CreatorPageRecommendations";
 import { EventCalendar } from "@/components/EventCalendar";
+import { TipTiers } from "@/components/TipTiers";
 import { creatorUsernameSchema } from "@/schemas/creatorSchema";
 import { getCreatorProfile } from "@/services/api";
 import { formatUsername } from "@/utils/format";
