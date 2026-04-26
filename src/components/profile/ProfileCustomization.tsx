@@ -8,6 +8,7 @@ import { ThemeSelector } from "@/components/profile/ThemeSelector";
 import { ColorPicker } from "@/components/profile/ColorPicker";
 import { LayoutSelector } from "@/components/profile/LayoutSelector";
 import { BannerUpload } from "@/components/upload/BannerUpload";
+import { OptimizedImage } from "@/components/OptimizedImage";
 import { Button } from "@/components/Button";
 import {
   ProfileCustomizationValues,
@@ -68,7 +69,7 @@ function ProfilePreview({
           }`}
           style={{ ringColor: styles.accent }}
         >
-          <img src={avatarUrl} alt={displayName} className="h-full w-full object-cover" />
+          <OptimizedImage src={avatarUrl} alt={displayName} fill sizes="80px" />
         </div>
         <h3 className="text-xl font-bold" style={{ color: styles.text }}>
           {displayName}
