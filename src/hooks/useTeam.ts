@@ -2,13 +2,50 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+export type TeamRole = "owner" | "admin" | "member" | "viewer";
+
+export const TEAM_ROLE_LABELS: Record<TeamRole, string> = {
+  owner: "Owner",
+  admin: "Admin",
+  member: "Member",
+  viewer: "Viewer",
+};
+
+export const TEAM_ROLE_DESCRIPTIONS: Record<TeamRole, string> = {
+  owner: "Full control over team settings and members",
+  admin: "Can manage members and configure splits",
+  member: "Receives tip splits, limited settings access",
+  viewer: "Read-only access to team stats",
+};
+
+export const TEAM_ROLE_PERMISSIONS: Record<TeamRole, string[]> = {
+  owner: [
+    "manage_members",
+    "configure_splits",
+    "view_earnings",
+    "delete_team",
+    "invite_members",
+  ],
+  admin: [
+    "manage_members",
+    "configure_splits",
+    "view_earnings",
+    "invite_members",
+  ],
+  member: ["view_earnings"],
+  viewer: [],
+};
+
 export interface TeamMember {
   id: string;
   name: string;
   email?: string;
+  role: TeamRole;
   split: number;
   createdAt: string;
   isActive: boolean;
+  earnings?: number;
+  walletAddress?: string;
 }
 
 export interface TeamInvitation {
@@ -112,18 +149,29 @@ export function useTeam(teamName: string) {
         },
       }));
     },
-    [teamName, profiles]
+    [teamName, profiles],
   );
 
   const addMember = useCallback(
-    (member: { name: string; email?: string; split: number }) => {
+    (member: {
+      name: string;
+      email?: string;
+      split: number;
+      role?: TeamRole;
+      walletAddress?: string;
+    }) => {
       setProfiles((prev) => {
         const current = prev[teamName] ?? team;
         const newMember: TeamMember = {
           id: `member_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-          ...member,
+          name: member.name,
+          email: member.email,
+          split: member.split,
+          role: member.role ?? "member",
+          walletAddress: member.walletAddress,
           createdAt: fmt(),
           isActive: true,
+          earnings: 0,
         };
         return {
           ...prev,
@@ -135,7 +183,7 @@ export function useTeam(teamName: string) {
         };
       });
     },
-    [teamName, team]
+    [teamName, team],
   );
 
   const removeMember = useCallback(
@@ -153,7 +201,7 @@ export function useTeam(teamName: string) {
         };
       });
     },
-    [teamName]
+    [teamName],
   );
 
   const updateMember = useCallback(
@@ -162,7 +210,7 @@ export function useTeam(teamName: string) {
         const current = prev[teamName];
         if (!current) return prev;
         const newMembers = current.members.map((m) =>
-          m.id === memberId ? { ...m, ...updates } : m
+          m.id === memberId ? { ...m, ...updates } : m,
         );
         return {
           ...prev,
@@ -170,21 +218,28 @@ export function useTeam(teamName: string) {
         };
       });
     },
-    [teamName]
+    [teamName],
   );
 
   const updateSplit = useCallback(
     (memberId: string, split: number) => {
       updateMember(memberId, { split: Math.max(0, Math.min(100, split)) });
     },
-    [updateMember]
+    [updateMember],
+  );
+
+  const updateRole = useCallback(
+    (memberId: string, role: TeamRole) => {
+      updateMember(memberId, { role });
+    },
+    [updateMember],
   );
 
   const removeSplit = useCallback(
     (memberId: string) => {
       updateMember(memberId, { isActive: false });
     },
-    [updateMember]
+    [updateMember],
   );
 
   const inviteMember = useCallback(
@@ -196,7 +251,9 @@ export function useTeam(teamName: string) {
           email,
           sentAt: fmt(),
           status: "pending",
-          expiredAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          expiredAt: new Date(
+            Date.now() + 7 * 24 * 60 * 60 * 1000,
+          ).toISOString(),
         };
         return {
           ...prev,
@@ -211,7 +268,7 @@ export function useTeam(teamName: string) {
         };
       });
     },
-    [teamName, team]
+    [teamName, team],
   );
 
   const cancelInvitation = useCallback(
@@ -223,31 +280,39 @@ export function useTeam(teamName: string) {
           ...prev,
           [teamName]: {
             ...current,
-            invitations: current.invitations.filter((inv) => inv.id !== invitationId),
+            invitations: current.invitations.filter(
+              (inv) => inv.id !== invitationId,
+            ),
             updatedAt: fmt(),
           },
         };
       });
     },
-    [teamName]
+    [teamName],
   );
 
   const stats = useMemo((): TeamStatistics => {
     const activeMembers = team.members.filter((m) => m.isActive);
-    const totalSplit = activeMembers.reduce((sum, member) => sum + member.split, 0);
+    const totalSplit = activeMembers.reduce(
+      (sum, member) => sum + member.split,
+      0,
+    );
 
     return {
       memberCount: team.members.length,
       activeMemberCount: activeMembers.length,
       totalSplit,
       isBalanced: totalSplit === 100 && activeMembers.length > 0,
-      averageSplit: activeMembers.length > 0 ? totalSplit / activeMembers.length : 0,
+      averageSplit:
+        activeMembers.length > 0 ? totalSplit / activeMembers.length : 0,
       totalTipsReceived: team.totalTipsReceived || 0,
     };
   }, [team.members, team.totalTipsReceived]);
 
   const splitStatus = stats.isBalanced ? "balanced" : "unbalanced";
-  const pendingInvitations = team.invitations.filter((inv) => inv.status === "pending");
+  const pendingInvitations = team.invitations.filter(
+    (inv) => inv.status === "pending",
+  );
 
   return {
     team,
@@ -259,6 +324,7 @@ export function useTeam(teamName: string) {
     removeMember,
     updateMember,
     updateSplit,
+    updateRole,
     removeSplit,
     totalSplit: stats.totalSplit,
     splitStatus,
