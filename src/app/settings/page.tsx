@@ -11,6 +11,7 @@ import {
   TrashIcon,
   ChevronRightIcon,
   EnvelopeIcon,
+  SwatchIcon,
 } from "@heroicons/react/24/outline";
 import { Toggle } from "@/components/forms/Toggle";
 import { Button } from "@/components/Button";
