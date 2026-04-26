@@ -1,13 +1,16 @@
 "use client";
 
-import { useState } from "react";
-import { Download, Calendar } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Download } from "lucide-react";
 
 import { Button } from "@/components/Button";
 import { KPICard } from "./KPICard";
 import { TipTrendChart } from "./TipTrendChart";
 import { TopSupportersChart } from "./TopSupportersChart";
 import { DistributionChart } from "./DistributionChart";
+import { GrowthMetricsPanel } from "./GrowthMetricsPanel";
+import { RevenueBreakdownChart } from "./RevenueBreakdownChart";
+import { SupporterInsightsTable } from "./SupporterInsightsTable";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { EmptyState } from "@/components/EmptyState";
 import { exportToCSV } from "@/utils/exportCSV";
@@ -24,41 +27,80 @@ interface DashboardProps {
   username?: string;
 }
 
-export function Dashboard({ username = "me" }: DashboardProps) {
-  const [preset, setPreset] = useState(0);
+function formatDateInput(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
 
-  const dateRange =
-    preset > 0
-      ? { start: new Date(Date.now() - preset * 86_400_000), end: new Date() }
-      : undefined;
+export function Dashboard({ username = "me" }: DashboardProps) {
+  const [preset, setPreset] = useState(30);
+  const [customStart, setCustomStart] = useState("");
+  const [customEnd, setCustomEnd] = useState("");
+
+  const dateRange = useMemo(() => {
+    if (customStart && customEnd) {
+      return { start: new Date(customStart), end: new Date(customEnd) };
+    }
+
+    if (preset > 0) {
+      return { start: new Date(Date.now() - preset * 86_400_000), end: new Date() };
+    }
+
+    return undefined;
+  }, [customStart, customEnd, preset]);
 
   const { data, loading, error } = useDashboardData(username, dateRange);
 
   const handleExportCSV = () => {
     if (!data) return;
+    const csvRows = data.revenueData.map((row) => ({
+      date: row.date,
+      grossRevenue: row.gross,
+      netRevenue: row.net,
+      recurringRevenue: row.recurring,
+      oneTimeRevenue: row.oneTime,
+    }));
+
     exportToCSV(
-      data.trendData,
+      csvRows,
       [
         { key: "date", label: "Date" },
-        { key: "amount", label: "Earnings (XLM)" },
+        { key: "grossRevenue", label: "Gross Revenue (XLM)" },
+        { key: "netRevenue", label: "Net Revenue (XLM)" },
+        { key: "recurringRevenue", label: "Recurring Revenue (XLM)" },
+        { key: "oneTimeRevenue", label: "One-time Revenue (XLM)" },
       ],
-      "analytics-export.csv",
+      "creator-analytics-export.csv",
     );
   };
 
   const handleExportExcel = () => {
     if (!data) return;
-    // Build tip-like rows from trendData for Excel export
-    const rows = data.trendData.map((d) => ({
+
+    const rows = data.revenueData.map((d) => ({
       date: d.date,
-      amount: d.amount,
+      amount: d.gross,
       recipient: username,
-      sender: "",
+      sender: "dashboard-analytics",
       status: "completed" as const,
-      memo: undefined,
+      memo: `Net ${d.net} | Recurring ${d.recurring}`,
       transactionHash: undefined,
     }));
-    exportToExcel(rows as Parameters<typeof exportToExcel>[0], "analytics-export.xlsx");
+
+    exportToExcel(rows as Parameters<typeof exportToExcel>[0], "creator-analytics-export.xlsx");
+  };
+
+  const applyPreset = (days: number) => {
+    setPreset(days);
+    setCustomStart("");
+    setCustomEnd("");
+  };
+
+  const applyLast30Days = () => {
+    const end = new Date();
+    const start = new Date(Date.now() - 30 * 86_400_000);
+    setCustomStart(formatDateInput(start));
+    setCustomEnd(formatDateInput(end));
+    setPreset(0);
   };
 
   if (error) {
@@ -98,70 +140,92 @@ export function Dashboard({ username = "me" }: DashboardProps) {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-ink">Analytics</h1>
-          <p className="text-ink/70 mt-1">Track your tips and supporter activity</p>
+          <h1 className="text-3xl font-bold text-ink">Creator Analytics Dashboard</h1>
+          <p className="text-ink/70 mt-1">Revenue, supporter behavior, and growth insights</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {/* Date range filter */}
           <div className="flex rounded-lg border border-ink/10 overflow-hidden">
             {DATE_PRESETS.map(({ label, days }) => (
               <button
                 key={label}
-                onClick={() => setPreset(days)}
+                onClick={() => applyPreset(days)}
                 className={`px-3 py-1.5 text-sm font-medium transition-colors ${
-                  preset === days ? "bg-wave text-white" : "text-ink/60 hover:bg-ink/5"
+                  preset === days && !customStart && !customEnd
+                    ? "bg-wave text-white"
+                    : "text-ink/60 hover:bg-ink/5"
                 }`}
               >
                 {label}
               </button>
             ))}
           </div>
-          <Button variant="ghost" onClick={handleExportCSV} disabled={!data}>
-            <Download size={16} />
-            <span className="ml-1.5">CSV</span>
+
+          <label className="text-sm text-ink/70">From</label>
+          <input
+            type="date"
+            value={customStart}
+            max={customEnd || undefined}
+            onChange={(event) => setCustomStart(event.target.value)}
+            className="rounded-lg border border-ink/15 px-3 py-2 text-sm bg-transparent"
+          />
+          <label className="text-sm text-ink/70">To</label>
+          <input
+            type="date"
+            value={customEnd}
+            min={customStart || undefined}
+            max={formatDateInput(new Date())}
+            onChange={(event) => setCustomEnd(event.target.value)}
+            className="rounded-lg border border-ink/15 px-3 py-2 text-sm bg-transparent"
+          />
+
+          <Button variant="ghost" size="sm" onClick={applyLast30Days}>
+            Reset
           </Button>
-          <Button onClick={handleExportExcel} disabled={!data}>
+          <Button variant="ghost" size="sm" onClick={handleExportCSV} disabled={!data}>
             <Download size={16} />
-            <span className="ml-1.5">Excel</span>
+            CSV
+          </Button>
+          <Button size="sm" onClick={handleExportExcel} disabled={!data}>
+            <Download size={16} />
+            Excel
           </Button>
         </div>
       </div>
 
-      {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <KPICard
-          title="Total Tips (XLM)"
+          title="Total Revenue (XLM)"
           value={data.totalTips}
           change={fmt(data.changes.totalTips)}
           isPositive={data.changes.totalTips >= 0}
         />
         <KPICard
-          title="Supporters"
+          title="Total Supporters"
           value={data.supporters}
           change={fmt(data.changes.supporters)}
           isPositive={data.changes.supporters >= 0}
         />
         <KPICard
-          title="Avg Tip (XLM)"
+          title="Average Tip"
           value={`${data.avgTip.toFixed(1)} XLM`}
           change={fmt(data.changes.avgTip)}
           isPositive={data.changes.avgTip >= 0}
         />
         <KPICard
-          title="This Month (XLM)"
+          title="Current Month"
           value={data.monthlyTips}
           change={fmt(data.changes.monthlyTips)}
           isPositive={data.changes.monthlyTips >= 0}
         />
       </div>
 
-      {/* Charts */}
+      <GrowthMetricsPanel metrics={data.growthMetrics} />
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="rounded-xl border border-ink/10 bg-[color:var(--surface)] p-6">
-          <h2 className="text-lg font-semibold text-ink mb-4">Tip Trends</h2>
+          <h2 className="text-lg font-semibold text-ink mb-4">Revenue Trend</h2>
           <TipTrendChart data={data.trendData} loading={loading} />
         </div>
         <div className="rounded-xl border border-ink/10 bg-[color:var(--surface)] p-6">
@@ -170,9 +234,18 @@ export function Dashboard({ username = "me" }: DashboardProps) {
         </div>
       </div>
 
-      {/* Distribution */}
       <div className="rounded-xl border border-ink/10 bg-[color:var(--surface)] p-6">
-        <h2 className="text-lg font-semibold text-ink mb-4">Tip Distribution by Source</h2>
+        <h2 className="text-lg font-semibold text-ink mb-4">Revenue Breakdown</h2>
+        <RevenueBreakdownChart data={data.revenueData} loading={loading} />
+      </div>
+
+      <div className="rounded-xl border border-ink/10 bg-[color:var(--surface)] p-6">
+        <h2 className="text-lg font-semibold text-ink mb-4">Supporter Analytics</h2>
+        <SupporterInsightsTable rows={data.supporterInsights} />
+      </div>
+
+      <div className="rounded-xl border border-ink/10 bg-[color:var(--surface)] p-6">
+        <h2 className="text-lg font-semibold text-ink mb-4">Revenue Source Distribution</h2>
         <DistributionChart data={data.distributionData} loading={loading} />
       </div>
     </div>

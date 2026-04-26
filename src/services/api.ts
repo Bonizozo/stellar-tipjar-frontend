@@ -574,8 +574,16 @@ export interface CreatorAnalytics {
   avgTip: number;
   monthlyTips: number;
   trendData: Array<{ date: string; amount: number }>;
+  revenueData: Array<{ date: string; gross: number; net: number; recurring: number; oneTime: number }>;
   supportersData: Array<{ name: string; tips: number }>;
+  supporterInsights: Array<{ name: string; totalTips: number; tipCount: number; avgTip: number; lastTipDate: string }>;
   distributionData: Array<{ name: string; value: number }>;
+  growthMetrics: {
+    revenueGrowth: number;
+    supporterGrowth: number;
+    repeatSupporterRate: number;
+    supporterRetentionRate: number;
+  };
   prevTotalTips: number;
   prevSupporters: number;
   prevAvgTip: number;
@@ -610,25 +618,41 @@ export async function getCreatorAnalytics(
         .slice(0, 10),
       amount: Math.floor(Math.random() * 200 + 20),
     }));
+    const supporterInsights = [
+      { name: "stellar-fan", totalTips: 450, tipCount: 18, avgTip: 25, lastTipDate: trendData.at(-1)?.date ?? trendData[0]?.date ?? new Date().toISOString().slice(0, 10) },
+      { name: "xlm-lover", totalTips: 380, tipCount: 14, avgTip: 27.1, lastTipDate: trendData.at(-2)?.date ?? trendData[0]?.date ?? new Date().toISOString().slice(0, 10) },
+      { name: "crypto-alice", totalTips: 320, tipCount: 12, avgTip: 26.7, lastTipDate: trendData.at(-3)?.date ?? trendData[0]?.date ?? new Date().toISOString().slice(0, 10) },
+      { name: "blockchainer", totalTips: 290, tipCount: 10, avgTip: 29, lastTipDate: trendData.at(-4)?.date ?? trendData[0]?.date ?? new Date().toISOString().slice(0, 10) },
+      { name: "defi-bob", totalTips: 250, tipCount: 8, avgTip: 31.3, lastTipDate: trendData.at(-5)?.date ?? trendData[0]?.date ?? new Date().toISOString().slice(0, 10) },
+    ];
+
     return {
       totalTips: 12450,
       supporters: 342,
       avgTip: 36.4,
       monthlyTips: 2890,
       trendData,
-      supportersData: [
-        { name: "stellar-fan", tips: 450 },
-        { name: "xlm-lover", tips: 380 },
-        { name: "crypto-alice", tips: 320 },
-        { name: "blockchainer", tips: 290 },
-        { name: "defi-bob", tips: 250 },
-      ],
+      revenueData: trendData.map((point) => ({
+        date: point.date,
+        gross: point.amount,
+        net: Math.round(point.amount * 0.92),
+        recurring: Math.round(point.amount * 0.35),
+        oneTime: Math.round(point.amount * 0.65),
+      })),
+      supportersData: supporterInsights.map(({ name, totalTips }) => ({ name, tips: totalTips })),
+      supporterInsights,
       distributionData: [
         { name: "Direct Tips", value: 45 },
         { name: "Widget Tips", value: 30 },
         { name: "Scheduled Tips", value: 15 },
         { name: "Other", value: 10 },
       ],
+      growthMetrics: {
+        revenueGrowth: 15.3,
+        supporterGrowth: 14.8,
+        repeatSupporterRate: 61.4,
+        supporterRetentionRate: 72.1,
+      },
       prevTotalTips: 10800,
       prevSupporters: 298,
       prevAvgTip: 34.1,
