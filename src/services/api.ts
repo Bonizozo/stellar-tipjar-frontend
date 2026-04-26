@@ -197,6 +197,52 @@ export async function getCreatorStats(username: string): Promise<CreatorStats> {
   }
 }
 
+// ─── Tip Heatmap ─────────────────────────────────────────────────────────────
+
+export interface HeatmapTip {
+  date: string;
+  amount: number;
+}
+
+/**
+ * Returns a flat list of { date, amount } entries for the heatmap calendar.
+ * Multiple tips on the same day are returned as separate entries — the hook
+ * aggregates them by date.
+ */
+export async function getTipHeatmapData(
+  username: string,
+  years = 1,
+): Promise<HeatmapTip[]> {
+  try {
+    return await request<HeatmapTip[]>(
+      `/creators/${username}/tips/heatmap?years=${years}`,
+      undefined,
+      { critical: false },
+    );
+  } catch {
+    // Realistic mock: ~55% of days have activity, with occasional bursts
+    const now = Date.now();
+    const totalDays = years * 365;
+    const tips: HeatmapTip[] = [];
+
+    for (let i = 0; i < totalDays; i++) {
+      const date = new Date(now - (totalDays - 1 - i) * 86_400_000)
+        .toISOString()
+        .slice(0, 10);
+
+      if (Math.random() > 0.45) {
+        // 1–4 tips on active days
+        const tipCount = Math.ceil(Math.random() * 4);
+        for (let t = 0; t < tipCount; t++) {
+          tips.push({ date, amount: Math.round((Math.random() * 120 + 5) * 100) / 100 });
+        }
+      }
+    }
+
+    return tips;
+  }
+}
+
 export async function getLeaderboards(period: Period): Promise<LeaderboardsResponse> {
   // Mock data - backend endpoint /leaderboards?period=${period}
   const baseTippers = [

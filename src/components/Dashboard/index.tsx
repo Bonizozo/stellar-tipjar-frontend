@@ -15,6 +15,8 @@ import { useDashboardData } from "@/hooks/useDashboardData";
 import { EmptyState } from "@/components/EmptyState";
 import { exportToCSV } from "@/utils/exportCSV";
 import { exportToExcel } from "@/utils/exportExcel";
+import { TipHeatmapCalendar } from "@/components/TipHeatmapCalendar";
+import { useHeatmapData } from "@/hooks/queries/useHeatmapData";
 
 const DATE_PRESETS = [
   { label: "7d", days: 7 },
@@ -42,13 +44,20 @@ export function Dashboard({ username = "me" }: DashboardProps) {
     }
 
     if (preset > 0) {
-      return { start: new Date(Date.now() - preset * 86_400_000), end: new Date() };
+      return {
+        start: new Date(Date.now() - preset * 86_400_000),
+        end: new Date(),
+      };
     }
 
     return undefined;
   }, [customStart, customEnd, preset]);
 
   const { data, loading, error } = useDashboardData(username, dateRange);
+  const { data: heatmapTips = [], isPending: heatmapPending } = useHeatmapData(
+    username,
+    1,
+  );
 
   const handleExportCSV = () => {
     if (!data) return;
@@ -86,7 +95,10 @@ export function Dashboard({ username = "me" }: DashboardProps) {
       transactionHash: undefined,
     }));
 
-    exportToExcel(rows as Parameters<typeof exportToExcel>[0], "creator-analytics-export.xlsx");
+    exportToExcel(
+      rows as Parameters<typeof exportToExcel>[0],
+      "creator-analytics-export.xlsx",
+    );
   };
 
   const applyPreset = (days: number) => {
@@ -142,8 +154,12 @@ export function Dashboard({ username = "me" }: DashboardProps) {
     <div className="space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-ink">Creator Analytics Dashboard</h1>
-          <p className="text-ink/70 mt-1">Revenue, supporter behavior, and growth insights</p>
+          <h1 className="text-3xl font-bold text-ink">
+            Creator Analytics Dashboard
+          </h1>
+          <p className="text-ink/70 mt-1">
+            Revenue, supporter behavior, and growth insights
+          </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex rounded-lg border border-ink/10 overflow-hidden">
@@ -183,7 +199,12 @@ export function Dashboard({ username = "me" }: DashboardProps) {
           <Button variant="ghost" size="sm" onClick={applyLast30Days}>
             Reset
           </Button>
-          <Button variant="ghost" size="sm" onClick={handleExportCSV} disabled={!data}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleExportCSV}
+            disabled={!data}
+          >
             <Download size={16} />
             CSV
           </Button>
@@ -229,24 +250,45 @@ export function Dashboard({ username = "me" }: DashboardProps) {
           <TipTrendChart data={data.trendData} loading={loading} />
         </div>
         <div className="rounded-xl border border-ink/10 bg-[color:var(--surface)] p-6">
-          <h2 className="text-lg font-semibold text-ink mb-4">Top Supporters</h2>
+          <h2 className="text-lg font-semibold text-ink mb-4">
+            Top Supporters
+          </h2>
           <TopSupportersChart data={data.supportersData} loading={loading} />
         </div>
       </div>
 
       <div className="rounded-xl border border-ink/10 bg-[color:var(--surface)] p-6">
-        <h2 className="text-lg font-semibold text-ink mb-4">Revenue Breakdown</h2>
+        <h2 className="text-lg font-semibold text-ink mb-4">
+          Revenue Breakdown
+        </h2>
         <RevenueBreakdownChart data={data.revenueData} loading={loading} />
       </div>
 
       <div className="rounded-xl border border-ink/10 bg-[color:var(--surface)] p-6">
-        <h2 className="text-lg font-semibold text-ink mb-4">Supporter Analytics</h2>
+        <h2 className="text-lg font-semibold text-ink mb-4">
+          Supporter Analytics
+        </h2>
         <SupporterInsightsTable rows={data.supporterInsights} />
       </div>
 
       <div className="rounded-xl border border-ink/10 bg-[color:var(--surface)] p-6">
-        <h2 className="text-lg font-semibold text-ink mb-4">Revenue Source Distribution</h2>
+        <h2 className="text-lg font-semibold text-ink mb-4">
+          Revenue Source Distribution
+        </h2>
         <DistributionChart data={data.distributionData} loading={loading} />
+      </div>
+
+      <div>
+        <h2 className="text-lg font-semibold text-ink mb-4">
+          Tip Activity Heatmap
+        </h2>
+        <TipHeatmapCalendar
+          tips={heatmapTips}
+          loading={heatmapPending}
+          title="Daily Tip Activity"
+          showStats
+          onExport={handleExportCSV}
+        />
       </div>
     </div>
   );
