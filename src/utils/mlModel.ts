@@ -128,3 +128,124 @@ export function scoreCreators(
     })
     .sort((a, b) => b.score - a.score);
 }
+
+// ─── Collaborative Filtering Extension (Issue #316) ──────────────────────────
+
+export type FeedbackType = "like" | "dislike" | "not_interested";
+
+export interface FeedbackEntry {
+  creatorUsername: string;
+  feedback: FeedbackType;
+  timestamp: number;
+}
+
+const FEEDBACK_KEY = "stj_cf_feedback";
+
+export function loadFeedback(): FeedbackEntry[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(FEEDBACK_KEY);
+    return raw ? (JSON.parse(raw) as FeedbackEntry[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function recordFeedback(entry: FeedbackEntry): void {
+  if (typeof window === "undefined") return;
+  const existing = loadFeedback().filter(
+    (f) => f.creatorUsername !== entry.creatorUsername,
+  );
+  try {
+    localStorage.setItem(FEEDBACK_KEY, JSON.stringify([...existing, entry]));
+  } catch {
+    // quota exceeded
+  }
+}
+
+export function clearFeedback(): void {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(FEEDBACK_KEY);
+}
+
+/**
+ * Cosine similarity between two category-score vectors.
+ * Used to find creators whose audience profile is similar to the user's affinity.
+ */
+export function cosineSimilarity(
+  a: Record<string, number>,
+  b: Record<string, number>,
+): number {
+  const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
+  let dot = 0;
+  let magA = 0;
+  let magB = 0;
+  for (const k of keys) {
+    const va = a[k] ?? 0;
+    const vb = b[k] ?? 0;
+    dot += va * vb;
+    magA += va * va;
+    magB += vb * vb;
+  }
+  if (magA === 0 || magB === 0) return 0;
+  return dot / (Math.sqrt(magA) * Math.sqrt(magB));
+}
+
+/**
+ * Extended scoring that incorporates collaborative filtering similarity scores
+ * and applies feedback penalties/boosts.
+ */
+export function scoreCreatorsWithCF(
+  candidates: {
+    username: string;
+    displayName: string;
+    category: string;
+    followers: number;
+    /** Optional per-creator category affinity vector (from server/mock data) */
+    categoryVector?: Record<string, number>;
+  }[],
+  profile: AffinityProfile,
+): ScoredCreator[] {
+  const feedback = loadFeedback();
+  const feedbackMap = new Map(feedback.map((f) => [f.creatorUsername, f.feedback]));
+
+  const maxFollowers = Math.max(...candidates.map((c) => c.followers), 1);
+  const maxCat = Math.max(...Object.values(profile.categoryScores), 1);
+  const maxInteraction = Math.max(...Object.values(profile.creatorInteractions), 1);
+
+  // Normalise user profile vector
+  const normProfile: Record<string, number> = {};
+  for (const [k, v] of Object.entries(profile.categoryScores)) {
+    normProfile[k] = v / maxCat;
+  }
+
+  return candidates
+    .filter((c) => feedbackMap.get(c.username) !== "not_interested")
+    .map((c) => {
+      const catScore = ((profile.categoryScores[c.category] ?? 0) / maxCat) * 0.4;
+      const interactionScore =
+        ((profile.creatorInteractions[c.username] ?? 0) / maxInteraction) * 0.25;
+      const popularityScore = (c.followers / maxFollowers) * 0.15;
+
+      // Collaborative filtering: cosine similarity between user affinity and creator vector
+      const cfScore = c.categoryVector
+        ? cosineSimilarity(normProfile, c.categoryVector) * 0.2
+        : 0;
+
+      // Feedback adjustment
+      const fb = feedbackMap.get(c.username);
+      const feedbackBoost = fb === "like" ? 0.15 : fb === "dislike" ? -0.3 : 0;
+
+      const score = catScore + interactionScore + popularityScore + cfScore + feedbackBoost;
+
+      let reason = "Popular in the community";
+      if (cfScore > 0.1) reason = "Similar to creators you enjoy";
+      else if (catScore > 0.25) reason = `Matches your interest in ${c.category}`;
+      else if (interactionScore > 0.15) reason = "You've interacted with them before";
+      else if (popularityScore > 0.12) reason = "Trending creator";
+      if (fb === "like") reason += " · You liked this creator";
+
+      return { ...c, score, reason };
+    })
+    .sort((a, b) => b.score - a.score);
+}
