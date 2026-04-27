@@ -5,7 +5,6 @@ import { notFound } from "next/navigation";
 import { Button } from "@/components/Button";
 import { ShareButton } from "@/components/ShareButton";
 import { ReportButton } from "@/components/ReportButton";
-import { ReportButton } from "@/components/ReportButton";
 import { TipForm } from "@/components/forms/TipForm";
 import { CreatorStatsDashboard } from "@/components/stats/CreatorStatsDashboard";
 import { TipComments } from "@/components/TipComments";
@@ -25,6 +24,7 @@ import { ProfileCard } from "@/components/ProfileCard";
 import { CreatorShare } from "@/components/CreatorShare";
 import { useTipNotifications } from "@/hooks/useTipNotifications";
 import { CampaignList } from "@/components/CampaignList";
+import { Glasses } from "lucide-react";
 
 
 interface CreatorPageProps {
@@ -96,6 +96,13 @@ function CreatorPageClient({ username, profile }: { username: string; profile: a
             <Button variant="ghost">Back to Explore</Button>
           </Link>
           <ReportButton targetUser={profile.username} />
+          <Link
+            href={`/ar?mode=profile&username=${profile.username}`}
+            className="inline-flex items-center gap-2 rounded-lg border border-indigo-300 bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-700 transition-colors hover:bg-indigo-100 dark:border-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 dark:hover:bg-indigo-900"
+          >
+            <Glasses className="h-4 w-4" />
+            View in AR
+          </Link>
         </div>
       <CreatorShare username={profile.username} displayName={profile.displayName} />
 
