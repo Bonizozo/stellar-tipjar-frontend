@@ -6,6 +6,7 @@ import { CookieConsent } from "@/components/CookieConsent";
 import { GA_TRACKING_ID } from "@/lib/analytics/gtag";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { Navbar } from "@/components/Navbar";
+import { VoiceCommandButton } from "@/components/VoiceCommandButton";
 import { PerformanceMonitor } from "@/components/PerformanceMonitor";
 import { ReactQueryProvider } from "@/components/ReactQueryProvider";
 import { SkipToContent } from "@/components/SkipToContent";
@@ -123,6 +124,7 @@ export default function RootLayout({
               <PWAInitializer />
               <CookieConsent />
               <ToastContainer />
+              <VoiceCommandButton className="fixed bottom-6 right-6 z-50 shadow-lg" />
               </ToastProvider>
             </WebSocketProvider>
           </ReactQueryProvider>
