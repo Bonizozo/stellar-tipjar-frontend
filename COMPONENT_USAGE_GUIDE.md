@@ -2,6 +2,204 @@
 
 Quick reference for using the newly implemented design system components.
 
+## Card Component System
+
+The Card component system provides a versatile foundation for creating consistent, accessible, and interactive card layouts.
+
+### Basic Card
+
+```tsx
+import { Card } from "@/components/Card";
+
+// Basic card
+<Card>
+  <h3>Card Title</h3>
+  <p>Card content goes here.</p>
+</Card>
+
+// Card with variants
+<Card variant="elevated" hoverEffect="lift" size="lg">
+  Content
+</Card>
+```
+
+**Props:**
+- `variant`: "default" | "elevated" | "outlined" | "glass"
+- `hoverEffect`: "none" | "lift" | "glow" | "border"
+- `size`: "sm" | "md" | "lg"
+- `hoverable`: boolean
+- `loading`: boolean
+- `interactive`: boolean (adds keyboard navigation)
+
+### Structured Cards
+
+```tsx
+import { Card, CardHeader, CardBody, CardFooter } from "@/components/Card";
+
+<Card variant="elevated">
+  <CardHeader
+    title="User Profile"
+    subtitle="Active since 2023"
+    icon={<UserIcon />}
+    actions={<Button size="sm">Edit</Button>}
+    bordered
+  />
+  <CardBody padding="md" scrollable>
+    <p>Card content with proper spacing.</p>
+  </CardBody>
+  <CardFooter justify="between" padding="lg">
+    <span>Last updated: Today</span>
+    <Button>Save</Button>
+  </CardFooter>
+</Card>
+```
+
+**CardHeader Props:**
+- `title`: string
+- `subtitle`: string
+- `icon`: ReactNode
+- `avatar`: ReactNode
+- `actions`: ReactNode
+- `bordered`: boolean
+
+**CardBody Props:**
+- `padding`: "none" | "sm" | "md" | "lg"
+- `scrollable`: boolean
+
+**CardFooter Props:**
+- `justify`: "start" | "center" | "end" | "between" | "around"
+- `bordered`: boolean
+- `padding`: "none" | "sm" | "md" | "lg"
+
+### Image Cards
+
+```tsx
+import { ImageCard } from "@/components/Card";
+
+// Basic image card
+<ImageCard
+  imageUrl="https://example.com/image.jpg"
+  imageAlt="Description"
+  title="Card Title"
+  description="Card description"
+  imageHeight="md"
+/>
+
+// Image card with overlay
+<ImageCard
+  imageUrl="https://example.com/image.jpg"
+  imageAlt="Description"
+  overlay
+  overlayContent={
+    <div>
+      <h3>Overlay Title</h3>
+      <p>Overlay description</p>
+    </div>
+  }
+/>
+
+// Side layout image card
+<ImageCard
+  imageUrl="https://example.com/image.jpg"
+  imageAlt="Description"
+  title="Side Layout"
+  description="Image on the side"
+  imagePosition="left"
+  actions={<Button>Learn More</Button>}
+/>
+```
+
+**Props:**
+- `imageUrl`: string (required)
+- `imageAlt`: string (required)
+- `title`: string
+- `subtitle`: string
+- `description`: string
+- `actions`: ReactNode
+- `imageHeight`: "sm" | "md" | "lg" | "xl"
+- `imagePosition`: "top" | "left" | "right"
+- `overlay`: boolean
+- `overlayContent`: ReactNode
+
+### Interactive Cards
+
+```tsx
+import { InteractiveCard } from "@/components/Card";
+import { useState } from "react";
+
+function SelectableCards() {
+  const [selected, setSelected] = useState<string | null>(null);
+
+  return (
+    <InteractiveCard
+      title="Selectable Option"
+      description="Click to select this card"
+      selectable
+      selected={selected === "card-1"}
+      onSelectionChange={(isSelected) => 
+        setSelected(isSelected ? "card-1" : null)
+      }
+      status="success"
+      badge={<Badge color="info">New</Badge>}
+    />
+  );
+}
+
+// Expandable card
+<InteractiveCard
+  title="Expandable Content"
+  description="Click to expand"
+  expandable
+  expandedContent={
+    <div>
+      <p>This content is shown when expanded.</p>
+    </div>
+  }
+/>
+```
+
+**Props:**
+- `selectable`: boolean
+- `selected`: boolean
+- `onSelectionChange`: (selected: boolean) => void
+- `expandable`: boolean
+- `expanded`: boolean
+- `onExpandChange`: (expanded: boolean) => void
+- `expandedContent`: ReactNode
+- `badge`: ReactNode
+- `status`: "default" | "success" | "warning" | "error" | "info"
+
+### Loading States
+
+```tsx
+import { Card, SkeletonCard } from "@/components/Card";
+
+// Built-in loading state
+<Card loading size="md" />
+
+// Custom skeleton card
+<SkeletonCard
+  variant="elevated"
+  size="md"
+  showHeader
+  showImage
+  showFooter
+  lines={4}
+  imageHeight="lg"
+/>
+```
+
+**SkeletonCard Props:**
+- `variant`: CardVariant
+- `size`: CardSize
+- `showHeader`: boolean
+- `showImage`: boolean
+- `showFooter`: boolean
+- `lines`: number (content lines)
+- `imageHeight`: "sm" | "md" | "lg"
+
+---
+
 ## Badge Component
 
 ```tsx
@@ -277,4 +475,32 @@ All components include:
     {/* Responsive columns */}
   </div>
 </div>
+```
+
+### Interactive Card Selection
+```tsx
+<InteractiveCard
+  title="Option 1"
+  selectable
+  selected={selectedOption === "1"}
+  onSelectionChange={(selected) => 
+    setSelectedOption(selected ? "1" : null)
+  }
+/>
+```
+
+### Image Card with Actions
+```tsx
+<ImageCard
+  imageUrl="/image.jpg"
+  imageAlt="Description"
+  title="Card Title"
+  description="Card description"
+  actions={
+    <div className="flex gap-2">
+      <Button size="sm" variant="outline">View</Button>
+      <Button size="sm">Edit</Button>
+    </div>
+  }
+/>
 ```
