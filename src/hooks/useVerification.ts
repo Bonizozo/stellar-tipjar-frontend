@@ -1,9 +1,10 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { requestVerificationStatus, requestVerification } from '@/services/api';
-import { useWallet } from '@/contexts/WalletContext';
+import { useWallet } from '@/hooks/useWallet';
 
 export function useVerification() {
   const { publicKey } = useWallet();
+  const queryClient = useQueryClient();
 
   const { data: status, isLoading } = useQuery({
     queryKey: ['verification-status'],
@@ -13,7 +14,7 @@ export function useVerification() {
   const verificationMutation = useMutation({
     mutationFn: requestVerification,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['verification-status'] });
+      void queryClient.invalidateQueries({ queryKey: ['verification-status'] });
     },
   });
 
