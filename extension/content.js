@@ -11,44 +11,39 @@
 
   // Patterns that indicate a creator profile link
   const CREATOR_LINK_PATTERNS = [
-    // Direct tipjar links: stellar-tipjar.app/creator/username
     /stellar-tipjar\.app\/creator\/([a-zA-Z0-9][a-zA-Z0-9_-]{1,31})/,
-    // tipjar.app/@username style
     /stellar-tipjar\.app\/@([a-zA-Z0-9][a-zA-Z0-9_-]{1,31})/,
+    // Support for potential partner sites
+    /linktree\.ee\/([a-zA-Z0-9][a-zA-Z0-9_-]{1,31})/,
+    /twitter\.com\/([a-zA-Z0-9][a-zA-Z0-9_-]{1,15})/,
+    /x\.com\/([a-zA-Z0-9][a-zA-Z0-9_-]{1,15})/,
+    /github\.com\/([a-zA-Z0-9][a-zA-Z0-9_-]{1,38})/,
   ];
 
-  // Meta tag patterns for creator pages (when on the actual site)
-  const META_CREATOR_SELECTORS = [
-    'meta[name="tipjar:username"]',
-    'meta[property="tipjar:username"]',
-    'meta[name="creator:username"]',
-  ];
+  // Specific selectors for social media profiles to extract username
+  const SOCIAL_SELECTORS = {
+    'twitter.com': () => {
+      const parts = window.location.pathname.split('/');
+      return parts.length === 2 && !['explore', 'home', 'notifications', 'messages'].includes(parts[1]) ? parts[1] : null;
+    },
+    'github.com': () => {
+      const parts = window.location.pathname.split('/');
+      return parts.length === 2 && !['trending', 'explore', 'marketplace'].includes(parts[1]) ? parts[1] : null;
+    }
+  };
 
   let detectedCreators = [];
   let injectedButtons = new WeakSet();
 
   // ─── Creator detection ──────────────────────────────────────────────────────
 
-  function extractUsernameFromUrl(url) {
-    for (const pattern of CREATOR_LINK_PATTERNS) {
-      const match = url.match(pattern);
-      if (match) return match[1];
-    }
-    return null;
-  }
-
-  function detectFromMeta() {
-    for (const selector of META_CREATOR_SELECTORS) {
-      const meta = document.querySelector(selector);
-      if (meta) {
-        const username = meta.getAttribute("content");
-        if (username) return { username, source: "Page meta tag", displayName: null };
-      }
-    }
-    return null;
-  }
-
   function detectFromCurrentUrl() {
+    const hostname = window.location.hostname;
+    if (SOCIAL_SELECTORS[hostname]) {
+      const username = SOCIAL_SELECTORS[hostname]();
+      if (username) return { username, source: `${hostname} profile`, displayName: null };
+    }
+
     const username = extractUsernameFromUrl(window.location.href);
     if (username) return { username, source: "Current page URL", displayName: null };
     return null;
@@ -166,102 +161,117 @@
     overlay.setAttribute("role", "dialog");
     overlay.setAttribute("aria-modal", "true");
     overlay.setAttribute("aria-label", `Tip @${username}`);
-    overlay.style.cssText = `
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.6);
-      z-index: 2147483647;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    `;
-
     overlay.innerHTML = `
       <div style="
-        background: #0f0f1a;
+        background: #0b0b14;
         border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 16px;
-        box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+        border-radius: 20px;
+        box-shadow: 0 24px 64px rgba(0,0,0,0.8);
         color: #e8e8f0;
-        max-width: 340px;
+        max-width: 360px;
         padding: 24px;
         position: relative;
         width: 90vw;
+        backdrop-filter: blur(20px);
       ">
         <button id="stj-close" aria-label="Close" style="
-          background: transparent;
+          background: rgba(255,255,255,0.05);
           border: none;
+          border-radius: 50%;
           color: rgba(255,255,255,0.4);
           cursor: pointer;
-          font-size: 20px;
-          line-height: 1;
+          font-size: 18px;
+          height: 32px;
+          width: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           position: absolute;
           right: 16px;
-          top: 14px;
+          top: 16px;
+          transition: all 0.2s;
         ">×</button>
 
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;">
           <div style="
             background: linear-gradient(135deg,#7c3aed,#2563eb);
-            border-radius: 8px;
-            font-size: 18px;
-            height: 36px;
-            width: 36px;
+            border-radius: 12px;
+            font-size: 20px;
+            height: 48px;
+            width: 48px;
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 0 20px rgba(124,58,237,0.3);
           ">⭐</div>
           <div>
-            <div style="font-size:15px;font-weight:600;">Tip @${username}</div>
-            <div style="font-size:11px;color:rgba(255,255,255,0.4);">via Stellar TipJar</div>
+            <div style="font-size:17px;font-weight:700;">Tip @${username}</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.4);">via accounts on Stellar</div>
           </div>
         </div>
 
-        <div id="stj-wallet-check" style="text-align:center;padding:12px 0;color:rgba(255,255,255,0.5);font-size:13px;">
+        <div id="stj-wallet-check" style="text-align:center;padding:20px 0;color:rgba(255,255,255,0.5);font-size:14px;">
+          <div class="stj-spinner" style="
+            width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.1);
+            border-top-color: #7c3aed; border-radius: 50%; margin: 0 auto 12px;
+            animation: stj-spin 0.8s linear infinite;
+          "></div>
           Checking wallet...
         </div>
 
         <div id="stj-form" style="display:none;">
-          <div style="display:flex;gap:6px;margin-bottom:14px;">
-            <button class="stj-quick" data-amount="1" style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#e8e8f0;cursor:pointer;font-size:12px;padding:7px 4px;">1 XLM</button>
-            <button class="stj-quick" data-amount="5" style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#e8e8f0;cursor:pointer;font-size:12px;padding:7px 4px;">5 XLM</button>
-            <button class="stj-quick" data-amount="10" style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#e8e8f0;cursor:pointer;font-size:12px;padding:7px 4px;">10 XLM</button>
-            <button class="stj-quick" data-amount="25" style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#e8e8f0;cursor:pointer;font-size:12px;padding:7px 4px;">25 XLM</button>
-          </div>
-
-          <div style="margin-bottom:12px;">
-            <label style="display:block;font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.06em;">Amount (XLM)</label>
-            <input id="stj-amount" type="number" min="0.01" step="0.01" value="5" style="
-              width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
-              border-radius:8px;color:#e8e8f0;font-size:14px;padding:9px 12px;outline:none;box-sizing:border-box;
-            " />
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px;">
+            <button class="stj-quick" data-amount="1" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#e8e8f0;cursor:pointer;font-size:12px;padding:10px 4px;font-weight:600;">1</button>
+            <button class="stj-quick" data-amount="5" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#e8e8f0;cursor:pointer;font-size:12px;padding:10px 4px;font-weight:600;">5</button>
+            <button class="stj-quick" data-amount="10" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#e8e8f0;cursor:pointer;font-size:12px;padding:10px 4px;font-weight:600;">10</button>
+            <button class="stj-quick" data-amount="25" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#e8e8f0;cursor:pointer;font-size:12px;padding:10px 4px;font-weight:600;">25</button>
           </div>
 
           <div style="margin-bottom:16px;">
-            <label style="display:block;font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.06em;">Message (optional)</label>
+            <label style="display:block;font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;">Amount (XLM)</label>
+            <input id="stj-amount" type="number" min="0.01" step="0.01" value="5" style="
+              width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
+              border-radius:12px;color:#fff;font-size:15px;padding:12px 14px;outline:none;box-sizing:border-box;
+              transition: border-color 0.2s;
+            " />
+          </div>
+
+          <div style="margin-bottom:24px;">
+            <label style="display:block;font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;">Message (optional)</label>
             <input id="stj-message" type="text" maxlength="500" placeholder="Great work!" style="
-              width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
-              border-radius:8px;color:#e8e8f0;font-size:14px;padding:9px 12px;outline:none;box-sizing:border-box;
+              width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
+              border-radius:12px;color:#fff;font-size:15px;padding:12px 14px;outline:none;box-sizing:border-box;
+              transition: border-color 0.2s;
             " />
           </div>
 
           <button id="stj-send" style="
             background:linear-gradient(135deg,#7c3aed,#2563eb);
-            border:none;border-radius:8px;color:#fff;cursor:pointer;
-            font-size:14px;font-weight:500;padding:11px;width:100%;
-          ">Send Tip</button>
+            border:none;border-radius:12px;color:#fff;cursor:pointer;
+            font-size:15px;font-weight:700;padding:14px;width:100%;
+            box-shadow: 0 4px 15px rgba(124,58,237,0.3);
+            transition: all 0.2s;
+          ">Send ${username} XLM</button>
 
-          <div id="stj-status" style="display:none;border-radius:8px;font-size:12px;margin-top:10px;padding:9px 12px;text-align:center;"></div>
+          <div id="stj-status" style="display:none;border-radius:12px;font-size:13px;margin-top:16px;padding:12px;text-align:center;"></div>
         </div>
 
-        <div id="stj-no-wallet" style="display:none;text-align:center;padding:8px 0;">
-          <div style="font-size:24px;margin-bottom:8px;">🔗</div>
-          <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:12px;">Connect your Freighter wallet to tip creators.</div>
+        <style>
+          @keyframes stj-spin { to { transform: rotate(360deg); } }
+          #stj-close:hover { background: rgba(255,255,255,0.15) !important; color: #fff !important; }
+          #stj-send:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(124,58,237,0.4) !important; }
+          #stj-send:active { transform: translateY(0); }
+          #stj-amount:focus, #stj-message:focus { border-color: #7c3aed !important; }
+        </style>
+
+        <div id="stj-no-wallet" style="display:none;text-align:center;padding:10px 0;">
+          <div style="font-size:32px;margin-bottom:12px;">🔗</div>
+          <div style="font-size:14px;color:rgba(255,255,255,0.6);margin-bottom:20px;line-height:1.5;">Connect your Freighter wallet to tip creators directly.</div>
           <a href="https://www.freighter.app" target="_blank" style="
             background:linear-gradient(135deg,#7c3aed,#2563eb);
-            border-radius:8px;color:#fff;display:inline-block;
-            font-size:13px;font-weight:500;padding:9px 18px;text-decoration:none;
+            border-radius:12px;color:#fff;display:inline-block;
+            font-size:14px;font-weight:700;padding:12px 24px;text-decoration:none;
+            box-shadow: 0 4px 15px rgba(124,58,237,0.3);
           ">Get Freighter</a>
         </div>
       </div>
