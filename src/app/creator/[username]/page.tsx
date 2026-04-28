@@ -24,7 +24,6 @@ import { ProfileCard } from "@/components/ProfileCard";
 import { CreatorShare } from "@/components/CreatorShare";
 import { useTipNotifications } from "@/hooks/useTipNotifications";
 import { CampaignList } from "@/components/CampaignList";
-import { Glasses } from "lucide-react";
 
 
 interface CreatorPageProps {
@@ -92,6 +91,9 @@ function CreatorPageClient({ username, profile }: { username: string; profile: a
           <Link href="/tips">
             <Button>Tip This Creator</Button>
           </Link>
+          <Link href={`/creator/${profile.username}/qr`}>
+            <Button variant="outline">QR Code</Button>
+          </Link>
           <Link href="/explore">
             <Button variant="ghost">Back to Explore</Button>
           </Link>
@@ -129,6 +131,9 @@ function CreatorPageClient({ username, profile }: { username: string; profile: a
       <div className="flex flex-wrap gap-3">
         <Link href="/tips">
           <Button>Tip This Creator</Button>
+        </Link>
+        <Link href={`/creator/${profile.username}/qr`}>
+          <Button variant="outline">QR Code</Button>
         </Link>
         <Link href="/explore">
           <Button variant="ghost">Back to Explore</Button>
