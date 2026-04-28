@@ -108,3 +108,13 @@ export const searchSchema = z.object({
 });
 
 export type SearchInput = z.infer<typeof searchSchema>;
+
+// ── Form-component aliases (matches the suggested public API) ─────────────────
+
+/** Alias for sendTipSchema — use with TipForm. */
+export const tipFormSchema = sendTipSchema;
+export type TipFormData = SendTipInput;
+
+/** Alias for createCreatorSchema — use with CreatorForm. */
+export const creatorFormSchema = createCreatorSchema;
+export type CreatorFormData = CreateCreatorInput;
