@@ -73,9 +73,24 @@ export function useOfflineQueue(): UseOfflineQueueReturn {
       }
     });
 
+    // Also listen for Service Worker messages
+    const handleSWMessage = (event: MessageEvent) => {
+      if (event.data?.type === "SYNC_COMPLETE") {
+        refreshActions();
+        setIsSyncing(false);
+      }
+    };
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.addEventListener("message", handleSWMessage);
+    }
+
     return () => {
       worker.terminate();
       workerRef.current = null;
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.removeEventListener("message", handleSWMessage);
+      }
     };
   }, [refreshActions]);
 
@@ -145,8 +160,8 @@ export function useOfflineQueue(): UseOfflineQueueReturn {
     await refreshActions();
   }, [refreshActions]);
 
-  const queuedCount = actions.filter((a) => a.status === "pending").length;
-  const failedCount = actions.filter((a) => a.status === "failed").length;
+  const queuedCount = actions.filter((a: QueuedAction) => a.status === "pending").length;
+  const failedCount = actions.filter((a: QueuedAction) => a.status === "failed").length;
 
   return {
     isOnline,

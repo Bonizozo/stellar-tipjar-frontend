@@ -1,8 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import Script from "next/script";
 
+import { CookieConsent } from "@/components/CookieConsent";
+import { GA_TRACKING_ID } from "@/lib/analytics/gtag";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { Navbar } from "@/components/Navbar";
+import { VoiceCommandButton } from "@/components/VoiceCommandButton";
 import { PerformanceMonitor } from "@/components/PerformanceMonitor";
 import { ReactQueryProvider } from "@/components/ReactQueryProvider";
 import { SkipToContent } from "@/components/SkipToContent";
@@ -15,6 +19,8 @@ import { ToastContainer } from "@/components/Toast";
 import { Footer } from "@/components/Footer";
 import { UpdatePrompt } from "@/components/UpdatePrompt";
 import { PWAInitializer } from "@/components/PWAInitializer";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { I18nProvider } from "@/components/I18nProvider";
 import "@/styles/globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -73,6 +79,25 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {GA_TRACKING_ID && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_TRACKING_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('consent', 'default', { analytics_storage: 'denied' });
+                gtag('config', '${GA_TRACKING_ID}', { page_path: window.location.pathname });
+              `}
+            </Script>
+          </>
+        )}
+      </head>
       <body className={inter.className}>
         <SkipToContent />
         <PerformanceMonitor />
@@ -97,7 +122,9 @@ export default function RootLayout({
               <InstallPrompt />
               <UpdatePrompt />
               <PWAInitializer />
+              <CookieConsent />
               <ToastContainer />
+              <VoiceCommandButton className="fixed bottom-6 right-6 z-50 shadow-lg" />
               </ToastProvider>
             </WebSocketProvider>
           </ReactQueryProvider>

@@ -5,7 +5,6 @@ import { notFound } from "next/navigation";
 import { Button } from "@/components/Button";
 import { ShareButton } from "@/components/ShareButton";
 import { ReportButton } from "@/components/ReportButton";
-import { ReportButton } from "@/components/ReportButton";
 import { TipForm } from "@/components/forms/TipForm";
 import { CreatorStatsDashboard } from "@/components/stats/CreatorStatsDashboard";
 import { TipComments } from "@/components/TipComments";
@@ -99,6 +98,13 @@ function CreatorPageClient({ username, profile }: { username: string; profile: a
             <Button variant="ghost">Back to Explore</Button>
           </Link>
           <ReportButton targetUser={profile.username} />
+          <Link
+            href={`/ar?mode=profile&username=${profile.username}`}
+            className="inline-flex items-center gap-2 rounded-lg border border-indigo-300 bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-700 transition-colors hover:bg-indigo-100 dark:border-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 dark:hover:bg-indigo-900"
+          >
+            <Glasses className="h-4 w-4" />
+            View in AR
+          </Link>
         </div>
       <CreatorShare username={profile.username} displayName={profile.displayName} />
 
@@ -107,7 +113,7 @@ function CreatorPageClient({ username, profile }: { username: string; profile: a
           <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-wave">Categories & Tags</p>
           <div className="flex flex-wrap gap-2 mb-4">
             {profile.categories?.map((cat) => (
-              <TagBadge key={cat} tag={cat} variant="category" />
+              <TagBadge key={cat} tag={cat} size="md" className="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border-indigo-400/30 text-indigo-700 dark:text-indigo-300" />
             ))}
             {profile.tags?.slice(0, 6).map((tag) => (
               <TagBadge key={tag} tag={tag} />
@@ -154,7 +160,7 @@ function CreatorPageClient({ username, profile }: { username: string; profile: a
         <CreatorStatsDashboard username={profile.username} />
       </div>
 
-      <TipTiers />
+      <PortfolioSection username={profile.username} />
 
       <TipComments creatorUsername={profile.username} />
 

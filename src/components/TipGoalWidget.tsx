@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, Glasses } from "lucide-react";
 import { useState } from "react";
+import Link from "next/link";
 
 export interface TipGoal {
   id: string;
@@ -13,12 +14,6 @@ export interface TipGoal {
   currency: string;
   deadline?: Date;
   supporters: number;
-}
-
-interface TipGoalWidgetProps {
-  goal: TipGoal;
-  variant?: "compact" | "standard" | "detailed";
-  showEmbed?: boolean;
 }
 
 function ProgressBar({ current, target }: { current: number; target: number }) {
@@ -139,10 +134,18 @@ function DetailedWidget({ goal }: { goal: TipGoal }) {
   );
 }
 
+interface TipGoalWidgetProps {
+  goal: TipGoal;
+  variant?: "compact" | "standard" | "detailed";
+  showEmbed?: boolean;
+  showAR?: boolean;
+}
+
 export function TipGoalWidget({
   goal,
   variant = "standard",
   showEmbed = false,
+  showAR = false,
 }: TipGoalWidgetProps) {
   const [copied, setCopied] = useState(false);
 
@@ -165,32 +168,43 @@ export function TipGoalWidget({
       <StandardWidget goal={goal} />
     );
 
-  if (!showEmbed) return widget;
-
   return (
     <div className="space-y-4">
       {widget}
-      <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
-        <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Embed Code
-        </p>
-        <div className="flex gap-2">
-          <code className="flex-1 text-xs bg-gray-100 dark:bg-gray-800 p-2 rounded overflow-x-auto text-gray-600 dark:text-gray-400 font-mono">
-            {embedCode}
-          </code>
-          <button
-            onClick={handleCopyEmbed}
-            className="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-medium transition-colors"
-            title="Copy embed code"
-          >
-            {copied ? (
-              <Check className="h-4 w-4" />
-            ) : (
-              <Copy className="h-4 w-4" />
-            )}
-          </button>
+
+      {showAR && (
+        <Link
+          href={`/ar?mode=goal&goalId=${goal.id}`}
+          className="flex w-full items-center justify-center gap-2 rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 transition-colors hover:bg-indigo-100 dark:border-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 dark:hover:bg-indigo-900"
+        >
+          <Glasses className="h-4 w-4" />
+          View in AR
+        </Link>
+      )}
+
+      {showEmbed && (
+        <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+          <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Embed Code
+          </p>
+          <div className="flex gap-2">
+            <code className="flex-1 text-xs bg-gray-100 dark:bg-gray-800 p-2 rounded overflow-x-auto text-gray-600 dark:text-gray-400 font-mono">
+              {embedCode}
+            </code>
+            <button
+              onClick={handleCopyEmbed}
+              className="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-medium transition-colors"
+              title="Copy embed code"
+            >
+              {copied ? (
+                <Check className="h-4 w-4" />
+              ) : (
+                <Copy className="h-4 w-4" />
+              )}
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

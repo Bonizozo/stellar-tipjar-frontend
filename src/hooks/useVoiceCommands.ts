@@ -1,154 +1,108 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
-import { speechRecognition, SpeechRecognitionResult } from '@/utils/speechRecognition';
-import { keyboardShortcutsManager } from '@/utils/keyboardShortcuts';
+'use client';
 
-export interface VoiceCommandConfig {
-  enabled?: boolean;
-  language?: string;
-  commands?: Map<string, () => void>;
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+
+export interface UseVoiceCommandsOptions {
+  lang?: string;
+  onTip?: (amount?: number) => void;
 }
 
-export interface VoiceCommandState {
+export interface UseVoiceCommandsResult {
   isListening: boolean;
-  isSpeaking: boolean;
-  transcript: string;
-  confidence: number;
-  error: string | null;
+  isSupported: boolean;
+  startListening: () => void;
+  stopListening: () => void;
 }
 
-export const useVoiceCommands = (config: VoiceCommandConfig = {}) => {
-  const [state, setState] = useState<VoiceCommandState>({
-    isListening: false,
-    isSpeaking: false,
-    transcript: '',
-    confidence: 0,
-    error: null,
-  });
+function speak(text: string, lang: string) {
+  if (typeof window === 'undefined' || !window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = lang;
+  window.speechSynthesis.speak(utterance);
+}
 
-  const commandsRef = useRef<Map<string, () => void>>(config.commands || new Map());
-  const isListeningRef = useRef(false);
+export function useVoiceCommands({
+  lang,
+  onTip,
+}: UseVoiceCommandsOptions = {}): UseVoiceCommandsResult {
+  const router = useRouter();
+  const resolvedLang =
+    lang ?? (typeof navigator !== 'undefined' ? navigator.language : 'en-US');
 
-  const handleVoiceResult = useCallback((result: SpeechRecognitionResult) => {
-    setState((prev) => ({
-      ...prev,
-      transcript: result.transcript,
-      confidence: result.confidence,
-      error: null,
-    }));
+  const SpeechRecognitionCtor =
+    typeof window !== 'undefined'
+      ? (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition
+      : null;
 
-    if (result.isFinal) {
-      // Check if the transcript matches any registered commands
-      commandsRef.current.forEach((callback, command) => {
-        if (
-          result.transcript.includes(command.toLowerCase()) ||
-          result.transcript.startsWith(command.toLowerCase())
-        ) {
-          callback();
+  const isSupported = Boolean(SpeechRecognitionCtor);
+
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
+
+  const handleResult = useCallback(
+    (event: any) => {
+      const transcript: string =
+        event.results[event.results.length - 1][0].transcript
+          .toLowerCase()
+          .trim();
+
+      if (transcript.includes('go home') || transcript.includes('navigate home')) {
+        speak('Navigating home', resolvedLang);
+        router.push('/');
+      } else if (transcript.startsWith('tip') || transcript.includes('send tip')) {
+        const match = transcript.match(/tip\s+(\d+(?:\.\d+)?)/);
+        const amount = match ? parseFloat(match[1]) : undefined;
+        const feedback = amount != null ? `Sending tip of ${amount}` : 'Sending tip';
+        speak(feedback, resolvedLang);
+        if (onTip) {
+          onTip(amount);
+        } else {
+          router.push('/tips');
         }
-      });
-    }
-  }, []);
+      } else if (transcript.startsWith('go to ')) {
+        const page = transcript.replace('go to ', '').trim();
+        speak(`Navigating to ${page}`, resolvedLang);
+        router.push(`/${page}`);
+      } else if (transcript.includes('stop listening')) {
+        speak('Stopping', resolvedLang);
+        recognitionRef.current?.stop();
+      } else {
+        speak('Command not recognized', resolvedLang);
+      }
+    },
+    [resolvedLang, router, onTip],
+  );
 
-  const handleVoiceError = useCallback((error: string) => {
-    setState((prev) => ({
-      ...prev,
-      error,
-      isListening: false,
-    }));
-    isListeningRef.current = false;
+  const stopListening = useCallback(() => {
+    recognitionRef.current?.abort();
+    setIsListening(false);
   }, []);
 
   const startListening = useCallback(() => {
-    if (!speechRecognition.isSupported()) {
-      setState((prev) => ({
-        ...prev,
-        error: 'Voice commands not supported in your browser',
-      }));
-      return;
-    }
+    if (!isSupported || !SpeechRecognitionCtor) return;
 
-    isListeningRef.current = true;
-    setState((prev) => ({
-      ...prev,
-      isListening: true,
-      error: null,
-      transcript: '',
-    }));
+    const recognition = new SpeechRecognitionCtor();
+    recognition.lang = resolvedLang;
+    recognition.continuous = false;
+    recognition.interimResults = false;
 
-    speechRecognition.startListening(
-      handleVoiceResult,
-      handleVoiceError,
-      {
-        language: config.language || 'en-US',
-        continuous: true,
-        interimResults: true,
-      }
-    );
-  }, [config.language, handleVoiceResult, handleVoiceError]);
+    recognition.onresult = handleResult;
+    recognition.onend = () => setIsListening(false);
+    recognition.onerror = () => setIsListening(false);
 
-  const stopListening = useCallback(() => {
-    isListeningRef.current = false;
-    speechRecognition.stopListening();
-    setState((prev) => ({
-      ...prev,
-      isListening: false,
-    }));
-  }, []);
+    recognitionRef.current = recognition;
+    recognition.start();
+    setIsListening(true);
+  }, [isSupported, SpeechRecognitionCtor, resolvedLang, handleResult]);
 
-  const speak = useCallback((text: string, onComplete?: () => void) => {
-    setState((prev) => ({
-      ...prev,
-      isSpeaking: true,
-    }));
-
-    speechRecognition.speak(text, () => {
-      setState((prev) => ({
-        ...prev,
-        isSpeaking: false,
-      }));
-      onComplete?.();
-    });
-  }, []);
-
-  const registerCommand = useCallback((command: string, callback: () => void) => {
-    commandsRef.current.set(command.toLowerCase(), callback);
-  }, []);
-
-  const unregisterCommand = useCallback((command: string) => {
-    commandsRef.current.delete(command.toLowerCase());
-  }, []);
-
-  // Set up keyboard shortcut for voice toggle
+  // Cleanup on unmount
   useEffect(() => {
-    if (config.enabled !== false) {
-      keyboardShortcutsManager.register({
-        key: 'v',
-        ctrl: true,
-        callback: () => {
-          if (isListeningRef.current) {
-            stopListening();
-          } else {
-            startListening();
-          }
-        },
-      });
-    }
-
     return () => {
-      keyboardShortcutsManager.unregister({
-        key: 'v',
-        ctrl: true,
-      });
+      recognitionRef.current?.abort();
     };
-  }, [startListening, stopListening, config.enabled]);
+  }, []);
 
-  return {
-    ...state,
-    startListening,
-    stopListening,
-    speak,
-    registerCommand,
-    unregisterCommand,
-    isSupported: speechRecognition.isSupported(),
-  };
-};
+  return { isListening, isSupported, startListening, stopListening };
+}

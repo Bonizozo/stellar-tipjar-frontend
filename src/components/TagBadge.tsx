@@ -1,9 +1,7 @@
 "use client";
 
-import { MouseEvent, ClipboardEvent } from "react";
-import { Copy, Check } from "lucide-react"; // Assume icons available or use SVG
+import { MouseEvent, ClipboardEvent, useState } from "react";
 import { validateTag } from "@/utils/categories";
-import { cn } from "@/lib/utils"; // Assume cn utility if exists, else className
 
 interface TagBadgeProps {
   tag: string;

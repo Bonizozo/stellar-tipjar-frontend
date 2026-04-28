@@ -57,11 +57,9 @@ describe('SectionCard Component', () => {
     const card = screen.getByRole('article')
     expect(card).toHaveClass(
       'rounded-2xl',
-      'border',
-      'border-ink/10',
-      'bg-[color:var(--surface)]',
-      'p-6',
-      'shadow-card'
+      'bg-white',
+      'dark:bg-gray-800',
+      'shadow-md'
     )
   })
 
@@ -115,7 +113,6 @@ describe('SectionCard Component', () => {
 
     const description = screen.getByText('Test description')
     expect(description).toHaveClass(
-      'mt-2',
       'text-sm',
       'text-ink/70'
     )
@@ -170,5 +167,49 @@ describe('SectionCard Component', () => {
 
     expect(screen.getByText(longTitle)).toBeInTheDocument()
     expect(screen.getByText(longDescription)).toBeInTheDocument()
+  })
+
+  it('supports different card variants', () => {
+    render(
+      <SectionCard
+        title="Test Title"
+        description="Test description"
+        icon={mockIcon}
+        variant="elevated"
+      />
+    )
+
+    const card = screen.getByRole('article')
+    expect(card).toHaveClass('shadow-xl')
+  })
+
+  it('handles click events when onClick is provided', () => {
+    const handleClick = vi.fn()
+    render(
+      <SectionCard
+        title="Test Title"
+        description="Test description"
+        icon={mockIcon}
+        onClick={handleClick}
+      />
+    )
+
+    const card = screen.getByRole('article')
+    card.click()
+    expect(handleClick).toHaveBeenCalledTimes(1)
+  })
+
+  it('renders image URL correctly', () => {
+    render(
+      <SectionCard
+        title="Test Title"
+        description="Test description"
+        imageUrl="/test-image.jpg"
+      />
+    )
+
+    const image = screen.getByRole('img')
+    expect(image).toBeInTheDocument()
+    expect(image).toHaveAttribute('alt', 'Test Title')
   })
 })

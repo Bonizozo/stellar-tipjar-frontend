@@ -1,120 +1,214 @@
-"use client";
+'use client';
 
-import { useComments } from "@/hooks/useComments";
-import { CommentCard } from "@/components/CommentCard";
-import { CommentForm } from "@/components/CommentForm";
-import { Button } from "@/components/Button";
-import type { Comment } from "@/services/api";
+import { useState } from 'react';
+
+interface Comment {
+  id: string;
+  author: string;
+  avatar: string;
+  content: string;
+  timestamp: string;
+  likes: number;
+  replies: Comment[];
+  isLiked: boolean;
+}
 
 interface TipCommentsProps {
-  creatorUsername: string;
+  tipId: string;
+  initialComments?: Comment[];
 }
 
-/** Groups flat comment list into top-level + replies map */
-function groupComments(comments: Comment[]): {
-  topLevel: Comment[];
-  repliesById: Map<string, Comment[]>;
-} {
-  const topLevel: Comment[] = [];
-  const repliesById = new Map<string, Comment[]>();
+export default function TipComments({ tipId, initialComments = [] }: TipCommentsProps) {
+  const [comments, setComments] = useState<Comment[]>(initialComments);
+  const [newComment, setNewComment] = useState('');
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyContent, setReplyContent] = useState('');
 
-  for (const c of comments) {
-    if (c.parentId === null) {
-      topLevel.push(c);
+  const handleAddComment = async () => {
+    if (!newComment.trim()) return;
+
+    const comment: Comment = {
+      id: Date.now().toString(),
+      author: 'Current User',
+      avatar: '/default-avatar.png',
+      content: newComment,
+      timestamp: new Date().toISOString(),
+      likes: 0,
+      replies: [],
+      isLiked: false,
+    };
+
+    setComments([comment, ...comments]);
+    setNewComment('');
+
+    // TODO: Send to backend
+    // await fetch(`/api/tips/${tipId}/comments`, {
+    //   method: 'POST',
+    //   body: JSON.stringify({ content: newComment })
+    // });
+  };
+
+  const handleAddReply = async (parentId: string) => {
+    if (!replyContent.trim()) return;
+
+    const reply: Comment = {
+      id: Date.now().toString(),
+      author: 'Current User',
+      avatar: '/default-avatar.png',
+      content: replyContent,
+      timestamp: new Date().toISOString(),
+      likes: 0,
+      replies: [],
+      isLiked: false,
+    };
+
+    setComments(comments.map(comment => 
+      comment.id === parentId
+        ? { ...comment, replies: [...comment.replies, reply] }
+        : comment
+    ));
+
+    setReplyContent('');
+    setReplyingTo(null);
+
+    // TODO: Send to backend
+  };
+
+  const handleLike = async (commentId: string, isReply: boolean = false, parentId?: string) => {
+    if (isReply && parentId) {
+      setComments(comments.map(comment =>
+        comment.id === parentId
+          ? {
+              ...comment,
+              replies: comment.replies.map(reply =>
+                reply.id === commentId
+                  ? { ...reply, likes: reply.isLiked ? reply.likes - 1 : reply.likes + 1, isLiked: !reply.isLiked }
+                  : reply
+              ),
+            }
+          : comment
+      ));
     } else {
-      const bucket = repliesById.get(c.parentId) ?? [];
-      bucket.push(c);
-      repliesById.set(c.parentId, bucket);
+      setComments(comments.map(comment =>
+        comment.id === commentId
+          ? { ...comment, likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1, isLiked: !comment.isLiked }
+          : comment
+      ));
     }
-  }
 
-  return { topLevel, repliesById };
-}
+    // TODO: Send to backend
+  };
 
-export function TipComments({ creatorUsername }: TipCommentsProps) {
-  const {
-    comments,
-    isLoading,
-    isError,
-    hasMore,
-    loadMore,
-    postComment,
-    isPosting,
-    postError,
-    toggleReaction,
-    reportComment,
-  } = useComments(creatorUsername);
+  const handleDelete = async (commentId: string) => {
+    if (!confirm('Delete this comment?')) return;
+    
+    setComments(comments.filter(c => c.id !== commentId));
+    // TODO: Send to backend
+  };
 
-  const { topLevel, repliesById } = groupComments(comments);
+  const CommentItem = ({ comment, isReply = false, parentId }: { comment: Comment; isReply?: boolean; parentId?: string }) => (
+    <div className={`${isReply ? 'ml-12 mt-3' : 'mb-4'} border-b pb-4`}>
+      <div className="flex gap-3">
+        <img src={comment.avatar} alt={comment.author} className="w-10 h-10 rounded-full" />
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="font-semibold">{comment.author}</span>
+            <span className="text-sm text-gray-500">{new Date(comment.timestamp).toLocaleDateString()}</span>
+          </div>
+          <p className="text-gray-800 mb-2">{comment.content}</p>
+          <div className="flex items-center gap-4 text-sm">
+            <button
+              onClick={() => handleLike(comment.id, isReply, parentId)}
+              className={`flex items-center gap-1 ${comment.isLiked ? 'text-red-500' : 'text-gray-500'} hover:text-red-500`}
+            >
+              <span>{comment.isLiked ? '❤️' : '🤍'}</span>
+              <span>{comment.likes}</span>
+            </button>
+            {!isReply && (
+              <button
+                onClick={() => setReplyingTo(comment.id)}
+                className="text-gray-500 hover:text-blue-500"
+              >
+                Reply
+              </button>
+            )}
+            <button
+              onClick={() => handleDelete(comment.id)}
+              className="text-gray-500 hover:text-red-500"
+            >
+              Delete
+            </button>
+          </div>
+
+          {replyingTo === comment.id && (
+            <div className="mt-3">
+              <textarea
+                value={replyContent}
+                onChange={(e) => setReplyContent(e.target.value)}
+                placeholder="Write a reply..."
+                className="w-full px-3 py-2 border rounded-lg resize-none"
+                rows={2}
+              />
+              <div className="flex gap-2 mt-2">
+                <button
+                  onClick={() => handleAddReply(comment.id)}
+                  className="px-4 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  Reply
+                </button>
+                <button
+                  onClick={() => {
+                    setReplyingTo(null);
+                    setReplyContent('');
+                  }}
+                  className="px-4 py-1 bg-gray-200 rounded-lg hover:bg-gray-300"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
+          {comment.replies.length > 0 && (
+            <div className="mt-3">
+              {comment.replies.map(reply => (
+                <CommentItem key={reply.id} comment={reply} isReply parentId={comment.id} />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 
   return (
-    <section aria-labelledby="comments-heading" className="space-y-6">
-      <h2 id="comments-heading" className="text-xl font-semibold text-ink">
-        Community Messages
-        {comments.length > 0 && (
-          <span className="ml-2 text-sm font-normal text-ink/50">({comments.length})</span>
-        )}
+    <div className="max-w-3xl mx-auto p-6">
+      <h2 className="text-2xl font-bold mb-4">
+        Comments ({comments.reduce((acc, c) => acc + 1 + c.replies.length, 0)})
       </h2>
 
-      {/* New comment form */}
-      <div className="rounded-2xl border border-ink/10 bg-[color:var(--surface)] p-5 shadow-card">
-        <p className="mb-3 text-sm text-ink/60">
-          Leave a public message for {creatorUsername} and the community.
-        </p>
-        <CommentForm
-          onSubmit={(body) => postComment({ body })}
-          isLoading={isPosting}
-          error={postError}
+      <div className="mb-6">
+        <textarea
+          value={newComment}
+          onChange={(e) => setNewComment(e.target.value)}
+          placeholder="Add a comment..."
+          className="w-full px-4 py-3 border rounded-lg resize-none"
+          rows={3}
         />
+        <button
+          onClick={handleAddComment}
+          disabled={!newComment.trim()}
+          className="mt-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+        >
+          Post Comment
+        </button>
       </div>
 
-      {/* States */}
-      {isLoading && (
-        <div className="space-y-3" aria-busy="true" aria-label="Loading comments">
-          {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="h-24 animate-pulse rounded-2xl border border-ink/10 bg-ink/5"
-            />
-          ))}
-        </div>
-      )}
-
-      {isError && (
-        <p role="alert" className="rounded-xl border border-error/30 bg-error/5 px-4 py-3 text-sm text-error">
-          Failed to load comments. Please refresh the page.
-        </p>
-      )}
-
-      {!isLoading && !isError && topLevel.length === 0 && (
-        <p className="text-sm text-ink/50">No messages yet — be the first!</p>
-      )}
-
-      {/* Comment list */}
-      {!isLoading && (
-        <div className="space-y-4">
-          {topLevel.map((comment) => (
-            <CommentCard
-              key={comment.id}
-              comment={comment}
-              replies={repliesById.get(comment.id) ?? []}
-              onReact={(commentId, emoji) => toggleReaction({ commentId, emoji })}
-              onReport={(commentId) => reportComment(commentId)}
-              onReply={(body, parentId) => postComment({ body, parentId })}
-              isPostingReply={isPosting}
-              replyError={postError}
-            />
-          ))}
-        </div>
-      )}
-
-      {hasMore && (
-        <div className="flex justify-center">
-          <Button variant="ghost" onClick={loadMore}>
-            Load more
-          </Button>
-        </div>
-      )}
-    </section>
+      <div>
+        {comments.map(comment => (
+          <CommentItem key={comment.id} comment={comment} />
+        ))}
+      </div>
+    </div>
   );
 }

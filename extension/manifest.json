@@ -2,9 +2,10 @@
   "manifest_version": 3,
   "name": "Stellar TipJar",
   "version": "1.0.0",
-  "description": "Tip creators directly from any website using Stellar XLM.",
+  "description": "Tip creators directly from any website and discover new creators using Stellar XLM.",
   "permissions": ["storage", "activeTab", "scripting"],
   "host_permissions": ["<all_urls>"],
+  "options_page": "options.html",
   "background": {
     "service_worker": "background.js"
   },
