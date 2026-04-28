@@ -1,9 +1,19 @@
 /* eslint-disable no-undef */
-const STATIC_CACHE = "tipjar-static-v1";
+const STATIC_CACHE = "tipjar-static-v2";
 const IMAGE_CACHE = "tipjar-images-v1";
 const API_CACHE = "tipjar-api-v1";
 const OFFLINE_FALLBACK = "/offline";
-const STATIC_ASSETS = ["/", OFFLINE_FALLBACK, "/manifest.json", "/icons/icon-192x192.png", "/icons/icon-512x512.png"];
+const DB_NAME = "stellar-tipjar-offline";
+const STORE_NAME = "queue";
+
+const STATIC_ASSETS = [
+  "/",
+  OFFLINE_FALLBACK,
+  "/manifest.json",
+  "/icons/icon-192x192.png",
+  "/icons/icon-512x512.png",
+  "/logo.svg",
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(STATIC_CACHE).then((cache) => cache.addAll(STATIC_ASSETS)));
@@ -134,27 +144,114 @@ self.addEventListener("notificationclick", (event) => {
 });
 
 self.addEventListener("sync", (event) => {
-  if (event.tag !== "tipjar-retry-requests") return;
-
-  event.waitUntil(
-    (async () => {
-      const cache = await caches.open(API_CACHE);
-      const requests = await cache.keys();
-      await Promise.all(
-        requests.map(async (request) => {
-          try {
-            const response = await fetch(request.clone());
-            if (response.ok) {
-              await cache.put(request, response.clone());
-            }
-          } catch {
-            // keep for the next sync attempt
-          }
-        }),
-      );
-    })(),
-  );
+  if (event.tag === "tipjar-retry-requests") {
+    event.waitUntil(processQueue());
+  }
 });
+
+/**
+ * processQueue
+ * Reads the IndexedDB action queue and attempts to execute pending actions.
+ */
+async function processQueue() {
+  const db = await openDB();
+  const queue = await getAllPending(db);
+
+  for (const action of queue) {
+    try {
+      await executeAction(action);
+      await removeAction(db, action.id);
+      console.log(`[SW] Successfully synced action: ${action.id}`);
+    } catch (error) {
+      console.error(`[SW] Failed to sync action ${action.id}:`, error);
+      await markAsFailed(db, action.id, error.message);
+    }
+  }
+
+  // Notify clients that sync finished
+  const clients = await self.clients.matchAll();
+  clients.forEach((client) => client.postMessage({ type: "SYNC_COMPLETE", count: queue.length }));
+}
+
+async function openDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function getAllPending(db) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, "readonly");
+    const store = tx.objectStore(STORE_NAME);
+    const request = store.getAll();
+    request.onsuccess = () => {
+      const all = request.result;
+      resolve(all.filter((a) => a.status === "pending" || a.status === "failed"));
+    };
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function executeAction(action) {
+  const apiBase = "http://localhost:8000"; // Fallback base
+  const headers = { "Content-Type": "application/json" };
+
+  let url = "";
+  switch (action.type) {
+    case "TIP_INTENT":
+      url = `${apiBase}/tips/intents`;
+      break;
+    case "POST_COMMENT":
+      const { creatorUsername, ...body } = action.payload;
+      url = `${apiBase}/creators/${creatorUsername}/comments`;
+      action.payload = body;
+      break;
+    case "TOGGLE_REACTION":
+      url = `${apiBase}/comments/${action.payload.commentId}/reactions`;
+      action.payload = { emoji: action.payload.emoji };
+      break;
+    default:
+      throw new Error(`Unknown action type: ${action.type}`);
+  }
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(action.payload),
+  });
+
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+}
+
+async function removeAction(db, id) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, "readwrite");
+    const request = tx.objectStore(STORE_NAME).delete(id);
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function markAsFailed(db, id, error) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, "readwrite");
+    const store = tx.objectStore(STORE_NAME);
+    const getRequest = store.get(id);
+    getRequest.onsuccess = () => {
+      const action = getRequest.result;
+      if (action) {
+        action.status = "failed";
+        action.attempts = (action.attempts || 0) + 1;
+        action.error = error;
+        store.put(action);
+      }
+      resolve();
+    };
+    request.onerror = () => reject(request.error);
+  });
+}
 
 self.addEventListener("message", (event) => {
   if (event.data?.type === "SKIP_WAITING") {

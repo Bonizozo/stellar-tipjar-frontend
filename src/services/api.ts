@@ -99,28 +99,54 @@ async function applyPathThrottle(path: string, throttleMs = DEFAULT_THROTTLE_MS)
   lastRequestByPath.set(path, Date.now());
 }
 
+import { enqueueAction } from "@/utils/offlineStorage";
+
 async function executeFetch<T>(path: string, init?: RequestInit, throttleMs?: number): Promise<T> {
   await applyPathThrottle(path, throttleMs);
 
   rateLimiter.recordRequest();
   notifyStatusChange();
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    headers: {
-      "Content-Type": "application/json",
-      ...(init?.headers ?? {}),
-    },
-    ...init,
-    // For frequently updated blockchain data, contributors can switch this to no-store.
-    next: { revalidate: 30 },
-  });
+  try {
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+      headers: {
+        "Content-Type": "application/json",
+        ...(init?.headers ?? {}),
+      },
+      ...init,
+      next: { revalidate: 30 },
+    });
 
-  if (!response.ok) {
-    throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+    }
+
+        return response.json() as Promise<T>;
+  } catch (error) {
+    // Detect offline state
+    if (typeof window !== "undefined" && !navigator.onLine && init?.method === "POST") {
+      console.warn(`[API] Offline detected, enqueuing ${path}`);
+      
+      let type: any = null;
+      let payload = init.body ? JSON.parse(init.body as string) : {};
+
+      if (path.includes("/tips/intents")) type = "TIP_INTENT";
+      else if (path.includes("/comments") && path.includes("/reactions")) type = "TOGGLE_REACTION";
+      else if (path.includes("/comments")) {
+        type = "POST_COMMENT";
+        const match = path.match(/\/creators\/([^/]+)\/comments/);
+        if (match) payload = { ...payload, creatorUsername: match[1] };
+      }
+
+      if (type) {
+        await enqueueAction(type, payload);
+        const err = new Error("OFFLINE_ENQUEUED");
+        (err as any).enqueued = true;
+        throw err;
+      }
+    }
+    throw error;
   }
-
-
-return response.json() as Promise<T>;
 }
 
 export function getApiRateLimitState() {
@@ -172,7 +198,15 @@ export interface CreatorStats {
   tipHistory: { date: string; amount: number }[];
 }
 
-import type { LeaderboardEntry, LeaderboardsResponse, Period } from \"../types/leaderboards\";
+import { generateAvatarUrl } from "@/utils/imageUtils";
+
+// Leaderboards use simplified types for the extension and PWA
+export type Period = '24h' | '7d' | '30d' | 'all';
+export interface LeaderboardsResponse {
+  tippers: any[];
+  creators: any[];
+  biggest: any[];
+}
 
 export async function getCreatorStats(username: string): Promise<CreatorStats> {
   try {
@@ -247,40 +281,41 @@ export async function getTipHeatmapData(
 export async function getLeaderboards(period: Period): Promise<LeaderboardsResponse> {
   // Mock data - backend endpoint /leaderboards?period=${period}
   const baseTippers = [
-    { name: \"Anonymous\", metric: 12500, change24h: 12.5 },
-    { name: \"stellar-max\", metric: 9800, change24h: 8.2 },
-    { name: \"xlm-whale\", metric: 7500, change24h: -2.1 },
-    { name: \"defi-donor\", metric: 6200, change24h: 15.3 },
-    { name: \"nft-supporter\", metric: 4800, change24h: 5.7 },
-    { name: \"crypto-angel\", metric: 4200, change24h: 22.1 },
-    { name: \"blockchain-backer\", metric: 3800, change24h: -1.8 },
-    { name: \"web3-warrior\", metric: 3400, change24h: 9.4 },
-    { name: \"Anonymous\", metric: 3100, change24h: 3.2 },
-    { name: \"tip-machine\", metric: 2900, change24h: 18.6 },
+    { name: "Anonymous", metric: 12500, change24h: 12.5 },
+    { name: "stellar-max", metric: 9800, change24h: 8.2 },
+    { name: "xlm-whale", metric: 7500, change24h: -2.1 },
+    { name: "defi-donor", metric: 6200, change24h: 15.3 },
+    { name: "nft-supporter", metric: 4800, change24h: 5.7 },
+    { name: "crypto-angel", metric: 4200, change24h: 22.1 },
+    { name: "blockchain-backer", metric: 3800, change24h: -1.8 },
+    { name: "web3-warrior", metric: 3400, change24h: 9.4 },
+    { name: "Anonymous", metric: 3100, change24h: 3.2 },
+    { name: "tip-machine", metric: 2900, change24h: 18.6 },
   ];
 
   const baseCreators = [
-    { name: \"stellar-dev\", metric: 15000, change24h: 6.8 },
-    { name: \"alice\", metric: 11200, change24h: 11.2 },
-    { name: \"nft-queen\", metric: 8900, change24h: -0.5 },
-    { name: \"defi-guru\", metric: 7600, change24h: 14.7 },
-    { name: \"art-star\", metric: 6400, change24h: 4.3 },
+    { name: "stellar-dev", metric: 15000, change24h: 6.8 },
+    { name: "alice", metric: 11200, change24h: 11.2 },
+    { name: "nft-queen", metric: 8900, change24h: -0.5 },
+    { name: "defi-guru", metric: 7600, change24h: 14.7 },
+    { name: "art-star", metric: 6400, change24h: 4.3 },
     // ... more
   ];
 
   const baseBiggest = [
-    { name: \"xlm-whale\", metric: 1250, change24h: 0, avatarUrl: generateAvatarUrl('whale') },
-    { name: \"Anonymous\", metric: 850, change24h: 0 },
-    { name: \"crypto-angel\", metric: 620, change24h: 0 },
+    { name: "xlm-whale", metric: 1250, change24h: 0, avatarUrl: generateAvatarUrl("whale") },
+    { name: "Anonymous", metric: 850, change24h: 0 },
+    { name: "crypto-angel", metric: 620, change24h: 0 },
     // biggest single tips
   ];
 
   // Scale by period
-  const scale = { '24h': 0.1, '7d': 0.4, '30d': 1, 'all': 2 }[period];
+  const periods: Record<string, number> = { '24h': 0.1, '7d': 0.4, '30d': 1, 'all': 2 };
+  const scale = periods[period] ?? 1;
   const entries = {
-    tippers: baseTippers.map((e, i) => ({ ...e, rank: i+1, metric: e.metric * scale, avatarUrl: generateAvatarUrl(e.name) })),
-    creators: baseCreators.map((e, i) => ({ ...e, rank: i+1, metric: e.metric * scale })),
-    biggest: baseBiggest.map((e, i) => ({ ...e, rank: i+1, metric: e.metric * scale })),
+    tippers: baseTippers.map((e, i) => ({ ...e, rank: i+1, metric: (e.metric ?? 0) * scale, avatarUrl: generateAvatarUrl(e.name) })),
+    creators: baseCreators.map((e, i) => ({ ...e, rank: i+1, metric: (e.metric ?? 0) * scale })),
+    biggest: baseBiggest.map((e, i) => ({ ...e, rank: i+1, metric: (e.metric ?? 0) * scale })),
   };
 
   return entries as LeaderboardsResponse;
