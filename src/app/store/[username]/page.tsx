@@ -1,133 +1,242 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { useParams } from 'next/navigation';
-import ProductGrid from '@/components/ProductGrid';
-import ShoppingCart from '@/components/ShoppingCart';
-import { useStore } from '@/hooks/useStore';
-import { Package } from 'lucide-react';
+import { useState } from "react";
+import { useParams } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { Package, ShoppingBag, ClipboardList, CheckCircle, AlertCircle } from "lucide-react";
+import ProductGrid from "@/components/ProductGrid";
+import ShoppingCart from "@/components/ShoppingCart";
+import { OrderTracking } from "@/components/OrderTracking";
+import { useStore } from "@/hooks/useStore";
+import { useWalletContext } from "@/contexts/WalletContext";
+import { WalletConnector } from "@/components/WalletConnector";
+
+type Tab = "shop" | "cart" | "orders";
+
+const CATEGORIES = ["all", "apparel", "posters", "bundles", "accessories", "digital"];
 
 export default function StorePage() {
   const params = useParams();
   const username = params.username as string;
-  const [showCart, setShowCart] = useState(false);
+  const { isConnected } = useWalletContext();
+
+  const [activeTab, setActiveTab] = useState<Tab>("shop");
+  const [selectedCategory, setSelectedCategory] = useState("all");
 
   const {
     products,
     isLoadingProducts,
     productsError,
+    orders,
+    isLoadingOrders,
     cart,
     cartTotal,
+    cartTotalXLM,
     cartItemCount,
     addToCart,
     removeFromCart,
     updateQuantity,
     checkout,
     isCheckingOut,
+    checkoutError,
+    lastOrder,
   } = useStore(username);
 
   const cartItemsMap = new Map(cart.map((item) => [item.product.id, item.quantity]));
 
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Package className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Store
-                </h1>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  by @{username}
-                </p>
-              </div>
-            </div>
+  const filteredProducts =
+    selectedCategory === "all"
+      ? products
+      : products.filter((p) => p.category === selectedCategory);
 
-            {/* Cart Toggle */}
-            <button
-              onClick={() => setShowCart(!showCart)}
-              className={`relative px-4 py-2 rounded-lg font-medium transition-colors ${
-                showCart
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600'
-              }`}
-            >
-              Cart
-              {cartItemCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
-                  {cartItemCount}
-                </span>
-              )}
-            </button>
-          </div>
+  const tabs: { id: Tab; label: string; icon: React.ReactNode; badge?: number }[] = [
+    { id: "shop", label: "Shop", icon: <ShoppingBag className="w-4 h-4" /> },
+    {
+      id: "cart",
+      label: "Cart",
+      icon: <Package className="w-4 h-4" />,
+      badge: cartItemCount || undefined,
+    },
+    {
+      id: "orders",
+      label: "Orders",
+      icon: <ClipboardList className="w-4 h-4" />,
+      badge: orders.length || undefined,
+    },
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-ink">
+            @{username}&apos;s Store
+          </h1>
+          <p className="mt-1 text-sm text-ink/60">
+            Pay with XLM · Powered by Stellar
+          </p>
         </div>
+        {!isConnected && (
+          <div className="shrink-0">
+            <WalletConnector />
+          </div>
+        )}
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Products Section */}
-          <div className="lg:col-span-2">
+      {/* Tabs */}
+      <div className="flex gap-1 rounded-xl bg-ink/5 p-1 w-fit">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              activeTab === tab.id
+                ? "bg-[color:var(--surface)] text-ink shadow-sm"
+                : "text-ink/60 hover:text-ink"
+            }`}
+          >
+            {tab.icon}
+            {tab.label}
+            {tab.badge !== undefined && (
+              <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-wave text-[10px] font-bold text-white">
+                {tab.badge}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      <AnimatePresence mode="wait">
+        {/* ── Shop tab ── */}
+        {activeTab === "shop" && (
+          <motion.div
+            key="shop"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-6"
+          >
+            {/* Category filter */}
+            <div className="flex flex-wrap gap-2">
+              {CATEGORIES.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium capitalize transition-colors ${
+                    selectedCategory === cat
+                      ? "bg-wave text-white"
+                      : "bg-ink/10 text-ink/70 hover:bg-ink/20"
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
             {productsError && (
-              <div className="bg-red-50 dark:bg-red-900 rounded-lg p-4 mb-6 border border-red-200 dark:border-red-700">
-                <p className="text-red-800 dark:text-red-100">
-                  Error loading products. Please try again later.
-                </p>
+              <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700 dark:bg-red-900/20 dark:text-red-400">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                Failed to load products. Please try again.
               </div>
             )}
 
             <ProductGrid
-              products={products}
-              onAddToCart={addToCart}
+              products={filteredProducts}
+              onAddToCart={(product, qty) => {
+                addToCart(product, qty);
+                setActiveTab("cart");
+              }}
               isLoading={isLoadingProducts}
               cartItems={cartItemsMap}
+              emptyMessage={`No ${selectedCategory === "all" ? "" : selectedCategory + " "}products available.`}
             />
-          </div>
+          </motion.div>
+        )}
 
-          {/* Cart Section */}
-          {showCart && (
-            <div className="lg:col-span-1">
-              <ShoppingCart
-                items={cart}
-                total={cartTotal}
-                onUpdateQuantity={updateQuantity}
-                onRemoveItem={removeFromCart}
-                onCheckout={checkout}
-                isCheckingOut={isCheckingOut}
-                onContinueShopping={() => setShowCart(false)}
-              />
-            </div>
-          )}
+        {/* ── Cart tab ── */}
+        {activeTab === "cart" && (
+          <motion.div
+            key="cart"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-4"
+          >
+            {/* Wallet warning */}
+            {!isConnected && cart.length > 0 && (
+              <div className="flex items-start gap-3 rounded-xl border border-yellow-200 bg-yellow-50 p-4 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300">
+                <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium">Wallet not connected</p>
+                  <p className="text-sm mt-0.5">Connect your Freighter wallet to pay with XLM.</p>
+                </div>
+              </div>
+            )}
 
-          {/* Cart on Desktop */}
-          <div className="hidden lg:block sticky top-20">
+            {/* Checkout error */}
+            {checkoutError && (
+              <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700 dark:bg-red-900/20 dark:text-red-400">
+                <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+                <p className="text-sm">{checkoutError}</p>
+              </div>
+            )}
+
+            {/* Success */}
+            {lastOrder && cart.length === 0 && (
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400"
+              >
+                <CheckCircle className="w-5 h-5 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium">Order placed!</p>
+                  <p className="text-sm mt-0.5">
+                    Order {lastOrder.id} · {lastOrder.totalXLM} XLM
+                    {lastOrder.txHash && (
+                      <> · tx: <span className="font-mono">{lastOrder.txHash.slice(0, 12)}…</span></>
+                    )}
+                  </p>
+                  <button
+                    onClick={() => setActiveTab("orders")}
+                    className="text-sm underline mt-1"
+                  >
+                    View order tracking →
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
             <ShoppingCart
               items={cart}
               total={cartTotal}
+              totalXLM={cartTotalXLM}
               onUpdateQuantity={updateQuantity}
               onRemoveItem={removeFromCart}
               onCheckout={checkout}
               isCheckingOut={isCheckingOut}
+              onContinueShopping={() => setActiveTab("shop")}
             />
-          </div>
-        </div>
-      </div>
+          </motion.div>
+        )}
 
-      {/* No Products Message */}
-      {!isLoadingProducts && products.length === 0 && (
-        <div className="text-center py-16">
-          <Package className="w-16 h-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-            No Products Available
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400">
-            This creator hasn't added any products to their store yet.
-          </p>
-        </div>
-      )}
+        {/* ── Orders tab ── */}
+        {activeTab === "orders" && (
+          <motion.div
+            key="orders"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+          >
+            <h2 className="text-xl font-semibold text-ink mb-4">Order History</h2>
+            <OrderTracking orders={orders} isLoading={isLoadingOrders} />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

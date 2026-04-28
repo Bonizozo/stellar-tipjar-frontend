@@ -130,6 +130,29 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       return true; // async
     }
 
+    case "GET_CREATORS_DISCOVERY": {
+      // Fetch trending creators (leaderboard)
+      apiRequest("/leaderboards?period=30d")
+        .then((data) => {
+          // Flatten leaderboard data into creator profiles
+          const creators = (data.creators || []).map(c => ({
+            username: c.name,
+            displayName: c.name,
+            categories: [c.category || 'Creator']
+          }));
+          sendResponse({ creators });
+        })
+        .catch((err) => sendResponse({ error: err.message }));
+      return true; // async
+    }
+
+    case "SEARCH_CREATORS": {
+      apiRequest(`/creators/search/tag?q=${encodeURIComponent(payload.query)}`)
+        .then((creators) => sendResponse({ creators }))
+        .catch((err) => sendResponse({ error: err.message }));
+      return true; // async
+    }
+
     default:
       sendResponse({ error: `Unknown message type: ${type}` });
   }

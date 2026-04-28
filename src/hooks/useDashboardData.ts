@@ -4,7 +4,14 @@ import { useState, useEffect } from "react";
 import { getCreatorAnalytics } from "@/services/api";
 import type { CreatorAnalytics } from "@/services/api";
 
-export interface DashboardData extends Omit<CreatorAnalytics, "prevTotalTips" | "prevSupporters" | "prevAvgTip" | "prevMonthlyTips"> {
+export interface DashboardData extends Omit<
+  CreatorAnalytics,
+  | "prevTotalTips"
+  | "prevSupporters"
+  | "prevAvgTip"
+  | "prevMonthlyTips"
+  | "prevGrowthMetrics"
+> {
   changes: {
     totalTips: number;
     supporters: number;
@@ -33,7 +40,14 @@ export function useDashboardData(
     getCreatorAnalytics(username, dateRange)
       .then((raw) => {
         if (cancelled) return;
-        const { prevTotalTips, prevSupporters, prevAvgTip, prevMonthlyTips, ...rest } = raw;
+        const {
+          prevTotalTips,
+          prevSupporters,
+          prevAvgTip,
+          prevMonthlyTips,
+          prevGrowthMetrics,
+          ...rest
+        } = raw;
         setData({
           ...rest,
           changes: {
@@ -47,14 +61,22 @@ export function useDashboardData(
       })
       .catch((err) => {
         if (cancelled) return;
-        setError(err instanceof Error ? err.message : "Failed to fetch analytics");
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch analytics",
+        );
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
 
-    return () => { cancelled = true; };
-  }, [username, dateRange?.start?.toISOString(), dateRange?.end?.toISOString()]);
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    username,
+    dateRange?.start?.toISOString(),
+    dateRange?.end?.toISOString(),
+  ]);
 
   return { data, loading, error };
 }

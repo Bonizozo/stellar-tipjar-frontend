@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stellar TipJar Options</title>
+  <style>
+    :root {
+      --bg: #0b0b14;
+      --card-bg: #161625;
+      --text: #e8e8f0;
+      --accent: #7c3aed;
+      --accent-gradient: linear-gradient(135deg, #7c3aed, #2563eb);
+      --border: rgba(255, 255, 255, 0.1);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 40px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      max-width: 600px;
+      width: 100%;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 30px;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 800;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #fff;
+    }
+
+    .setting-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 8px;
+    }
+
+    input[type="number"],
+    input[type="text"],
+    select {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: #fff;
+      padding: 10px 12px;
+      font-size: 14px;
+      outline: none;
+      box-sizing: border-box;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent);
+    }
+
+    .hint {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.4);
+      margin-top: 6px;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    button {
+      background: var(--accent-gradient);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      padding: 10px 24px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    button.secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+    }
+
+    #status {
+      margin-top: 15px;
+      font-size: 14px;
+      text-align: center;
+      transition: opacity 0.5s;
+      opacity: 0;
+    }
+
+    .success { color: #10b981; }
+    .error { color: #ef4444; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Stellar TipJar Settings</h1>
+
+    <div class="card">
+      <div class="section-title">Default Tip Settings</div>
+      
+      <div class="setting-group">
+        <label for="default-amount">Default Amount (XLM)</label>
+        <input type="number" id="default-amount" min="0.01" step="0.01" value="5">
+        <div class="hint">This amount will be pre-filled when you open the tip popup.</div>
+      </div>
+
+      <div class="setting-group">
+        <label for="preferred-asset">Preferred Asset Code</label>
+        <input type="text" id="preferred-asset" value="XLM" placeholder="XLM">
+        <div class="hint">The currency code to use for tips by default.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">Overlay Behavior</div>
+      
+      <div class="setting-group">
+        <label>
+          <input type="checkbox" id="show-buttons" checked>
+          Show inline "Tip" buttons next to detected creator links
+        </label>
+      </div>
+    </div>
+
+    <div class="actions">
+      <div id="status">Options saved</div>
+      <button id="save">Save Settings</button>
+    </div>
+  </div>
+  <script src="options.js"></script>
+</body>
+</html>
