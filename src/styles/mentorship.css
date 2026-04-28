@@ -1,0 +1,215 @@
+:root {
+  --mentor-primary: #10B981; /* Emerald */
+  --mentor-secondary: #6366F1; /* Indigo */
+  --mentor-bg: #0A0A0F;
+  --mentor-card-bg: rgba(255, 255, 255, 0.03);
+  --mentor-border: rgba(255, 255, 255, 0.08);
+  --mentor-text: #F3F4F6;
+  --mentor-text-muted: #9CA3AF;
+}
+
+.mentor-container {
+  min-height: 100vh;
+  background: radial-gradient(circle at top right, #111827 0%, #000000 100%);
+  color: var(--mentor-text);
+  padding: 3rem 2rem;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.mentor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 2rem;
+}
+
+.mentor-card {
+  background: var(--mentor-card-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--mentor-border);
+  border-radius: 28px;
+  padding: 2rem;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.mentor-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  border-color: var(--mentor-primary);
+  box-shadow: 0 25px 50px -12px rgba(16, 185, 129, 0.2);
+}
+
+.mentor-header {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.mentor-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 24px;
+  object-fit: cover;
+  border: 2px solid var(--mentor-primary);
+}
+
+.mentor-info h3 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.mentor-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #FBBF24;
+  font-size: 0.9rem;
+}
+
+.expertise-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tag {
+  padding: 4px 12px;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--mentor-secondary);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.mentor-bio {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--mentor-text-muted);
+  flex-grow: 1;
+}
+
+.btn-mentor {
+  width: 100%;
+  padding: 12px;
+  border-radius: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  background: linear-gradient(135deg, var(--mentor-primary) 0%, var(--mentor-secondary) 100%);
+  color: white;
+}
+
+.btn-mentor:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+}
+
+.btn-mentor:disabled {
+  background: #374151;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Chat System */
+.chat-container {
+  height: 700px;
+  background: var(--mentor-card-bg);
+  border: 1px solid var(--mentor-border);
+  border-radius: 32px;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  overflow: hidden;
+}
+
+.chat-header {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid var(--mentor-border);
+  background: rgba(255, 255, 255, 0.02);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chat-messages {
+  padding: 2rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.message-bubble {
+  max-width: 70%;
+  padding: 1rem 1.5rem;
+  border-radius: 20px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.message-received {
+  align-self: flex-start;
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom-left-radius: 4px;
+}
+
+.message-sent {
+  align-self: flex-end;
+  background: var(--mentor-secondary);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.chat-input-area {
+  padding: 1.5rem 2rem;
+  border-top: 1px solid var(--mentor-border);
+  background: rgba(255, 255, 255, 0.02);
+  display: flex;
+  gap: 1rem;
+}
+
+.chat-input {
+  flex-grow: 1;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--mentor-border);
+  border-radius: 12px;
+  padding: 12px 1rem;
+  color: white;
+  outline: none;
+}
+
+.chat-input:focus {
+  border-color: var(--mentor-primary);
+}
+
+/* Matching Algorithm UI */
+.match-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(20px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.match-card {
+  background: #111827;
+  border: 1px solid var(--mentor-primary);
+  border-radius: 40px;
+  padding: 4rem;
+  text-align: center;
+  max-width: 500px;
+  animation: matchPulse 2s infinite ease-in-out;
+}
+
+@keyframes matchPulse {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+  70% { box-shadow: 0 0 0 30px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
