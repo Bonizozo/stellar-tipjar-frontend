@@ -50,6 +50,7 @@ function ExploreMenu() {
 const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/explore", label: "Explore Creators" },
+  { href: "/marketplace", label: "Marketplace" },
   { href: "/compare", label: "Compare Creators" },
   { href: "/predictions", label: "Tip Predictions" },
   { href: "/tips", label: "Send Tips" },
