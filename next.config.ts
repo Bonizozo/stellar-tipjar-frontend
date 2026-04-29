@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 import { getSecurityHeaders } from "./src/utils/security";
 
-const withNextIntl = createNextIntlPlugin();
+const withNextIntl = createNextIntlPlugin('./src/i18n.ts');
 
 // i18n is handled via next-intl with locale routing
 // Supported locales: en, es, fr, zh, ar, he — preference persisted in localStorage

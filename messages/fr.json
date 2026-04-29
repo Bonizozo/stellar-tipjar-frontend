@@ -4,25 +4,60 @@
     "loading": "Chargement...",
     "error": "Une erreur s'est produite",
     "submit": "Soumettre",
-    "cancel": "Annuler"
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "close": "Fermer",
+    "search": "Rechercher",
+    "back": "Retour",
+    "next": "Suivant",
+    "confirm": "Confirmer"
   },
   "nav": {
     "home": "Accueil",
     "explore": "Explorer les Créateurs",
     "tips": "Envoyer un Pourboire",
-    "about": "À propos"
+    "about": "À propos",
+    "dashboard": "Tableau de bord",
+    "settings": "Paramètres",
+    "profile": "Profil"
   },
   "wallet": {
     "connect": "Connecter le Portefeuille",
     "disconnect": "Déconnecter",
     "notInstalled": "Le portefeuille Freighter n'est pas installé",
-    "balance": "Solde"
+    "balance": "Solde",
+    "address": "Adresse",
+    "network": "Réseau"
   },
   "tip": {
     "title": "Envoyer un Pourboire",
     "amount": "Montant (XLM)",
     "message": "Message (Optionnel)",
     "send": "Envoyer le Pourboire",
-    "success": "Pourboire envoyé avec succès"
+    "success": "Pourboire envoyé avec succès",
+    "failed": "Échec de l'envoi du pourboire",
+    "history": "Historique des Pourboires",
+    "received": "Pourboire reçu",
+    "newTip": "Nouveau pourboire reçu !"
+  },
+  "language": {
+    "select": "Sélectionner la langue",
+    "current": "Langue actuelle"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Tout marquer comme lu",
+    "noNotifications": "Aucune notification",
+    "connectionLive": "En direct",
+    "connectionOffline": "Hors ligne",
+    "connectionConnecting": "Connexion..."
+  },
+  "creator": {
+    "profile": "Profil du Créateur",
+    "explore": "Explorer les Créateurs",
+    "support": "Soutenir ce créateur",
+    "tips": "Pourboires reçus"
   }
 }

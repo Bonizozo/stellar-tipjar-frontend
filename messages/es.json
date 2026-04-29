@@ -4,25 +4,60 @@
     "loading": "Cargando...",
     "error": "Ocurrió un error",
     "submit": "Enviar",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "close": "Cerrar",
+    "search": "Buscar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "confirm": "Confirmar"
   },
   "nav": {
     "home": "Inicio",
     "explore": "Explorar Creadores",
     "tips": "Enviar una Propina",
-    "about": "Acerca de"
+    "about": "Acerca de",
+    "dashboard": "Panel",
+    "settings": "Configuración",
+    "profile": "Perfil"
   },
   "wallet": {
     "connect": "Conectar Billetera",
     "disconnect": "Desconectar",
     "notInstalled": "La billetera Freighter no está instalada",
-    "balance": "Saldo"
+    "balance": "Saldo",
+    "address": "Dirección",
+    "network": "Red"
   },
   "tip": {
     "title": "Enviar una Propina",
     "amount": "Cantidad (XLM)",
     "message": "Mensaje (Opcional)",
     "send": "Enviar Propina",
-    "success": "Propina enviada exitosamente"
+    "success": "Propina enviada exitosamente",
+    "failed": "Error al enviar la propina",
+    "history": "Historial de Propinas",
+    "received": "Propina recibida",
+    "newTip": "¡Nueva propina recibida!"
+  },
+  "language": {
+    "select": "Seleccionar idioma",
+    "current": "Idioma actual"
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "markAllRead": "Marcar todo como leído",
+    "noNotifications": "Sin notificaciones",
+    "connectionLive": "En vivo",
+    "connectionOffline": "Sin conexión",
+    "connectionConnecting": "Conectando..."
+  },
+  "creator": {
+    "profile": "Perfil del Creador",
+    "explore": "Explorar Creadores",
+    "support": "Apoyar a este creador",
+    "tips": "Propinas recibidas"
   }
 }

@@ -1,28 +1,63 @@
 {
   "common": {
-    "welcome": "مرحبا بك في Stellar Tip Jar",
-    "loading": "جار التحميل...",
+    "welcome": "مرحباً بك في Stellar Tip Jar",
+    "loading": "جارٍ التحميل...",
     "error": "حدث خطأ",
     "submit": "إرسال",
-    "cancel": "إلغاء"
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "close": "إغلاق",
+    "search": "بحث",
+    "back": "رجوع",
+    "next": "التالي",
+    "confirm": "تأكيد"
   },
   "nav": {
     "home": "الرئيسية",
-    "explore": "استكشف المبدعين",
+    "explore": "استكشاف المبدعين",
     "tips": "إرسال إكرامية",
-    "about": "حول"
+    "about": "حول",
+    "dashboard": "لوحة التحكم",
+    "settings": "الإعدادات",
+    "profile": "الملف الشخصي"
   },
   "wallet": {
     "connect": "ربط المحفظة",
-    "disconnect": "فصل الاتصال",
+    "disconnect": "قطع الاتصال",
     "notInstalled": "محفظة Freighter غير مثبتة",
-    "balance": "الرصيد"
+    "balance": "الرصيد",
+    "address": "العنوان",
+    "network": "الشبكة"
   },
   "tip": {
     "title": "إرسال إكرامية",
     "amount": "المبلغ (XLM)",
-    "message": "الرسالة (اختياري)",
+    "message": "رسالة (اختياري)",
     "send": "إرسال الإكرامية",
-    "success": "تم إرسال الإكرامية بنجاح"
+    "success": "تم إرسال الإكرامية بنجاح",
+    "failed": "فشل إرسال الإكرامية",
+    "history": "سجل الإكراميات",
+    "received": "تم استلام إكرامية",
+    "newTip": "تم استلام إكرامية جديدة!"
+  },
+  "language": {
+    "select": "اختر اللغة",
+    "current": "اللغة الحالية"
+  },
+  "notifications": {
+    "title": "الإشعارات",
+    "markAllRead": "تحديد الكل كمقروء",
+    "noNotifications": "لا توجد إشعارات",
+    "connectionLive": "مباشر",
+    "connectionOffline": "غير متصل",
+    "connectionConnecting": "جارٍ الاتصال..."
+  },
+  "creator": {
+    "profile": "ملف المبدع",
+    "explore": "استكشاف المبدعين",
+    "support": "دعم هذا المبدع",
+    "tips": "الإكراميات المستلمة"
   }
 }
