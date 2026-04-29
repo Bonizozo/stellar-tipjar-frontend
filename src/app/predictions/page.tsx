@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { TipPredictions } from "@/components/predictions/TipPredictions";
+import { ScenarioPlanner } from "@/components/predictions/ScenarioPlanner";
 
 export const metadata: Metadata = {
   title: "Tip Predictions - Stellar TipJar",
@@ -16,6 +17,7 @@ export default function PredictionsPage() {
         </p>
       </div>
       <TipPredictions />
+      <ScenarioPlanner />
     </div>
   );
 }
