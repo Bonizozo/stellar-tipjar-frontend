@@ -24,6 +24,9 @@ import { ProfileCard } from "@/components/ProfileCard";
 import { CreatorShare } from "@/components/CreatorShare";
 import { useTipNotifications } from "@/hooks/useTipNotifications";
 import { CampaignList } from "@/components/CampaignList";
+import { WalletConnectionStatus, WebSocketConnectionStatus } from "@/components/ConnectionStatus";
+import { VirtualTipTable } from "@/components/VirtualList/VirtualTipTable";
+import { useTipHistory } from "@/hooks/useTipHistory";
 
 
 interface CreatorPageProps {
@@ -62,6 +65,7 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
 
 function CreatorPageClient({ username, profile }: { username: string; profile: any }) {
   useTipNotifications(username);
+  const { tips, isLoading: tipsLoading, sortField, sortOrder, handleSort } = useTipHistory();
 
   return (
     <section className="space-y-8">
@@ -79,6 +83,11 @@ function CreatorPageClient({ username, profile }: { username: string; profile: a
           ),
         }}
       />
+      {/* Connection status indicators (#218 wallet, #219 websocket) */}
+      <div className="flex flex-wrap items-center gap-2">
+        <WalletConnectionStatus />
+        <WebSocketConnectionStatus />
+      </div>
       <ProfileCard
         username={profile.username}
         displayName={profile.displayName}
@@ -161,6 +170,22 @@ function CreatorPageClient({ username, profile }: { username: string; profile: a
       </div>
 
       <PortfolioSection username={profile.username} />
+
+      {/* Tip history with virtual scrolling (#362) */}
+      <div className="rounded-2xl border border-ink/10 bg-white/70 p-5 sm:p-6">
+        <h2 className="mb-4 text-xl font-semibold text-ink">Tip History</h2>
+        {tipsLoading ? (
+          <div className="h-32 animate-pulse rounded-xl bg-ink/5" />
+        ) : (
+          <VirtualTipTable
+            tips={tips}
+            sortBy={sortField}
+            sortOrder={sortOrder}
+            onSort={handleSort}
+            scrollRestorationKey={`creator-tips-${username}`}
+          />
+        )}
+      </div>
 
       <TipComments creatorUsername={profile.username} />
 
