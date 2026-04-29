@@ -1,7 +1,7 @@
 "use client";
 
 import { ProgressBar } from "@/components/Progress/ProgressBar";
-import type { Level } from "@/hooks/useGamification";
+import type { Level } from "@/types/gamification";
 
 interface LevelProgressProps {
   totalXP: number;
