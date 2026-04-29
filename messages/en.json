@@ -4,25 +4,60 @@
     "loading": "Loading...",
     "error": "An error occurred",
     "submit": "Submit",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "search": "Search",
+    "back": "Back",
+    "next": "Next",
+    "confirm": "Confirm"
   },
   "nav": {
     "home": "Home",
     "explore": "Explore Creators",
     "tips": "Send a Tip",
-    "about": "About"
+    "about": "About",
+    "dashboard": "Dashboard",
+    "settings": "Settings",
+    "profile": "Profile"
   },
   "wallet": {
     "connect": "Connect Wallet",
     "disconnect": "Disconnect",
     "notInstalled": "Freighter wallet is not installed",
-    "balance": "Balance"
+    "balance": "Balance",
+    "address": "Address",
+    "network": "Network"
   },
   "tip": {
     "title": "Send a Tip",
     "amount": "Amount (XLM)",
     "message": "Message (Optional)",
     "send": "Send Tip",
-    "success": "Tip sent successfully"
+    "success": "Tip sent successfully",
+    "failed": "Failed to send tip",
+    "history": "Tip History",
+    "received": "Tip received",
+    "newTip": "New tip received!"
+  },
+  "language": {
+    "select": "Select language",
+    "current": "Current language"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all as read",
+    "noNotifications": "No notifications",
+    "connectionLive": "Live",
+    "connectionOffline": "Offline",
+    "connectionConnecting": "Connecting..."
+  },
+  "creator": {
+    "profile": "Creator Profile",
+    "explore": "Explore Creators",
+    "support": "Support this creator",
+    "tips": "Tips received"
   }
 }

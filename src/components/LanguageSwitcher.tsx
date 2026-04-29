@@ -19,11 +19,19 @@ export function LanguageSwitcher() {
   const [isPending, startTransition] = useTransition();
 
   const switchLanguage = (newLocale: string) => {
+    // Persist preference in localStorage
+    if (typeof window !== "undefined") {
+      localStorage.setItem("locale", newLocale);
+    }
+
     startTransition(() => {
-      // Remove current locale from pathname
+      // Strip existing locale prefix and prepend new one
       const segments = pathname.split("/");
-      segments.splice(1, 1); // Remove locale segment
-      const newPath = `/${newLocale}${segments.join("/")}`;
+      const knownLocales = languages.map((l) => l.code);
+      if (knownLocales.includes(segments[1])) {
+        segments.splice(1, 1);
+      }
+      const newPath = newLocale === "en" ? segments.join("/") || "/" : `/${newLocale}${segments.join("/")}`;
       router.replace(newPath);
     });
   };
