@@ -10,6 +10,8 @@ import { ExportModal } from "@/components/ExportModal";
 import { TipForm } from "@/components/forms/TipForm";
 import { useTipHistory } from "@/hooks/useTipHistory";
 import { usePagination } from "@/hooks/usePagination";
+import { useMilestoneCelebration } from "@/hooks/useMilestoneCelebration";
+import { MilestoneCelebrationModal } from "@/components/MilestoneCelebration";
 
 export default function TipsPage() {
   const {
@@ -18,7 +20,6 @@ export default function TipsPage() {
     isLoading,
     sortField,
     sortOrder,
-    filters,
     setFilters,
     handleSort,
   } = useTipHistory();
@@ -28,6 +29,8 @@ export default function TipsPage() {
   const [showExport, setShowExport] = useState(false);
   // Use virtual table when there are enough rows to benefit from it
   const useVirtual = tips.length > 50;
+
+  const { activeMilestone, dismiss } = useMilestoneCelebration(allTips.length);
 
   const pagination = usePagination({
     totalItems: tips.length,
@@ -167,6 +170,14 @@ export default function TipsPage() {
 
       {showExport && (
         <ExportModal tips={allTips} onClose={() => setShowExport(false)} />
+      )}
+
+      {activeMilestone && (
+        <MilestoneCelebrationModal
+          milestone={activeMilestone}
+          username="tips"
+          onClose={dismiss}
+        />
       )}
     </section>
   );

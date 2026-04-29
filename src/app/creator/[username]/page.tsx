@@ -1,19 +1,17 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Glasses } from "lucide-react";
 
 import { Button } from "@/components/Button";
-import { ShareButton } from "@/components/ShareButton";
 import { ReportButton } from "@/components/ReportButton";
 import { TipForm } from "@/components/forms/TipForm";
 import { CreatorStatsDashboard } from "@/components/stats/CreatorStatsDashboard";
 import { TipComments } from "@/components/TipComments";
 import { CreatorPageRecommendations } from "@/components/CreatorPageRecommendations";
 import { EventCalendar } from "@/components/EventCalendar";
-import { TipTiers } from "@/components/TipTiers";
 import { creatorUsernameSchema } from "@/schemas/creatorSchema";
 import { getCreatorProfile } from "@/services/api";
-import { formatUsername } from "@/utils/format";
 import { generateAvatarUrl } from "@/utils/imageUtils";
 import { buildMetadata, creatorProfileJsonLd } from "@/utils/seo";
 import { TagBadge } from "@/components/TagBadge";
@@ -27,6 +25,7 @@ import { CampaignList } from "@/components/CampaignList";
 import { WalletConnectionStatus, WebSocketConnectionStatus } from "@/components/ConnectionStatus";
 import { VirtualTipTable } from "@/components/VirtualList/VirtualTipTable";
 import { useTipHistory } from "@/hooks/useTipHistory";
+import { MilestoneProgressSection } from "@/components/MilestoneProgressSection";
 
 
 interface CreatorPageProps {
@@ -170,6 +169,8 @@ function CreatorPageClient({ username, profile }: { username: string; profile: a
       </div>
 
       <PortfolioSection username={profile.username} />
+
+      <MilestoneProgressSection totalTips={profile.totalTips ?? 0} />
 
       {/* Tip history with virtual scrolling (#362) */}
       <div className="rounded-2xl border border-ink/10 bg-white/70 p-5 sm:p-6">
