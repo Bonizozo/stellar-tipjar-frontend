@@ -1,67 +1,136 @@
-export type ModerationCategory = "spam" | "harassment" | "inappropriate" | "scam" | "clean";
-export type ModerationStatus = "pending" | "flagged" | "approved" | "rejected";
+/**
+ * AI-powered content moderation service.
+ * Scans content for inappropriate material, spam, and policy violations.
+ * Auto-flags high-confidence violations; queues borderline cases for manual review.
+ */
+
+export type ModerationCategory =
+  | "spam"
+  | "harassment"
+  | "hate_speech"
+  | "inappropriate"
+  | "impersonation"
+  | "other";
+
+export type ModerationStatus = "pending" | "flagged" | "approved" | "rejected" | "reviewing";
 
 export interface ModerationResult {
-  category: ModerationCategory;
-  confidence: number; // 0–1
-  flagged: boolean;
-  reasons: string[];
-}
-
-export interface ContentItem {
   id: string;
-  type: "comment" | "profile" | "tip_message";
+  contentId: string;
+  contentType: "tip_message" | "comment" | "profile_bio" | "username";
   content: string;
-  author: string;
-  createdAt: string;
+  authorId: string;
+  flagged: boolean;
+  autoActioned: boolean;
+  confidence: number; // 0–1
+  categories: ModerationCategory[];
   status: ModerationStatus;
-  aiResult?: ModerationResult;
+  reviewedBy?: string;
+  reviewNote?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-// Keyword-based AI simulation (replace with real API integration)
-const SPAM_PATTERNS = [/buy now/i, /click here/i, /free money/i, /\$\$\$/];
-const HARASSMENT_PATTERNS = [/hate/i, /threat/i, /kill/i];
-const SCAM_PATTERNS = [/send xlm/i, /double your/i, /guaranteed profit/i];
-const INAPPROPRIATE_PATTERNS = [/nsfw/i, /explicit/i];
+export interface ScanRequest {
+  contentId: string;
+  contentType: ModerationResult["contentType"];
+  content: string;
+  authorId: string;
+}
 
-export function scanContent(content: string): ModerationResult {
-  const reasons: string[] = [];
-  let category: ModerationCategory = "clean";
-  let confidence = 0.95;
+export interface ModerationQueue {
+  items: ModerationResult[];
+  total: number;
+  pending: number;
+  flagged: number;
+}
 
-  if (SPAM_PATTERNS.some((p) => p.test(content))) {
-    category = "spam";
-    reasons.push("Promotional language detected");
-    confidence = 0.88;
-  } else if (SCAM_PATTERNS.some((p) => p.test(content))) {
-    category = "scam";
-    reasons.push("Potential scam pattern detected");
-    confidence = 0.92;
-  } else if (HARASSMENT_PATTERNS.some((p) => p.test(content))) {
-    category = "harassment";
-    reasons.push("Threatening or hateful language detected");
-    confidence = 0.85;
-  } else if (INAPPROPRIATE_PATTERNS.some((p) => p.test(content))) {
-    category = "inappropriate";
-    reasons.push("Inappropriate content detected");
-    confidence = 0.80;
+export interface ReviewAction {
+  resultId: string;
+  status: "approved" | "rejected";
+  reviewNote?: string;
+}
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+
+// ─── Keyword-based local pre-scan (runs before API call) ─────────────────────
+
+const SPAM_PATTERNS = [
+  /\b(buy now|click here|free money|earn \$|make money fast)\b/i,
+  /https?:\/\/[^\s]{30,}/,
+  /(.)\1{6,}/, // repeated chars
+];
+
+const HATE_PATTERNS = [
+  /\b(slur1|slur2)\b/i, // placeholder — real list would be comprehensive
+];
+
+const HARASSMENT_PATTERNS = [/\b(kill yourself|kys|go die)\b/i];
+
+function localPreScan(content: string): { flagged: boolean; categories: ModerationCategory[]; confidence: number } {
+  const categories: ModerationCategory[] = [];
+
+  if (SPAM_PATTERNS.some((p) => p.test(content))) categories.push("spam");
+  if (HATE_PATTERNS.some((p) => p.test(content))) categories.push("hate_speech");
+  if (HARASSMENT_PATTERNS.some((p) => p.test(content))) categories.push("harassment");
+
+  const flagged = categories.length > 0;
+  const confidence = flagged ? 0.85 : 0;
+  return { flagged, categories, confidence };
+}
+
+// ─── API helpers ──────────────────────────────────────────────────────────────
+
+async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, {
+    headers: { "Content-Type": "application/json" },
+    ...init,
+  });
+  if (!res.ok) throw new Error(`Moderation API error: ${res.status}`);
+  return res.json() as Promise<T>;
+}
+
+// ─── Public API ───────────────────────────────────────────────────────────────
+
+/**
+ * Scan a piece of content for policy violations.
+ * Performs a local pre-scan first; if clean, delegates to the AI moderation API.
+ * High-confidence violations (≥0.9) are auto-actioned without manual review.
+ */
+export async function scanContent(req: ScanRequest): Promise<ModerationResult> {
+  const local = localPreScan(req.content);
+
+  // If local scan is confident enough, skip the remote call
+  if (local.flagged && local.confidence >= 0.9) {
+    return apiFetch<ModerationResult>("/api/moderation/scan", {
+      method: "POST",
+      body: JSON.stringify({ ...req, localResult: local, autoAction: true }),
+    });
   }
 
-  return {
-    category,
-    confidence,
-    flagged: category !== "clean",
-    reasons,
-  };
+  return apiFetch<ModerationResult>("/api/moderation/scan", {
+    method: "POST",
+    body: JSON.stringify({ ...req, localResult: local }),
+  });
 }
 
-export async function submitModerationAction(
-  itemId: string,
-  action: "approve" | "reject"
-): Promise<void> {
-  await fetch(`/api/moderation/${itemId}`, {
+/** Fetch the moderation queue (pending + flagged items). */
+export async function getModerationQueue(
+  status?: ModerationStatus,
+): Promise<ModerationQueue> {
+  const qs = status ? `?status=${status}` : "";
+  return apiFetch<ModerationQueue>(`/api/moderation/queue${qs}`);
+}
+
+/** Submit a manual review decision for a flagged item. */
+export async function reviewContent(action: ReviewAction): Promise<ModerationResult> {
+  return apiFetch<ModerationResult>(`/api/moderation/${action.resultId}/review`, {
     method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ action }),
-  }).catch(() => {/* best-effort */});
+    body: JSON.stringify({ status: action.status, reviewNote: action.reviewNote }),
+  });
+}
+
+/** Fetch a single moderation result by ID. */
+export async function getModerationResult(id: string): Promise<ModerationResult> {
+  return apiFetch<ModerationResult>(`/api/moderation/${id}`);
 }

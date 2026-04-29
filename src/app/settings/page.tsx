@@ -15,6 +15,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { Toggle } from "@/components/forms/Toggle";
 import { Button } from "@/components/Button";
+import { SoundPreferences } from "@/components/SoundPreferences";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -332,6 +333,11 @@ export default function SettingsPage() {
           {/* Email prefs */}
           <motion.div {...fadeUp(0.1)}>
             <EmailPreferences />
+          </motion.div>
+
+          {/* Sound preferences (#325) */}
+          <motion.div {...fadeUp(0.12)}>
+            <SoundPreferences />
           </motion.div>
 
           {/* Privacy */}

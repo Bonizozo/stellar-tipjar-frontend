@@ -6,6 +6,7 @@ import { LiveChat } from "@/components/LiveChat";
 import { LiveTipFeed } from "@/components/LiveTipFeed";
 import { useVideoStream } from "@/hooks/useVideoStream";
 import { VideoPlayer } from "@/components/VideoPlayer";
+import { ViewerCountBadge } from "@/components/ViewerCountBadge";
 
 export default function LiveStreamPage() {
   const stream = useLiveStream();
@@ -18,6 +19,9 @@ export default function LiveStreamPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-ink">Live Stream</h1>
           <p className="mt-1 text-sm text-ink/60">Stream to your audience and receive real-time tips.</p>
+          <div className="mt-2">
+            <ViewerCountBadge count={stream.viewerCount} isLive={stream.isLive} />
+          </div>
         </div>
         <StreamControls
           isLive={stream.isLive}
