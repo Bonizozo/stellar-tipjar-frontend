@@ -1,6 +1,6 @@
 "use client";
 
-import type { GamificationBadge } from "@/hooks/useGamification";
+import type { GamificationBadge } from "@/types/gamification";
 
 const rarityStyles: Record<GamificationBadge["rarity"], string> = {
   common:    "border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50",

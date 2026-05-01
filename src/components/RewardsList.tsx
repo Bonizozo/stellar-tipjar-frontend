@@ -1,6 +1,6 @@
 "use client";
 
-import type { Reward } from "@/hooks/useGamification";
+import type { Reward } from "@/types/gamification";
 
 interface RewardsListProps {
   rewards: Reward[];

@@ -1,7 +1,7 @@
 "use client";
 
 import { ProgressBar } from "@/components/Progress/ProgressBar";
-import type { Achievement } from "@/hooks/useGamification";
+import type { Achievement } from "@/types/gamification";
 
 interface AchievementCardProps {
   achievement: Achievement;
