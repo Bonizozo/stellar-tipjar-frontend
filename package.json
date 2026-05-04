@@ -38,7 +38,7 @@
     "react": "latest",
     "react-dom": "latest",
     "react-force-graph-2d": "^1.25.5",
-    "react-hook-form": "^7.72.0",
+    "react-hook-form": "^7.75.0",
     "react-hot-toast": "^2.6.0",
     "recharts": "^3.8.1",
     "socket.io-client": "^4.8.3",
