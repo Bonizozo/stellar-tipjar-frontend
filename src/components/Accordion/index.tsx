@@ -71,3 +71,67 @@ export const Accordion: React.FC<AccordionProps> = ({
     </AccordionContext.Provider>
   );
 };
+
+interface AccordionItemProps {
+  children: ReactNode;
+  value: string;
+  className?: string;
+}
+
+export const AccordionItem: React.FC<AccordionItemProps> = ({ children, value, className = "" }) => {
+  return (
+    <div className={`border border-ink/10 rounded-xl overflow-hidden ${className}`} data-value={value}>
+      {children}
+    </div>
+  );
+};
+
+interface AccordionTriggerProps {
+  children: ReactNode;
+  value: string;
+  className?: string;
+}
+
+export const AccordionTrigger: React.FC<AccordionTriggerProps> = ({ children, value, className = "" }) => {
+  const { activeItems, toggleItem } = useAccordion();
+  const isOpen = activeItems.includes(value);
+
+  return (
+    <button
+      type="button"
+      onClick={() => toggleItem(value)}
+      aria-expanded={isOpen}
+      className={`w-full flex items-center justify-between px-4 py-3 text-left font-medium text-ink hover:bg-ink/5 transition-colors ${className}`}
+    >
+      {children}
+      <svg
+        className={`h-4 w-4 shrink-0 text-ink/50 transition-transform ${isOpen ? "rotate-180" : ""}`}
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+      </svg>
+    </button>
+  );
+};
+
+interface AccordionContentProps {
+  children: ReactNode;
+  value: string;
+  className?: string;
+}
+
+export const AccordionContent: React.FC<AccordionContentProps> = ({ children, value, className = "" }) => {
+  const { activeItems } = useAccordion();
+  const isOpen = activeItems.includes(value);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className={`px-4 pb-4 text-sm text-ink/80 ${className}`}>
+      {children}
+    </div>
+  );
+};

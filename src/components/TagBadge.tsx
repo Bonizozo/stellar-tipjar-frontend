@@ -26,7 +26,7 @@ export function TagBadge({
     lg: "px-4 py-2 text-base",
   };
 
-  const handleCopy = (e: ClipboardEvent | MouseEvent) {
+  const handleCopy = (e: ClipboardEvent | MouseEvent) => {
     e.preventDefault();
     navigator.clipboard.writeText(tag).then(() => {
       setIsCopied(true);

@@ -3,7 +3,7 @@
 import { useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '../Button';
+import { Button } from '@/components/Button';
 import { generateAvatarUrl } from '@/utils/imageUtils';
 import { AvatarImage } from '@/components/OptimizedImage';
 import { requestVerification } from '@/services/api';

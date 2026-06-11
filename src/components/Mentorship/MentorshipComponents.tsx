@@ -29,7 +29,7 @@ export const MentorCard: React.FC<{ mentor: Mentor; onSelect: (id: string) => vo
       <p className="mentor-bio">{mentor.bio}</p>
       
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}>
-        <div style={{ fontSize: '0.9rem', fontWeight: 'bold', color: var(--mentor-primary) }}>
+        <div style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--mentor-primary)' }}>
           {mentor.pricePerSession || 'Contact for price'}
         </div>
         <button 

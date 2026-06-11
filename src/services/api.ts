@@ -781,3 +781,61 @@ export async function getCreatorAnalytics(
     };
   }
 }
+
+// --- Portfolio API ---
+
+export interface PortfolioItem {
+  id: string;
+  title: string;
+  description?: string;
+  url?: string;
+  imageUrl?: string;
+  createdAt: string;
+}
+
+export async function getPortfolio(username: string): Promise<PortfolioItem[]> {
+  try {
+    return await request<PortfolioItem[]>(`/creators/${username}/portfolio`);
+  } catch {
+    return [];
+  }
+}
+
+export async function addPortfolioItem(
+  username: string,
+  item: Omit<PortfolioItem, "id">
+): Promise<PortfolioItem> {
+  return request<PortfolioItem>(`/creators/${username}/portfolio`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(item),
+  });
+}
+
+export async function deletePortfolioItem(username: string, itemId: string): Promise<void> {
+  return request(`/creators/${username}/portfolio/${itemId}`, { method: "DELETE" });
+}
+
+// --- Verification API ---
+
+export interface VerificationStatus {
+  status: "none" | "pending" | "approved" | "rejected";
+  submittedAt?: string;
+  reviewedAt?: string;
+}
+
+export async function requestVerificationStatus(): Promise<VerificationStatus> {
+  try {
+    return await request<VerificationStatus>("/verification/status");
+  } catch {
+    return { status: "none" };
+  }
+}
+
+export async function requestVerification(username: string): Promise<void> {
+  return request("/verification/request", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username }),
+  });
+}

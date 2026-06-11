@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { generateAvatarUrl } from '@/utils/imageUtils';
 import { AvatarImage } from '@/components/OptimizedImage';
 import { useCreatorProfile } from '@/hooks/queries/useCreatorProfile';
-import { useWallet } from '@/contexts/WalletContext';
+import { useWallet } from '@/hooks/useWallet';
 
 export default function VerifyPage() {
   const { status, isLoading, isVerified } = useVerification();

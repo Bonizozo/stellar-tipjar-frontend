@@ -1,8 +1,8 @@
 "use client";
 
 import { 
-  TrendingUpIcon, 
-  TrendingDownIcon,
+  ArrowTrendingUpIcon as TrendingUpIcon, 
+  ArrowTrendingDownIcon as TrendingDownIcon,
   ArrowRightIcon,
   ExclamationTriangleIcon
 } from "@heroicons/react/24/outline";
