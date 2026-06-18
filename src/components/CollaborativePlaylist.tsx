@@ -65,6 +65,7 @@ export function CollaborativePlaylist({ playlistId, className = "" }: Collaborat
   const addCollaboratorMutation = useMutation({
     mutationFn: ({ playlistId: pid, email }: { playlistId: string; email: string }) =>
       PlaylistService.addCollaborator(pid, {
+        playlistId: pid,
         username: email,
         displayName: email,
         canEdit: true,
@@ -203,7 +204,7 @@ export function CollaborativePlaylist({ playlistId, className = "" }: Collaborat
             </div>
             <div className="flex items-center gap-2 shrink-0">
               {playlist.totalTips && Number(playlist.totalTips) > 0 && (
-                <Badge variant="success" className="text-xs">
+                <Badge color="success" size="sm">
                   {playlist.totalTips} tipped
                 </Badge>
               )}
@@ -323,7 +324,7 @@ export function CollaborativePlaylist({ playlistId, className = "" }: Collaborat
                                 by {item.creatorDisplayName} &middot; added by {item.addedBy}
                               </p>
                             </div>
-                            <Badge variant="default" className="text-xs">
+                            <Badge color="neutral" size="sm">
                               {item.contentType}
                             </Badge>
                           </div>

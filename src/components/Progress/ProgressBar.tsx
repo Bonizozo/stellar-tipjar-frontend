@@ -4,7 +4,7 @@ import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface ProgressBarProps {
-  progress: number;
+  progress?: number;
   max?: number;
   indeterminate?: boolean;
   label?: string;
@@ -32,7 +32,7 @@ const sizeClasses: Record<string, string> = {
 };
 
 export const ProgressBar: React.FC<ProgressBarProps> = ({
-  progress,
+  progress = 0,
   max = 100,
   indeterminate = false,
   label,

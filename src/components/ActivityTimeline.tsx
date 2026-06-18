@@ -190,17 +190,18 @@ export function ActivityTimeline({
       ) : filtered.length === 0 ? (
         <p className="text-center text-gray-400 py-12">No activity to display.</p>
       ) : (
-        <InfiniteScroll
-          onLoadMore={handleLoadMore}
-          hasMore={hasMore}
-          isLoading={isLoadingMore}
-        >
+        <>
           <div>
             {filtered.map((activity) => (
               <ActivityTimelineItem key={activity.id} activity={activity} />
             ))}
           </div>
-        </InfiniteScroll>
+          <InfiniteScroll
+            onLoadMore={handleLoadMore}
+            hasMore={hasMore}
+            isLoading={isLoadingMore}
+          />
+        </>
       )}
     </section>
   );

@@ -161,17 +161,19 @@ export function DistributionChart({
           <ResponsiveContainer width="100%" height={280}>
             <PieChart>
               <Pie
-                data={data}
-                cx="50%"
-                cy="50%"
-                innerRadius={innerRadius}
-                outerRadius={100}
-                dataKey="value"
-                activeIndex={activeIndex}
-                activeShape={<ActiveShape />}
-                onMouseEnter={(_, index) => setActiveIndex(index)}
-                onMouseLeave={() => setActiveIndex(undefined)}
-                paddingAngle={viewMode === "donut" ? 3 : 0}
+                {...({
+                  data: data,
+                  cx: "50%",
+                  cy: "50%",
+                  innerRadius: innerRadius,
+                  outerRadius: 100,
+                  dataKey: "value",
+                  activeIndex: activeIndex,
+                  activeShape: <ActiveShape />,
+                  onMouseEnter: (_: any, index: number) => setActiveIndex(index),
+                  onMouseLeave: () => setActiveIndex(undefined),
+                  paddingAngle: viewMode === "donut" ? 3 : 0,
+                } as any)}
               >
                 {data.map((_, index) => (
                   <Cell

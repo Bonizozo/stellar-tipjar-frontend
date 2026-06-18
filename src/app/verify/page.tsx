@@ -9,6 +9,7 @@ import { generateAvatarUrl } from '@/utils/imageUtils';
 import { AvatarImage } from '@/components/OptimizedImage';
 import { useCreatorProfile } from '@/hooks/queries/useCreatorProfile';
 import { useWallet } from '@/hooks/useWallet';
+import { WalletConnector } from '@/components/WalletConnector';
 
 export default function VerifyPage() {
   const { status, isLoading, isVerified } = useVerification();
@@ -50,7 +51,7 @@ export default function VerifyPage() {
             Verification requests require a connected Stellar wallet.
           </p>
         </div>
-        <WalletConnectButton /> {/* Assume exists */}
+        <WalletConnector />
       </div>
     );
   }

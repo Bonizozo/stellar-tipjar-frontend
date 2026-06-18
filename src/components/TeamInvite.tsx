@@ -135,7 +135,7 @@ export function TeamInvite({
                   </div>
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-ink line-clamp-1">{invitation.email}</p>
-                    <Badge variant="secondary" className="inline-flex mt-1">
+                    <Badge color="neutral" size="sm">
                       {invitation.status === "pending" ? "⏳ Pending" : "✓ Accepted"}
                     </Badge>
                   </div>

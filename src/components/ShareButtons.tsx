@@ -13,7 +13,7 @@ interface ShareButtonsProps {
 }
 
 export function ShareButtons({ url, title, description, onShare }: ShareButtonsProps) {
-  const { toast } = useToast();
+  const toast = useToast();
   const [shareCount, setShareCount] = useState<Record<SharePlatform, number>>({
     twitter: 0,
     facebook: 0,
@@ -28,7 +28,7 @@ export function ShareButtons({ url, title, description, onShare }: ShareButtonsP
           await navigator.clipboard.writeText(url);
           toast.success("Link copied to clipboard!");
           setShareCount((prev) => ({ ...prev, copy: prev.copy + 1 }));
-        } else if (platform === "native" && navigator.share) {
+        } else if ((platform as string) === "native" && navigator.share) {
           await navigator.share({
             title,
             text: description || title,
@@ -73,7 +73,7 @@ export function ShareButtons({ url, title, description, onShare }: ShareButtonsP
         </button>
       ))}
 
-      {navigator.share && (
+      {typeof navigator !== "undefined" && !!navigator.share && (
         <button
           onClick={() => handleShare("native" as SharePlatform)}
           className="inline-flex items-center gap-2 rounded-lg border border-gray-300/20 bg-white/5 px-3 py-2 text-xs font-medium text-gray-200 transition hover:border-blue-400 hover:bg-blue-500/10 hover:text-white"

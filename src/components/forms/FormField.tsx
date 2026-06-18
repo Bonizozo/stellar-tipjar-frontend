@@ -8,15 +8,17 @@ type ValidationState = "default" | "error" | "success" | "warning";
 type FormFieldProps = {
   id?: string;
   name?: string;
-  label: string;
+  label?: string;
   type?: string;
   placeholder?: string;
   description?: string;
   helperText?: string;
   errorText?: string;
+  error?: string;
   validationState?: ValidationState;
   disabled?: boolean;
   children?: ReactNode;
+  className?: string;
 };
 
 const stateColorClasses: Record<ValidationState, string> = {
@@ -35,11 +37,13 @@ export function FormField({
   description,
   helperText,
   errorText,
+  error,
   validationState = "default",
   disabled = false,
   children,
+  className = "",
 }: FormFieldProps) {
-  const fieldId = id ?? name ?? label.toLowerCase().replace(/\s+/g, "-");
+  const fieldId = id ?? name ?? label?.toLowerCase().replace(/\s+/g, "-") ?? "field";
 
   // Try to use form context if available (react-hook-form FormProvider)
   let contextError: string | undefined;
@@ -56,18 +60,20 @@ export function FormField({
     // No FormProvider in tree — standalone usage
   }
 
-  const resolvedError = errorText ?? contextError;
+  const resolvedError = errorText ?? error ?? contextError;
   const resolvedState: ValidationState = resolvedError ? "error" : validationState;
   const textColor = stateColorClasses[resolvedState];
 
   return (
-    <div className="mb-4">
-      <label
-        htmlFor={fieldId}
-        className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200"
-      >
-        {label}
-      </label>
+    <div className={`mb-4 ${className}`}>
+      {label && (
+        <label
+          htmlFor={fieldId}
+          className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200"
+        >
+          {label}
+        </label>
+      )}
 
       {children ?? (name && register ? (
         <input

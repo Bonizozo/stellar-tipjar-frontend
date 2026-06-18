@@ -31,7 +31,7 @@ export function NavItem({ label, href, megaMenu }: NavItemProps) {
   if (!megaMenu && href) {
     return (
       <Link
-        href={href}
+        href={href as any}
         className="text-sm font-medium text-gray-700 transition-colors hover:text-purple-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/50 rounded dark:text-gray-300 dark:hover:text-purple-400"
       >
         {label}
@@ -81,7 +81,7 @@ export function NavItem({ label, href, megaMenu }: NavItemProps) {
 export function MegaMenuLink({ href, icon, title, description }: { href: string; icon: ReactNode; title: string; description: string }) {
   return (
     <Link
-      href={href}
+      href={href as any}
       className="flex items-start gap-3 rounded-xl p-3 transition-colors hover:bg-purple-50 dark:hover:bg-purple-950/40"
     >
       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-purple-100 text-purple-600 dark:bg-purple-900/50 dark:text-purple-400">

@@ -4,7 +4,7 @@ import React, { useRef, useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
 import { useSearch } from "@/hooks/useSearch";
 import { SearchInput } from "./SearchInput";
-import { SearchResults } from "./SearchResults";
+import { SearchDropdown } from "./SearchDropdown";
 
 interface SearchProps {
   onSearch?: (query: string) => void;
@@ -72,7 +72,7 @@ export function Search({ onSearch, placeholder, className = "" }: SearchProps) {
 
       <AnimatePresence>
         {showResults && (
-          <SearchResults
+          <SearchDropdown
             isVisible={showResults}
             query={query}
             results={results}

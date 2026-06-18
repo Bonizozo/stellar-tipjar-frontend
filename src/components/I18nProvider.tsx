@@ -11,7 +11,7 @@ import ja from "@/i18n/locales/ja.json";
 
 export type Locale = "en" | "es" | "fr" | "de" | "ja";
 
-const messages: Record<Locale, typeof en> = { en, es, fr, de, ja };
+const messages: Record<Locale, any> = { en, es, fr, de, ja };
 
 interface LocaleContextValue {
   locale: Locale;

@@ -40,7 +40,7 @@ export function EarningsChart({ data, loading = false }: EarningsChartProps) {
             border: "1px solid rgba(21,21,21,0.1)",
             borderRadius: 8,
           }}
-          formatter={(v: number) => [`${v} XLM`, "Earnings"]}
+          formatter={(v: any) => [`${v} XLM`, "Earnings"]}
         />
         <Area
           type="monotone"

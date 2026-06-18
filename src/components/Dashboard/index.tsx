@@ -97,7 +97,7 @@ export function Dashboard({ username = "me" }: DashboardProps) {
         status: "completed" as const,
         memo: `Net ${d.net} | Recurring ${d.recurring}`,
         transactionHash: undefined,
-      })),
+      })) as any,
       "creator-analytics-export.xlsx",
     );
   };
@@ -312,7 +312,6 @@ export function Dashboard({ username = "me" }: DashboardProps) {
         />
         <SupporterRetentionChart
           metrics={data.growthMetrics}
-          prevMetrics={data.prevGrowthMetrics}
           loading={loading}
           onExport={handleExportCSV}
         />

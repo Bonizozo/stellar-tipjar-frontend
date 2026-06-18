@@ -83,9 +83,9 @@ export function TipTrendChart({
     enabled: realtime && !!realtimeFetcher,
   });
 
-  const rawData =
+  const rawData: TipTrendDataPoint[] =
     realtime && livePoints.length
-      ? livePoints.map((p) => ({ date: p.date, amount: p.value }))
+      ? livePoints.map((p) => ({ date: p.date, amount: p.value } as TipTrendDataPoint))
       : staticData;
 
   const chartData = showAverage ? computeAverage(rawData) : rawData;

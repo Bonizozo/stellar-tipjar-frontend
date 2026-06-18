@@ -54,6 +54,7 @@ export const PortfolioGallery = ({
     .map((item) => ({
       id: item.id,
       src: item.mediaUrl,
+      thumbnail: item.thumbnail || item.mediaUrl,
       caption: item.title,
     }));
 

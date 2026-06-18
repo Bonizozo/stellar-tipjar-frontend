@@ -441,7 +441,7 @@ export function CreatorCollaboration({ className = "" }: CreatorCollaborationPro
                                   {(file.fileSize / 1024).toFixed(1)} KB &middot; by {file.uploadedBy}
                                 </p>
                               </div>
-                              <Badge variant="default" className="text-xs">
+                              <Badge color="neutral" size="sm">
                                 {file.fileType}
                               </Badge>
                             </div>

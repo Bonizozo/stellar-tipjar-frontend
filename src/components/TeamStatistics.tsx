@@ -53,8 +53,8 @@ export function TeamStatisticsCard({
             label="Team Members"
             value={stats.activeMemberCount.toString()}
             subtext={`${stats.memberCount - stats.activeMemberCount} inactive`}
-            isLoading={isLoading}
-            trend={stats.activeMemberCount > 0 ? { value: stats.activeMemberCount * 100, direction: "up" } : undefined}
+            loading={isLoading}
+            trend={stats.activeMemberCount > 0 ? stats.activeMemberCount * 100 : undefined}
           />
         </motion.div>
 
@@ -64,7 +64,7 @@ export function TeamStatisticsCard({
             label="Average Split"
             value={`${stats.averageSplit.toFixed(1)}%`}
             subtext={`Out of ${stats.totalSplit}% allocated`}
-            isLoading={isLoading}
+            loading={isLoading}
           />
         </motion.div>
 
@@ -74,7 +74,7 @@ export function TeamStatisticsCard({
             label="Total Tips Received"
             value={`${stats.totalTipsReceived.toLocaleString()}`}
             subtext="XLM accumulated"
-            isLoading={isLoading}
+            loading={isLoading}
           />
         </motion.div>
 
@@ -84,7 +84,7 @@ export function TeamStatisticsCard({
             label="Split Status"
             value={stats.isBalanced ? "Balanced ✓" : "Incomplete"}
             subtext={stats.isBalanced ? "100% allocated" : `${100 - stats.totalSplit}% remaining`}
-            isLoading={isLoading}
+            loading={isLoading}
             variant={stats.isBalanced ? "success" : "warning"}
           />
         </motion.div>

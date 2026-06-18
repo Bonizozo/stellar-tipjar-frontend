@@ -27,4 +27,16 @@ export async function mockTipSubmit(page: Page, success = true) {
       body: JSON.stringify(success ? { id: 'tip_123', status: 'completed' } : { error: 'Failed' }),
     })
   )
+
+  await page.route('**/tips/intents', (route) =>
+    route.fulfill({
+      status: success ? 200 : 500,
+      contentType: 'application/json',
+      body: JSON.stringify(
+        success
+          ? { intentId: 'intent_123', checkoutUrl: 'https://checkout.stellar-tipjar.app/intent_123' }
+          : { error: 'Failed to create tip intent' }
+      ),
+    })
+  )
 }

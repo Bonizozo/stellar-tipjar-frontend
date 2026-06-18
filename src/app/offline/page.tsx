@@ -27,7 +27,7 @@ export default function OfflinePage() {
           Check Connection
         </Button>
         
-        <Link href="/">
+        <Link href={"/" as any}>
           <Button variant="outline" className="px-8 flex items-center gap-2">
             <MoveLeft className="h-4 w-4" />
             Back Home

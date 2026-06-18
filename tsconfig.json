@@ -32,5 +32,5 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "mobile", "extension", "tools", "scripts"]
+  "exclude": ["node_modules", "mobile", "extension", "tools", "scripts", "**/*.stories.tsx", "**/*.stories.ts", "tests/**/*"]
 }

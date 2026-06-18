@@ -82,7 +82,7 @@ export function CreatorSelector({
                   </div>
                   <Button
                     size="sm"
-                    variant={isCreatorSelected(creator.username) ? "ghost" : "default"}
+                    variant={isCreatorSelected(creator.username) ? "ghost" : "primary"}
                     onClick={() => handleCreatorSelect({
                       username: creator.username,
                       displayName: creator.displayName

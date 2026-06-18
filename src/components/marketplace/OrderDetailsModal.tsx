@@ -191,7 +191,7 @@ export function OrderDetailsModal({ order, onClose, onUpdateStatus }: OrderDetai
                   (status) => (
                     <Button
                       key={status}
-                      variant={order.status === status ? "default" : "ghost"}
+                      variant={order.status === status ? "primary" : "ghost"}
                       onClick={() => onUpdateStatus(order.id, status)}
                       className="capitalize"
                     >

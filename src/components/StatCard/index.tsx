@@ -7,7 +7,7 @@ import { Sparkline } from "./Sparkline";
 
 interface StatCardProps {
   label: string;
-  value: number;
+  value: number | string;
   icon: React.ReactNode;
   trend?: number;
   sparklineData?: { date: string; amount: number }[];
@@ -16,6 +16,8 @@ interface StatCardProps {
   decimals?: number;
   loading?: boolean;
   confidence?: number;
+  subtext?: string;
+  variant?: string;
 }
 
 export function StatCard({
@@ -29,6 +31,8 @@ export function StatCard({
   decimals = 0,
   loading = false,
   confidence,
+  subtext,
+  variant,
 }: StatCardProps) {
   if (loading) {
     return (
@@ -45,7 +49,9 @@ export function StatCard({
   }
 
   return (
-    <div className="bg-[color:var(--surface)] dark:bg-gray-800 rounded-2xl p-6 border border-ink/10 shadow-card hover:shadow-card-hover transition-shadow duration-300">
+    <div className={`bg-[color:var(--surface)] dark:bg-gray-800 rounded-2xl p-6 border border-ink/10 shadow-card hover:shadow-card-hover transition-shadow duration-300 ${
+      variant === "success" ? "ring-2 ring-moss/20" : variant === "warning" ? "ring-2 ring-warning/20" : ""
+    }`}>
       <div className="flex items-center justify-between mb-4">
         <div className="p-3 bg-wave/10 dark:bg-wave/20 rounded-lg text-wave">
           {icon}
@@ -54,12 +60,16 @@ export function StatCard({
       </div>
       
       <h3 className="text-3xl font-bold text-ink dark:text-white">
-        <AnimatedCounter 
-          value={value} 
-          prefix={prefix} 
-          suffix={suffix} 
-          decimals={decimals} 
-        />
+        {typeof value === "number" ? (
+          <AnimatedCounter 
+            value={value} 
+            prefix={prefix} 
+            suffix={suffix} 
+            decimals={decimals} 
+          />
+        ) : (
+          <span>{value}</span>
+        )}
       </h3>
       
       <p className="text-sm font-medium text-ink/60 dark:text-gray-400 mt-1 uppercase tracking-wide">
@@ -70,6 +80,10 @@ export function StatCard({
           </span>
         )}
       </p>
+
+      {subtext && (
+        <p className="text-xs text-ink/40 mt-1">{subtext}</p>
+      )}
       
       {sparklineData && (
         <div className="mt-4 pt-4 border-t border-ink/5">

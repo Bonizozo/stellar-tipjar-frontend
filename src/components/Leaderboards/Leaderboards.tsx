@@ -21,7 +21,8 @@ export function Leaderboards() {
   const [activeTab, setActiveTab] = useState<Tab["value"]>("tippers");
   const [period, setPeriod] = useState<"24h" | "7d" | "30d" | "all">("30d");
 
-  const { data: leaderboards = {}, isLoading } = useLeaderboards({ period });
+  const { data: leaderboardsData, isLoading } = useLeaderboards({ period });
+  const leaderboards = (leaderboardsData || {}) as any;
 
   const currentData = (leaderboards[activeTab] as any[]) || [];
 

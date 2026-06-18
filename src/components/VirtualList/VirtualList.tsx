@@ -182,4 +182,4 @@ function VirtualListInner<T>(
 
 export const VirtualList = forwardRef(VirtualListInner) as <T>(
   props: VirtualListProps<T> & { ref?: React.Ref<VirtualListHandle> },
-) => JSX.Element;
+) => React.ReactElement;

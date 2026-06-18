@@ -152,7 +152,7 @@ export function TopSupportersChart({
               dataKey="tips"
               position="right"
               style={{ fontSize: 10, fill: "rgba(21,21,21,0.5)" }}
-              formatter={(v: number) => `${v.toLocaleString()} XLM`}
+              formatter={(v: any) => `${Number(v).toLocaleString()} XLM`}
             />
           </Bar>
         </BarChart>

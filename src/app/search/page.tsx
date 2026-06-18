@@ -2,9 +2,9 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { SlidersHorizontal, X, Tag } from "lucide-react";
-import { SearchBar } from "@/components/search/SearchBar";
-import { SearchFilters, type SearchFilterState } from "@/components/search/SearchFilters";
-import { SearchResults } from "@/components/search/SearchResults";
+import { SearchBar } from "@/components/Search/SearchBar";
+import { SearchFilters, type SearchFilterState } from "@/components/Search/SearchFilters";
+import { SearchResults } from "@/components/Search/SearchResults";
 import { useDebounce } from "@/hooks/useDebounce";
 import { CREATOR_EXAMPLES, type Creator } from "@/utils/creatorData";
 import { CATEGORIES } from "@/utils/categories";

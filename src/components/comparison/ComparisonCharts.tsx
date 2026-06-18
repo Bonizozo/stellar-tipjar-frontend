@@ -125,7 +125,7 @@ export function ComparisonCharts({ creators }: ComparisonChartsProps) {
                 border: '1px solid #e5e7eb',
                 borderRadius: '8px'
               }}
-              formatter={(value: number) => [`${value.toFixed(2)} XLM`, 'Total Tips']}
+              formatter={(value: any) => [`${Number(value).toFixed(2)} XLM`, 'Total Tips']}
             />
             <Bar 
               dataKey="totalTips" 
@@ -219,7 +219,7 @@ export function ComparisonCharts({ creators }: ComparisonChartsProps) {
                   border: '1px solid #e5e7eb',
                   borderRadius: '8px'
                 }}
-                formatter={(value: number) => [`${value.toFixed(2)} XLM`, 'Avg Tip']}
+                formatter={(value: any) => [`${Number(value).toFixed(2)} XLM`, 'Avg Tip']}
               />
               <Bar 
                 dataKey="avgTip" 

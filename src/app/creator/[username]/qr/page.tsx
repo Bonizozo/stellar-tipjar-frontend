@@ -7,17 +7,19 @@ import { TipCard } from "@/components/TipCard";
 import { Button } from "@/components/Button";
 
 interface QRPageProps {
-  params: { username: string };
+  params: Promise<{ username: string }>;
 }
 
 export async function generateMetadata({ params }: QRPageProps): Promise<Metadata> {
-  const parsed = creatorUsernameSchema.safeParse(params.username);
+  const { username } = await params;
+  const parsed = creatorUsernameSchema.safeParse(username);
   if (!parsed.success) return {};
   return { title: `QR Code – @${parsed.data}` };
 }
 
 export default async function CreatorQRPage({ params }: QRPageProps) {
-  const parsed = creatorUsernameSchema.safeParse(params.username);
+  const { username } = await params;
+  const parsed = creatorUsernameSchema.safeParse(username);
   if (!parsed.success) notFound();
 
   const profile = await getCreatorProfile(parsed.data);

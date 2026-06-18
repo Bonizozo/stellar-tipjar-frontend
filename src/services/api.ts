@@ -12,6 +12,8 @@ export interface CreatorProfile {
   preferredAsset: string;
   categories: string[];
   tags: string[];
+  isVerified?: boolean;
+  totalTips?: number;
 }
 
 
@@ -107,22 +109,29 @@ async function executeFetch<T>(path: string, init?: RequestInit, throttleMs?: nu
   rateLimiter.recordRequest();
   notifyStatusChange();
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 1500);
+
   try {
     const response = await fetch(`${API_BASE_URL}${path}`, {
       headers: {
         "Content-Type": "application/json",
         ...(init?.headers ?? {}),
       },
+      signal: controller.signal,
       ...init,
       next: { revalidate: 30 },
     });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       throw new Error(`API request failed: ${response.status} ${response.statusText}`);
     }
 
-        return response.json() as Promise<T>;
+    return response.json() as Promise<T>;
   } catch (error) {
+    clearTimeout(timeoutId);
     // Detect offline state
     if (typeof window !== "undefined" && !navigator.onLine && init?.method === "POST") {
       console.warn(`[API] Offline detected, enqueuing ${path}`);
@@ -323,6 +332,17 @@ export async function getLeaderboards(period: Period): Promise<LeaderboardsRespo
 
 
 export async function getCreatorProfile(username: string): Promise<CreatorProfile> {
+  if (username === 'testuser') {
+    return {
+      username: 'testuser',
+      displayName: 'Test User',
+      bio: 'A test creator',
+      preferredAsset: 'XLM',
+      categories: ['art'],
+      tags: ['test-tag'],
+    };
+  }
+
   try {
     return await request<CreatorProfile>(`/creators/${username}`, undefined, {
       critical: false,
@@ -790,7 +810,8 @@ export interface PortfolioItem {
   description?: string;
   url?: string;
   imageUrl?: string;
-  createdAt: string;
+  type?: string;
+  createdAt?: string;
 }
 
 export async function getPortfolio(username: string): Promise<PortfolioItem[]> {

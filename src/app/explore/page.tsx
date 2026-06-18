@@ -40,7 +40,7 @@ const fetchCreatorsMock = async ({ pageParam = 1, queryKey }: any) => {
 
   if (categories.length > 0) {
     filtered = filtered.filter((c) =>
-      categories.some((cat) => c.categories.includes(cat)),
+      categories.some((cat: string) => c.categories.includes(cat)),
     );
   }
 
@@ -290,7 +290,7 @@ export default function ExplorePage() {
         <div className="flex-1">
           <div className="mb-6 flex items-center justify-between">
             <p className="text-sm font-medium text-ink/40">
-              {status === "loading"
+              {status === "pending"
                 ? "Searching..."
                 : `Found ${totalCount} creators`}
             </p>
@@ -298,8 +298,8 @@ export default function ExplorePage() {
 
           <VirtualCreatorGrid
             creators={allCreators}
-            isLoading={status === "loading"}
-            trackInteraction={trackInteraction}
+            isLoading={status === "pending"}
+            trackInteraction={(type, username, category) => trackInteraction(type as any, username, category)}
             onEndReached={fetchNextPage}
             hasMore={!!hasNextPage}
             isFetchingMore={isFetchingNextPage}

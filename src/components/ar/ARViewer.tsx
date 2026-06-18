@@ -28,7 +28,7 @@ export function ARViewer({ children, onClose }: ARViewerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const reticleRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number>(0);
-  const hitTestSourceRef = useRef<XRHitTestSource | null>(null);
+  const hitTestSourceRef = useRef<any | null>(null);
 
   const { sessionState, isSupported, session, referenceSpace, startAR, endAR, error } = useWebXR();
   const [hitResult, setHitResult] = useState<HitTestResult | null>(null);
@@ -58,7 +58,7 @@ export function ARViewer({ children, onClose }: ARViewerProps) {
 
     setupHitTest();
 
-    function onXRFrame(_time: number, frame: XRFrame) {
+    function onXRFrame(_time: number, frame: any) {
       if (cancelled) return;
 
       // Hit-test marker tracking

@@ -2,7 +2,6 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
-import { Inter } from "next/font/google";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { InstallPrompt } from "@/components/InstallPrompt";
@@ -19,8 +18,6 @@ import { ToastProvider } from "@/contexts/ToastContext";
 import { ToastContainer } from "@/components/Toast";
 import { Footer } from "@/components/Footer";
 import "@/styles/globals.css";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export default async function LocaleLayout({
   children,
@@ -41,7 +38,7 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body className={inter.className}>
+      <body>
         <SkipToContent />
         <PerformanceMonitor />
         <CurrencyProvider>

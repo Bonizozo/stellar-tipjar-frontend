@@ -259,7 +259,7 @@ export function RecommendationWidget({
       {/* A/B test variant badge */}
       {data?.variant && (
         <div className="text-center">
-          <Badge variant="default" className="text-[10px] uppercase tracking-wider">
+          <Badge color="neutral" size="sm">
             Variant: {data.variant}
           </Badge>
         </div>

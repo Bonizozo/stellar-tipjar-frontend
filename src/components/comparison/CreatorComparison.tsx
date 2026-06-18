@@ -89,14 +89,14 @@ export function CreatorComparison() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Button
-                variant={viewMode === "table" ? "default" : "ghost"}
+                variant={viewMode === "table" ? "primary" : "ghost"}
                 size="sm"
                 onClick={() => setViewMode("table")}
               >
                 Table View
               </Button>
               <Button
-                variant={viewMode === "charts" ? "default" : "ghost"}
+                variant={viewMode === "charts" ? "primary" : "ghost"}
                 size="sm"
                 onClick={() => setViewMode("charts")}
               >

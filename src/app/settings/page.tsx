@@ -81,7 +81,7 @@ function NavLink({ href, icon: Icon, label, description }: {
 }) {
   return (
     <Link
-      href={href}
+      href={href as any}
       className="flex items-center justify-between rounded-xl p-3 hover:bg-ink/5 transition-colors group"
     >
       <div className="flex items-center gap-3">
@@ -138,7 +138,7 @@ function EmailPreferences() {
               <p className="text-sm font-medium text-ink">{label}</p>
               <p className="text-xs text-ink/50">{helper}</p>
             </div>
-            <Toggle id={`email-${key}`} label="" checked={prefs[key]} onChange={toggle(key)} />
+            <Toggle id={`email-${key}`} label="" checked={prefs[key]} onChange={(e) => toggle(key)(e.target.checked)} />
           </div>
         ))}
       </div>
@@ -190,7 +190,7 @@ function PrivacySettings() {
               <p className="text-sm font-medium text-ink">{label}</p>
               <p className="text-xs text-ink/50">{helper}</p>
             </div>
-            <Toggle id={`privacy-${key}`} label="" checked={prefs[key]} onChange={toggle(key)} />
+            <Toggle id={`privacy-${key}`} label="" checked={prefs[key]} onChange={(e) => toggle(key)(e.target.checked)} />
           </div>
         ))}
       </div>
@@ -229,7 +229,7 @@ function SecuritySettings() {
           id="2fa"
           label=""
           checked={twoFAEnabled}
-          onChange={handle2FA}
+          onChange={(e) => handle2FA(e.target.checked)}
           disabled={toggling}
         />
       </div>

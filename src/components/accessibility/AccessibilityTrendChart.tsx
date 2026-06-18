@@ -23,7 +23,7 @@ export function AccessibilityTrendChart({ trends }: AccessibilityTrendChartProps
           <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
           <Tooltip
             contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid rgba(0,0,0,0.1)" }}
-            formatter={(value: number, name: string) => [
+            formatter={(value: any, name: any) => [
               name === "score" ? `${value}%` : value,
               name === "score" ? "Score" : "Violations",
             ]}

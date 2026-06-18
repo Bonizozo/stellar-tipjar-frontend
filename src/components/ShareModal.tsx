@@ -4,7 +4,6 @@ import { Modal } from "@/components/Modal";
 import { ModalBody } from "@/components/Modal/ModalBody";
 import { ModalFooter } from "@/components/Modal/ModalFooter";
 import { ModalHeader } from "@/components/Modal/ModalHeader";
-import { ShareButton } from "@/components/ShareButton";
 import type { SharePlatform } from "@/utils/shareUtils";
 
 type ShareModalProps = {
@@ -14,6 +13,25 @@ type ShareModalProps = {
   shareUrl: string;
   shareCounts: Record<SharePlatform, number>;
 };
+
+interface LocalShareButtonProps {
+  platform: SharePlatform;
+  onClick: (platform: SharePlatform) => void;
+  count: number;
+}
+
+function LocalShareButton({ platform, onClick, count }: LocalShareButtonProps) {
+  return (
+    <button
+      type="button"
+      onClick={() => onClick(platform)}
+      className="inline-flex items-center justify-between gap-2 rounded-xl border border-ink/10 bg-ink/5 px-4 py-3 text-sm font-medium text-ink transition hover:bg-ink/10 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
+    >
+      <span className="capitalize">{platform}</span>
+      {count > 0 && <span className="text-xs text-ink/40">({count})</span>}
+    </button>
+  );
+}
 
 export function ShareModal({ isOpen, onClose, onShare, shareUrl, shareCounts }: ShareModalProps) {
   return (
@@ -29,10 +47,10 @@ export function ShareModal({ isOpen, onClose, onShare, shareUrl, shareCounts }: 
 
       <ModalBody>
         <div className="grid grid-cols-2 gap-2">
-          <ShareButton platform="twitter" onClick={onShare} count={shareCounts.twitter} />
-          <ShareButton platform="facebook" onClick={onShare} count={shareCounts.facebook} />
-          <ShareButton platform="linkedin" onClick={onShare} count={shareCounts.linkedin} />
-          <ShareButton platform="copy" onClick={onShare} count={shareCounts.copy} />
+          <LocalShareButton platform="twitter" onClick={onShare} count={shareCounts.twitter} />
+          <LocalShareButton platform="facebook" onClick={onShare} count={shareCounts.facebook} />
+          <LocalShareButton platform="linkedin" onClick={onShare} count={shareCounts.linkedin} />
+          <LocalShareButton platform="copy" onClick={onShare} count={shareCounts.copy} />
         </div>
       </ModalBody>
 

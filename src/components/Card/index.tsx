@@ -15,7 +15,7 @@ export interface CardProps extends HTMLAttributes<HTMLDivElement> {
   hoverable?: boolean;
   loading?: boolean;
   interactive?: boolean;
-  children: ReactNode;
+  children?: ReactNode;
 }
 
 const variants: Record<CardVariant, string> = {

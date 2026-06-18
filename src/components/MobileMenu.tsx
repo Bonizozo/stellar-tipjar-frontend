@@ -62,7 +62,7 @@ export function MobileMenu({ links, isOpen, onClose }: MobileMenuProps) {
                 {links.map((link) => (
                   <li key={link.href}>
                     <Link
-                      href={link.href}
+                      href={link.href as any}
                       onClick={onClose}
                       className="block rounded-xl px-4 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-purple-50 hover:text-purple-600 dark:text-gray-300 dark:hover:bg-purple-950/40 dark:hover:text-purple-400"
                     >

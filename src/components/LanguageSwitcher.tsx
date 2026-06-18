@@ -32,7 +32,7 @@ export function LanguageSwitcher() {
         segments.splice(1, 1);
       }
       const newPath = newLocale === "en" ? segments.join("/") || "/" : `/${newLocale}${segments.join("/")}`;
-      router.replace(newPath);
+      router.replace(newPath as any);
     });
   };
 

@@ -22,7 +22,7 @@ const AchievementCard: React.FC<{ achievement: Achievement }> = ({ achievement }
             ></div>
           </div>
           <p className="text-xs text-right mt-1 font-semibold text-gray-500">
-            {isUnlocked ? '🏆 Unlocked' : `${Math.min(achievement.milestone, achievement.progress)} / ${achievement.milestone}`}
+            {isUnlocked ? '🏆 Unlocked' : `${Math.min(achievement.milestone, achievement.progress ?? 0)} / ${achievement.milestone}`}
           </p>
         </div>
       </div>

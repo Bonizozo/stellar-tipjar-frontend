@@ -23,19 +23,22 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
   const {
     query,
     setQuery,
-    filters,
-    setFilters,
     results,
     isLoading,
     searchHistory,
     addToHistory,
     clearHistory,
     savedSearches,
-    saveSearch,
+    saveAsSearch,
     deleteSavedSearch,
     loadSavedSearch,
     getAutocompleteSuggestions,
   } = useSearch();
+
+  const [filters, setFilters] = useState<{ category?: string; sort?: string }>({
+    category: "",
+    sort: "relevance",
+  });
 
   const [showDropdown, setShowDropdown] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
@@ -59,7 +62,7 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
 
   const handleSaveSearch = () => {
     if (saveSearchName.trim()) {
-      saveSearch(saveSearchName);
+      saveAsSearch(saveSearchName, filters);
       setSaveSearchName('');
       setShowSaveModal(false);
     }

@@ -57,8 +57,8 @@ export function RevenueSplit({
           <p className="text-sm text-ink/60">Adjust how tips are distributed among team members</p>
         </div>
         <Badge
-          variant={stats.isBalanced ? "success" : stats.isOverflow ? "error" : "warning"}
-          className="inline-flex whitespace-nowrap"
+          color={stats.isBalanced ? "success" : stats.isOverflow ? "error" : "warning"}
+          size="sm"
         >
           {stats.isBalanced ? "✓ Balanced" : stats.isOverflow ? "⚠ Overflow" : "⚠ Incomplete"}
         </Badge>

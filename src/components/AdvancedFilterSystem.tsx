@@ -175,7 +175,7 @@ export function AdvancedFilterSystem({
         <div className="flex items-center gap-2">
           {criteria.length > 0 && (
             <>
-              <Badge variant="info" className="text-xs">
+              <Badge color="info" size="sm">
                 {buildQueryString(criteria)}
               </Badge>
               <button

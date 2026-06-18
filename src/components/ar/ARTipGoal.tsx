@@ -5,8 +5,8 @@ import type { TipGoal } from "@/components/TipGoalWidget";
 
 interface ARTipGoalProps {
   goal: TipGoal;
-  session: XRSession;
-  referenceSpace: XRReferenceSpace;
+  session: any;
+  referenceSpace: any;
 }
 
 /**
@@ -26,7 +26,7 @@ export function ARTipGoal({ goal, session, referenceSpace }: ARTipGoalProps) {
 
     const percentage = Math.min((goal.currentAmount / goal.targetAmount) * 100, 100);
 
-    function drawFrame(_time: number, frame: XRFrame) {
+    function drawFrame(_time: number, frame: any) {
       if (!frame || !gl) return;
 
       const pose = frame.getViewerPose(referenceSpace);

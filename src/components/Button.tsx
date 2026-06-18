@@ -7,12 +7,13 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 export type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "danger";
 export type ButtonSize = "xs" | "sm" | "md" | "lg" | "xl";
 
-export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onDrag" | "onDragStart" | "onDragEnd" | "onAnimationStart" | "style"> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   loading?: boolean;
   icon?: ReactNode;
   iconPosition?: "left" | "right";
+  style?: any;
 }
 
 const variants: Record<ButtonVariant, string> = {

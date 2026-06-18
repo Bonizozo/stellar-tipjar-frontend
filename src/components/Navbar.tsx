@@ -85,7 +85,7 @@ export function Navbar() {
         >
           {/* Logo */}
           <Link
-            href="/"
+            href={"/" as any}
             aria-label="Stellar Tip Jar — home"
             className="shrink-0 text-lg font-bold tracking-tight text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/50 rounded dark:text-gray-100"
           >
