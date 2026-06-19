@@ -135,7 +135,11 @@ export const useNotificationStore = create<NotificationStoreState>()(
         })),
       }),
       merge: (persistedState, currentState) => {
-        if (persistedState && "notifications" in persistedState) {
+        if (
+          persistedState &&
+          typeof persistedState === "object" &&
+          "notifications" in persistedState
+        ) {
           const notifs = (persistedState as any).notifications.map(
             (n: any) => ({
               ...n,
