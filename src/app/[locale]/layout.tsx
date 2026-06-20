@@ -48,7 +48,7 @@ export default async function LocaleLayout({
             <ToastProvider>
               <WebSocketProvider>
                 <NextIntlClientProvider messages={messages}>
-                  <div className="min-h-screen flex flex-col">
+                  <div className="min-h-screen flex flex-col pb-16 md:pb-0">
                     <Navbar />
                     <main
                       id="main-content"
