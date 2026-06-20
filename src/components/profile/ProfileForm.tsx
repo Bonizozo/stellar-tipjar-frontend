@@ -12,7 +12,10 @@ const profileSchema = z.object({
     .trim()
     .min(2, "Username must be at least 2 characters.")
     .max(32)
-    .regex(/^[a-zA-Z0-9][a-zA-Z0-9_-]*$/, "Letters, numbers, underscores, and hyphens only."),
+    .regex(
+      /^[a-zA-Z0-9][a-zA-Z0-9_-]*$/,
+      "Letters, numbers, underscores, and hyphens only.",
+    ),
   bio: z.string().max(280, "Bio must be 280 characters or fewer.").optional(),
   website: z.string().url("Enter a valid URL.").or(z.literal("")).optional(),
   twitter: z.string().max(50).optional(),
@@ -40,10 +43,13 @@ export function ProfileForm({ initialValues, onSave }: ProfileFormProps) {
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  const set = (field: keyof ProfileValues) => (value: string) => {
-    setValues((v) => ({ ...v, [field]: value }));
-    if (errors[field]) setErrors((e) => ({ ...e, [field]: undefined }));
-  };
+  const set =
+    (field: keyof ProfileValues) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      setValues((v) => ({ ...v, [field]: value }));
+      if (errors[field]) setErrors((e) => ({ ...e, [field]: undefined }));
+    };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,8 +82,7 @@ export function ProfileForm({ initialValues, onSave }: ProfileFormProps) {
           label="Display name"
           value={values.displayName}
           onChange={set("displayName")}
-          validationState={errors.displayName ? "error" : "default"}
-          errorText={errors.displayName}
+          error={errors.displayName}
           required
         />
         <Input
@@ -85,14 +90,16 @@ export function ProfileForm({ initialValues, onSave }: ProfileFormProps) {
           label="Username"
           value={values.username}
           onChange={set("username")}
-          validationState={errors.username ? "error" : "default"}
-          errorText={errors.username}
+          error={errors.username}
           required
         />
       </div>
 
       <div className="mb-4">
-        <label htmlFor="bio" className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+        <label
+          htmlFor="bio"
+          className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200"
+        >
           Bio
         </label>
         <textarea
@@ -100,12 +107,19 @@ export function ProfileForm({ initialValues, onSave }: ProfileFormProps) {
           rows={3}
           maxLength={280}
           value={values.bio}
-          onChange={(e) => set("bio")(e.target.value)}
+          onChange={(e) => {
+            setValues((v) => ({ ...v, bio: e.target.value }));
+            if (errors.bio) setErrors((err) => ({ ...err, bio: undefined }));
+          }}
           placeholder="Tell supporters about yourself…"
           className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm text-slate-900 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/30"
         />
         <div className="mt-1 flex justify-between text-xs text-ink/50">
-          {errors.bio ? <span className="text-rose-500">{errors.bio}</span> : <span />}
+          {errors.bio ? (
+            <span className="text-rose-500">{errors.bio}</span>
+          ) : (
+            <span />
+          )}
           <span>{(values.bio ?? "").length}/280</span>
         </div>
       </div>
@@ -117,8 +131,7 @@ export function ProfileForm({ initialValues, onSave }: ProfileFormProps) {
         value={values.website ?? ""}
         onChange={set("website")}
         placeholder="https://yoursite.com"
-        validationState={errors.website ? "error" : "default"}
-        errorText={errors.website}
+        error={errors.website}
       />
 
       <div className="grid grid-cols-1 gap-x-6 sm:grid-cols-2">
@@ -128,8 +141,7 @@ export function ProfileForm({ initialValues, onSave }: ProfileFormProps) {
           value={values.twitter ?? ""}
           onChange={set("twitter")}
           placeholder="@handle"
-          validationState={errors.twitter ? "error" : "default"}
-          errorText={errors.twitter}
+          error={errors.twitter}
         />
         <Input
           id="github"
@@ -137,8 +149,7 @@ export function ProfileForm({ initialValues, onSave }: ProfileFormProps) {
           value={values.github ?? ""}
           onChange={set("github")}
           placeholder="username"
-          validationState={errors.github ? "error" : "default"}
-          errorText={errors.github}
+          error={errors.github}
         />
       </div>
 

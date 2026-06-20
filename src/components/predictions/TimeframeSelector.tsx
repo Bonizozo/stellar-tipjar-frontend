@@ -9,20 +9,41 @@ interface TimeframeSelectorProps {
 }
 
 const timeframeOptions = [
-  { value: "7d" as Timeframe, label: "7 Days", description: "Short-term predictions" },
-  { value: "30d" as Timeframe, label: "30 Days", description: "Monthly forecast" },
-  { value: "90d" as Timeframe, label: "90 Days", description: "Quarterly outlook" },
-  { value: "1y" as Timeframe, label: "1 Year", description: "Long-term trends" },
+  {
+    value: "7d" as Timeframe,
+    label: "7 Days",
+    description: "Short-term predictions",
+  },
+  {
+    value: "30d" as Timeframe,
+    label: "30 Days",
+    description: "Monthly forecast",
+  },
+  {
+    value: "90d" as Timeframe,
+    label: "90 Days",
+    description: "Quarterly outlook",
+  },
+  {
+    value: "1y" as Timeframe,
+    label: "1 Year",
+    description: "Long-term trends",
+  },
 ];
 
-export function TimeframeSelector({ timeframe, onChange }: TimeframeSelectorProps) {
+export function TimeframeSelector({
+  timeframe,
+  onChange,
+}: TimeframeSelectorProps) {
   return (
     <div className="flex items-center gap-2">
-      <span className="text-sm font-medium text-ink/70 mr-2">Prediction Period:</span>
+      <span className="text-sm font-medium text-ink/70 mr-2">
+        Prediction Period:
+      </span>
       {timeframeOptions.map((option) => (
         <Button
           key={option.value}
-          variant={timeframe === option.value ? "default" : "ghost"}
+          variant={timeframe === option.value ? "primary" : "ghost"}
           size="sm"
           onClick={() => onChange(option.value)}
           className="relative group"

@@ -1,4 +1,4 @@
-/* eslint-disable no-undef */
+/* eslint-disable */
 const STATIC_CACHE = "tipjar-static-v2";
 const IMAGE_CACHE = "tipjar-images-v1";
 const API_CACHE = "tipjar-api-v1";
@@ -16,7 +16,9 @@ const STATIC_ASSETS = [
 ];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(STATIC_CACHE).then((cache) => cache.addAll(STATIC_ASSETS)));
+  event.waitUntil(
+    caches.open(STATIC_CACHE).then((cache) => cache.addAll(STATIC_ASSETS)),
+  );
   self.skipWaiting();
 });
 
@@ -26,7 +28,9 @@ self.addEventListener("activate", (event) => {
       const keys = await caches.keys();
       await Promise.all(
         keys
-          .filter((key) => ![STATIC_CACHE, IMAGE_CACHE, API_CACHE].includes(key))
+          .filter(
+            (key) => ![STATIC_CACHE, IMAGE_CACHE, API_CACHE].includes(key),
+          )
           .map((key) => caches.delete(key)),
       );
       await self.clients.claim();
@@ -104,7 +108,11 @@ self.addEventListener("fetch", (event) => {
 });
 
 self.addEventListener("push", (event) => {
-  let data = { title: "Stellar Tip Jar", body: "You have a new notification", url: "/" };
+  let data = {
+    title: "Stellar Tip Jar",
+    body: "You have a new notification",
+    url: "/",
+  };
 
   if (event.data) {
     try {
@@ -129,17 +137,19 @@ self.addEventListener("notificationclick", (event) => {
   const url = event.notification.data?.url || "/";
 
   event.waitUntil(
-    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
-      for (const client of clients) {
-        if (client.url.includes(url) && "focus" in client) {
-          return client.focus();
+    self.clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((clients) => {
+        for (const client of clients) {
+          if (client.url.includes(url) && "focus" in client) {
+            return client.focus();
+          }
         }
-      }
-      if (self.clients.openWindow) {
-        return self.clients.openWindow(url);
-      }
-      return undefined;
-    }),
+        if (self.clients.openWindow) {
+          return self.clients.openWindow(url);
+        }
+        return undefined;
+      }),
   );
 });
 
@@ -170,7 +180,9 @@ async function processQueue() {
 
   // Notify clients that sync finished
   const clients = await self.clients.matchAll();
-  clients.forEach((client) => client.postMessage({ type: "SYNC_COMPLETE", count: queue.length }));
+  clients.forEach((client) =>
+    client.postMessage({ type: "SYNC_COMPLETE", count: queue.length }),
+  );
 }
 
 async function openDB() {
@@ -188,7 +200,9 @@ async function getAllPending(db) {
     const request = store.getAll();
     request.onsuccess = () => {
       const all = request.result;
-      resolve(all.filter((a) => a.status === "pending" || a.status === "failed"));
+      resolve(
+        all.filter((a) => a.status === "pending" || a.status === "failed"),
+      );
     };
     request.onerror = () => reject(request.error);
   });

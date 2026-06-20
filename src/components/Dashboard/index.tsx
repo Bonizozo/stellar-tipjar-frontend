@@ -13,6 +13,8 @@ import { exportToCSV } from "@/utils/exportCSV";
 import { exportToExcel } from "@/utils/exportExcel";
 import { TipHeatmapCalendar } from "@/components/TipHeatmapCalendar";
 import { useHeatmapData } from "@/hooks/queries/useHeatmapData";
+import { ProfileCompletionIndicator } from "@/components/ProfileCompletionIndicator";
+import { useProfileCompletion } from "@/hooks/useProfileCompletion";
 
 // Advanced chart components
 import {
@@ -45,6 +47,9 @@ export function Dashboard({ username = "me" }: DashboardProps) {
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
   const [showRealtime, setShowRealtime] = useState(false);
+
+  // Track profile completion
+  useProfileCompletion();
 
   const dateRange = useMemo(() => {
     if (customStart && customEnd) {
@@ -158,6 +163,9 @@ export function Dashboard({ username = "me" }: DashboardProps) {
 
   return (
     <div className="space-y-8">
+      {/* ── Profile Completion Indicator ── */}
+      <ProfileCompletionIndicator />
+
       {/* ── Header ── */}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>

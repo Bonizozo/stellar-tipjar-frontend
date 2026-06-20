@@ -1,8 +1,8 @@
 "use client";
 
-import { useQuery } from '@tanstack/react-query';
-import { getLeaderboards } from '@/services/api';
-import type { LeaderboardsResponse, Period } from '@/types/leaderboards';
+import { useQuery } from "@tanstack/react-query";
+import { getLeaderboards } from "@/services/api";
+import type { Period } from "@/services/api";
 
 interface UseLeaderboardsProps {
   period: Period;
@@ -10,10 +10,9 @@ interface UseLeaderboardsProps {
 
 export function useLeaderboards({ period }: UseLeaderboardsProps) {
   return useQuery({
-    queryKey: ['leaderboards', period],
+    queryKey: ["leaderboards", period],
     queryFn: () => getLeaderboards(period),
     staleTime: 5 * 60 * 1000, // 5 min
     retry: 2,
   });
 }
-

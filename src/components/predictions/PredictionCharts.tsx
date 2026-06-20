@@ -1,18 +1,18 @@
 "use client";
 
 import { useMemo } from "react";
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   Area,
   ComposedChart,
   Bar,
-  ReferenceLine
+  ReferenceLine,
 } from "recharts";
 import { useTipPredictions } from "@/hooks/queries/useTipPredictions";
 import { useCreatorStats } from "@/hooks/queries/useCreatorStats";
@@ -23,23 +23,29 @@ interface PredictionChartsProps {
   timeframe: Timeframe;
 }
 
-export function PredictionCharts({ creator, timeframe }: PredictionChartsProps) {
-  const { data: predictions, isPending: predictionsPending } = useTipPredictions(creator.username, timeframe);
+export function PredictionCharts({
+  creator,
+  timeframe,
+}: PredictionChartsProps) {
+  const { data: predictions, isPending: predictionsPending } =
+    useTipPredictions(creator.username, timeframe);
   const { data: historicalStats } = useCreatorStats(creator.username);
 
   const chartData = useMemo(() => {
     if (!predictions || !historicalStats) return [];
 
     // Combine historical and predicted data
-    const historical = historicalStats.tipHistory.slice(-30).map((item, index) => ({
-      date: item.date,
-      historical: item.amount,
-      predicted: null,
-      confidenceUpper: null,
-      confidenceLower: null,
-      isHistorical: true,
-      dayIndex: index - 30
-    }));
+    const historical = historicalStats.tipHistory
+      .slice(-30)
+      .map((item, index) => ({
+        date: item.date,
+        historical: item.amount,
+        predicted: null,
+        confidenceUpper: null,
+        confidenceLower: null,
+        isHistorical: true,
+        dayIndex: index - 30,
+      }));
 
     const predicted = predictions.timeline.map((item, index) => ({
       date: item.date,
@@ -48,7 +54,7 @@ export function PredictionCharts({ creator, timeframe }: PredictionChartsProps) 
       confidenceUpper: item.confidenceUpper,
       confidenceLower: item.confidenceLower,
       isHistorical: false,
-      dayIndex: index
+      dayIndex: index,
     }));
 
     return [...historical, ...predicted];
@@ -58,7 +64,10 @@ export function PredictionCharts({ creator, timeframe }: PredictionChartsProps) 
     return (
       <div className="space-y-6">
         {[...Array(2)].map((_, i) => (
-          <div key={i} className="rounded-2xl border border-ink/10 bg-white/70 p-6">
+          <div
+            key={i}
+            className="rounded-2xl border border-ink/10 bg-white/70 p-6"
+          >
             <div className="animate-pulse">
               <div className="h-6 bg-ink/10 rounded w-1/3 mb-4"></div>
               <div className="h-64 bg-ink/10 rounded"></div>
@@ -87,30 +96,28 @@ export function PredictionCharts({ creator, timeframe }: PredictionChartsProps) 
         <ResponsiveContainer width="100%" height={400}>
           <ComposedChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-            <XAxis 
-              dataKey="date" 
-              stroke="#6b7280"
-              fontSize={12}
-            />
-            <YAxis 
-              stroke="#6b7280"
-              fontSize={12}
-            />
-            <Tooltip 
+            <XAxis dataKey="date" stroke="#6b7280" fontSize={12} />
+            <YAxis stroke="#6b7280" fontSize={12} />
+            <Tooltip
               contentStyle={{
-                backgroundColor: 'white',
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px'
+                backgroundColor: "white",
+                border: "1px solid #e5e7eb",
+                borderRadius: "8px",
               }}
-              formatter={(value: number, name: string) => {
-                if (name === 'historical') return [`${value?.toFixed(2)} XLM`, 'Historical'];
-                if (name === 'predicted') return [`${value?.toFixed(2)} XLM`, 'Predicted'];
-                if (name === 'confidenceUpper') return [`${value?.toFixed(2)} XLM`, 'Upper Bound'];
-                if (name === 'confidenceLower') return [`${value?.toFixed(2)} XLM`, 'Lower Bound'];
+              formatter={(value: any, name: any) => {
+                if (!value) return ["—", name];
+                if (name === "historical")
+                  return [`${value.toFixed(2)} XLM`, "Historical"];
+                if (name === "predicted")
+                  return [`${value.toFixed(2)} XLM`, "Predicted"];
+                if (name === "confidenceUpper")
+                  return [`${value.toFixed(2)} XLM`, "Upper Bound"];
+                if (name === "confidenceLower")
+                  return [`${value.toFixed(2)} XLM`, "Lower Bound"];
                 return [value, name];
               }}
             />
-            
+
             {/* Confidence Interval Area */}
             <Area
               type="monotone"
@@ -126,7 +133,7 @@ export function PredictionCharts({ creator, timeframe }: PredictionChartsProps) 
               fill="#8b5cf6"
               fillOpacity={0.1}
             />
-            
+
             {/* Historical Data Line */}
             <Line
               type="monotone"
@@ -136,7 +143,7 @@ export function PredictionCharts({ creator, timeframe }: PredictionChartsProps) 
               dot={{ r: 3 }}
               connectNulls={false}
             />
-            
+
             {/* Predicted Data Line */}
             <Line
               type="monotone"
@@ -147,12 +154,16 @@ export function PredictionCharts({ creator, timeframe }: PredictionChartsProps) 
               dot={{ r: 3 }}
               connectNulls={false}
             />
-            
+
             {/* Reference line to separate historical from predicted */}
-            <ReferenceLine x={new Date().toISOString().split('T')[0]} stroke="#ef4444" strokeDasharray="2 2" />
+            <ReferenceLine
+              x={new Date().toISOString().split("T")[0]}
+              stroke="#ef4444"
+              strokeDasharray="2 2"
+            />
           </ComposedChart>
         </ResponsiveContainer>
-        
+
         <div className="flex items-center justify-center gap-6 mt-4 text-sm">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-cyan-500 rounded"></div>
@@ -181,23 +192,16 @@ export function PredictionCharts({ creator, timeframe }: PredictionChartsProps) 
         <ResponsiveContainer width="100%" height={300}>
           <ComposedChart data={predictions.trendAnalysis}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-            <XAxis 
-              dataKey="period" 
-              stroke="#6b7280"
-              fontSize={12}
-            />
-            <YAxis 
-              stroke="#6b7280"
-              fontSize={12}
-            />
-            <Tooltip 
+            <XAxis dataKey="period" stroke="#6b7280" fontSize={12} />
+            <YAxis stroke="#6b7280" fontSize={12} />
+            <Tooltip
               contentStyle={{
-                backgroundColor: 'white',
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px'
+                backgroundColor: "white",
+                border: "1px solid #e5e7eb",
+                borderRadius: "8px",
               }}
             />
-            
+
             <Bar dataKey="baseline" fill="#e5e7eb" name="Baseline" />
             <Line
               type="monotone"
@@ -230,7 +234,7 @@ export function PredictionCharts({ creator, timeframe }: PredictionChartsProps) 
                 {feature.name}
               </div>
               <div className="flex-1 bg-ink/10 rounded-full h-2">
-                <div 
+                <div
                   className="bg-wave h-2 rounded-full transition-all duration-500"
                   style={{ width: `${feature.importance * 100}%` }}
                 />

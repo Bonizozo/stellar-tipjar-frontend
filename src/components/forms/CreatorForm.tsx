@@ -6,7 +6,10 @@ import toast from "react-hot-toast";
 
 import { Button } from "@/components/Button";
 import { FormField } from "@/components/forms/FormField";
-import { creatorFormSchema, type CreatorFormData } from "@/lib/validation/schemas";
+import {
+  creatorFormSchema,
+  type CreatorFormData,
+} from "@/lib/validation/schemas";
 
 interface CreatorFormProps {
   onSubmit: (data: CreatorFormData) => Promise<void>;
@@ -38,7 +41,8 @@ export function CreatorForm({ onSubmit }: CreatorFormProps) {
       reset();
       toast.success("Creator profile submitted!");
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Submission failed.";
+      const message =
+        error instanceof Error ? error.message : "Submission failed.";
       toast.error(message);
     }
   };
@@ -92,9 +96,11 @@ export function CreatorForm({ onSubmit }: CreatorFormProps) {
             type="submit"
             disabled={isSubmitting}
             aria-busy={isSubmitting}
-            aria-label={isSubmitting ? "Submitting, please wait" : "Register as creator"}
+            aria-label={
+              isSubmitting ? "Submitting, please wait" : "Register as creator"
+            }
           >
-            {isSubmitting ? "Submitting…" : "Register as Creator"}
+            {isSubmitting ? "Submitting" : "Register as Creator"}
           </Button>
         </div>
       </form>

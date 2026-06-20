@@ -2,6 +2,7 @@
 
 import { useCallback } from "react";
 import { useWebSocketContext } from "@/contexts/WebSocketContext";
+import { useNotificationStore } from "@/store/notificationStore";
 
 /** Bell SVG icon */
 function BellIcon({ className }: { className?: string }) {
@@ -24,7 +25,13 @@ function BellIcon({ className }: { className?: string }) {
 }
 
 /** Speaker / mute icon */
-function SoundIcon({ muted, className }: { muted: boolean; className?: string }) {
+function SoundIcon({
+  muted,
+  className,
+}: {
+  muted: boolean;
+  className?: string;
+}) {
   return muted ? (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -61,12 +68,12 @@ function SoundIcon({ muted, className }: { muted: boolean; className?: string })
 }
 
 export function NotificationBadge() {
-  const { unreadCount, markAllRead, isMuted, setMuted } =
-    useWebSocketContext();
+  const { unreadCount, markAllRead, isMuted, setMuted } = useWebSocketContext();
+  const { setOpen } = useNotificationStore();
 
   const handleBellClick = useCallback(() => {
-    if (unreadCount > 0) markAllRead();
-  }, [unreadCount, markAllRead]);
+    setOpen(true);
+  }, [setOpen]);
 
   const toggleMute = useCallback(() => {
     setMuted(!isMuted);
@@ -108,7 +115,9 @@ export function NotificationBadge() {
       {/* Mute toggle */}
       <button
         onClick={toggleMute}
-        aria-label={isMuted ? "Unmute notification sounds" : "Mute notification sounds"}
+        aria-label={
+          isMuted ? "Unmute notification sounds" : "Mute notification sounds"
+        }
         title={isMuted ? "Unmute sounds" : "Mute sounds"}
         className="flex h-9 w-9 items-center justify-center rounded-full transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
       >

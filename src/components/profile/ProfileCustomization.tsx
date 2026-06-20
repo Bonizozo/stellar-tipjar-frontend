@@ -62,12 +62,14 @@ function ProfilePreview({
           style={{ backgroundImage: `url(${values.bannerUrl})` }}
         />
       )}
-      <div className={`p-6 ${values.layout === "left" ? "" : values.layout === "compact" ? "text-center" : "text-center"}`}>
+      <div
+        className={`p-6 ${values.layout === "left" ? "" : values.layout === "compact" ? "text-center" : "text-center"}`}
+      >
         <div
           className={`mx-auto mb-4 h-20 w-20 overflow-hidden rounded-full ring-4 ${
             values.layout === "left" ? "mx-0" : "mx-auto"
           }`}
-          style={{ ringColor: styles.accent }}
+          style={{ borderColor: styles.accent } as React.CSSProperties}
         >
           <OptimizedImage src={avatarUrl} alt={displayName} fill sizes="80px" />
         </div>
@@ -83,7 +85,13 @@ function ProfilePreview({
           </p>
         )}
         <div className="mt-4 flex justify-center gap-2">
-          <Button size="sm" style={{ backgroundColor: styles.accent, borderColor: styles.accent }}>
+          <Button
+            size="sm"
+            style={{
+              backgroundColor: styles.accent,
+              borderColor: styles.accent,
+            }}
+          >
             Tip this creator
           </Button>
         </div>
@@ -93,21 +101,74 @@ function ProfilePreview({
 }
 
 function getPreviewStyles(values: ProfileCustomizationValues) {
-  const themeColors: Record<ProfileTheme, { bg: string; border: string; text: string; secondary: string; muted: string }> = {
-    default: { bg: "#ffffff", border: "#e5e7eb", text: "#151515", secondary: "#6b7280", muted: "#6b7280" },
-    dark: { bg: "#1e1e2e", border: "#313244", text: "#cdd6f4", secondary: "#a6adc8", muted: "#9399b2" },
-    light: { bg: "#fafafa", border: "#e5e7eb", text: "#18181b", secondary: "#71717a", muted: "#71717a" },
-    ocean: { bg: "#f0f9ff", border: "#bae6fd", text: "#164e63", secondary: "#0891b2", muted: "#0e7490" },
-    sunset: { bg: "#fff7ed", border: "#fed7aa", text: "#7c2d12", secondary: "#ea580c", muted: "#c2410c" },
-    forest: { bg: "#f0fdf4", border: "#bbf7d0", text: "#14532d", secondary: "#16a34a", muted: "#15803d" },
-    midnight: { bg: "#172554", border: "#1e3a8a", text: "#e0e7ff", secondary: "#818cf8", muted: "#6366f1" },
+  const themeColors: Record<
+    ProfileTheme,
+    {
+      bg: string;
+      border: string;
+      text: string;
+      secondary: string;
+      muted: string;
+    }
+  > = {
+    default: {
+      bg: "#ffffff",
+      border: "#e5e7eb",
+      text: "#151515",
+      secondary: "#6b7280",
+      muted: "#6b7280",
+    },
+    dark: {
+      bg: "#1e1e2e",
+      border: "#313244",
+      text: "#cdd6f4",
+      secondary: "#a6adc8",
+      muted: "#9399b2",
+    },
+    light: {
+      bg: "#fafafa",
+      border: "#e5e7eb",
+      text: "#18181b",
+      secondary: "#71717a",
+      muted: "#71717a",
+    },
+    ocean: {
+      bg: "#f0f9ff",
+      border: "#bae6fd",
+      text: "#164e63",
+      secondary: "#0891b2",
+      muted: "#0e7490",
+    },
+    sunset: {
+      bg: "#fff7ed",
+      border: "#fed7aa",
+      text: "#7c2d12",
+      secondary: "#ea580c",
+      muted: "#c2410c",
+    },
+    forest: {
+      bg: "#f0fdf4",
+      border: "#bbf7d0",
+      text: "#14532d",
+      secondary: "#16a34a",
+      muted: "#15803d",
+    },
+    midnight: {
+      bg: "#172554",
+      border: "#1e3a8a",
+      text: "#e0e7ff",
+      secondary: "#818cf8",
+      muted: "#6366f1",
+    },
   };
 
-  const theme = themeColors[values.theme] || themeColors.default;
+  const theme =
+    themeColors[values.theme as ProfileTheme] || themeColors.default;
   return {
     background: values.theme === "default" ? values.backgroundColor : theme.bg,
     border: theme.border,
-    text: values.theme === "default" ? textColor(values.accentColor) : theme.text,
+    text:
+      values.theme === "default" ? textColor(values.accentColor) : theme.text,
     secondary: theme.secondary,
     accent: values.theme === "default" ? values.accentColor : undefined,
     textMuted: theme.muted,
@@ -121,7 +182,10 @@ function textColor(hex: string): string {
   return r * 0.299 + g * 0.587 + b * 0.114 > 128 ? "#151515" : "#ffffff";
 }
 
-const fadeUp = { initial: { opacity: 0, y: 16 }, animate: { opacity: 1, y: 0 } };
+const fadeUp = {
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0 },
+};
 
 export function ProfileCustomization({
   initialValues,
@@ -142,7 +206,7 @@ export function ProfileCustomization({
 
   const update = <K extends keyof ProfileCustomizationValues>(
     key: K,
-    value: ProfileCustomizationValues[K]
+    value: ProfileCustomizationValues[K],
   ) => {
     setValues((v) => ({ ...v, [key]: value }));
   };
@@ -173,11 +237,17 @@ export function ProfileCustomization({
             <SwatchIcon className="h-8 w-8 text-wave" />
             Profile Customization
           </h1>
-          <p className="mt-1 text-sm text-ink/60">Customize your public creator profile</p>
+          <p className="mt-1 text-sm text-ink/60">
+            Customize your public creator profile
+          </p>
         </motion.div>
 
         <div className="grid gap-8 lg:grid-cols-2">
-          <motion.div {...fadeUp} transition={{ delay: 0.05 }} className="space-y-6">
+          <motion.div
+            {...fadeUp}
+            transition={{ delay: 0.05 }}
+            className="space-y-6"
+          >
             <div className="rounded-2xl border border-ink/10 bg-[color:var(--surface)] p-6">
               <ThemeSelector
                 value={values.theme}
@@ -217,7 +287,9 @@ export function ProfileCustomization({
             </div>
 
             <div className="rounded-2xl border border-ink/10 bg-[color:var(--surface)] p-6">
-              <h2 className="mb-4 text-base font-semibold text-ink">Banner image</h2>
+              <h2 className="mb-4 text-base font-semibold text-ink">
+                Banner image
+              </h2>
               <BannerUpload
                 currentSrc={values.bannerUrl}
                 onUpload={uploadBanner}
@@ -225,17 +297,26 @@ export function ProfileCustomization({
               />
             </div>
 
-            <Button variant="primary" size="lg" onClick={handleSave} loading={saving}>
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={handleSave}
+              loading={saving}
+            >
               Save Changes
             </Button>
             {saved && (
-              <span className="text-sm text-emerald-600">✓ Changes saved successfully</span>
+              <span className="text-sm text-emerald-600">
+                ✓ Changes saved successfully
+              </span>
             )}
           </motion.div>
 
           <motion.div {...fadeUp} transition={{ delay: 0.1 }}>
             <div className="sticky top-8">
-              <h2 className="mb-4 text-base font-semibold text-ink">Live Preview</h2>
+              <h2 className="mb-4 text-base font-semibold text-ink">
+                Live Preview
+              </h2>
               <ProfilePreview
                 values={values}
                 displayName={previewData.displayName}

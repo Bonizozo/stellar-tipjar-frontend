@@ -7,7 +7,10 @@ import { PredictionSummary } from "./PredictionSummary";
 import { TimeframeSelector } from "./TimeframeSelector";
 import { ModelExplanation } from "./ModelExplanation";
 import { Button } from "@/components/Button";
-import { ChartBarIcon, InformationCircleIcon } from "@heroicons/react/24/outline";
+import {
+  ChartBarIcon,
+  InformationCircleIcon,
+} from "@heroicons/react/24/outline";
 
 export type Timeframe = "7d" | "30d" | "90d" | "1y";
 
@@ -17,7 +20,8 @@ export interface SelectedCreator {
 }
 
 export function TipPredictions() {
-  const [selectedCreator, setSelectedCreator] = useState<SelectedCreator | null>(null);
+  const [selectedCreator, setSelectedCreator] =
+    useState<SelectedCreator | null>(null);
   const [timeframe, setTimeframe] = useState<Timeframe>("30d");
   const [showExplanation, setShowExplanation] = useState(false);
 
@@ -34,7 +38,9 @@ export function TipPredictions() {
       {/* Creator Selection */}
       <div className="rounded-2xl border border-ink/10 bg-white/70 p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-ink">Select Creator for Predictions</h2>
+          <h2 className="text-xl font-semibold text-ink">
+            Select Creator for Predictions
+          </h2>
           {selectedCreator && (
             <Button
               variant="ghost"
@@ -46,8 +52,8 @@ export function TipPredictions() {
             </Button>
           )}
         </div>
-        
-        <CreatorSelector 
+
+        <CreatorSelector
           onCreatorSelect={handleCreatorSelect}
           selectedCreator={selectedCreator}
         />
@@ -62,8 +68,12 @@ export function TipPredictions() {
                 className="w-12 h-12 rounded-full"
               />
               <div>
-                <p className="font-semibold text-ink">{selectedCreator.displayName}</p>
-                <p className="text-sm text-ink/60">@{selectedCreator.username}</p>
+                <p className="font-semibold text-ink">
+                  {selectedCreator.displayName}
+                </p>
+                <p className="text-sm text-ink/60">
+                  @{selectedCreator.username}
+                </p>
               </div>
             </div>
           </div>
@@ -75,13 +85,10 @@ export function TipPredictions() {
         <div className="space-y-6">
           {/* Controls */}
           <div className="flex items-center justify-between">
-            <TimeframeSelector 
-              timeframe={timeframe}
-              onChange={setTimeframe}
-            />
+            <TimeframeSelector timeframe={timeframe} onChange={setTimeframe} />
             <div className="flex items-center gap-2">
               <Button
-                variant={showExplanation ? "default" : "ghost"}
+                variant={showExplanation ? "primary" : "ghost"}
                 size="sm"
                 onClick={() => setShowExplanation(!showExplanation)}
               >
@@ -92,21 +99,13 @@ export function TipPredictions() {
           </div>
 
           {/* Model Explanation */}
-          {showExplanation && (
-            <ModelExplanation timeframe={timeframe} />
-          )}
+          {showExplanation && <ModelExplanation timeframe={timeframe} />}
 
           {/* Prediction Summary */}
-          <PredictionSummary 
-            creator={selectedCreator}
-            timeframe={timeframe}
-          />
+          <PredictionSummary creator={selectedCreator} timeframe={timeframe} />
 
           {/* Prediction Charts */}
-          <PredictionCharts 
-            creator={selectedCreator}
-            timeframe={timeframe}
-          />
+          <PredictionCharts creator={selectedCreator} timeframe={timeframe} />
         </div>
       )}
 
@@ -114,7 +113,9 @@ export function TipPredictions() {
       {!selectedCreator && (
         <div className="text-center py-12 rounded-2xl border border-dashed border-ink/20">
           <ChartBarIcon className="w-12 h-12 mx-auto text-ink/20 mb-3" />
-          <p className="text-ink/50 mb-2">Select a creator to view tip predictions</p>
+          <p className="text-ink/50 mb-2">
+            Select a creator to view tip predictions
+          </p>
           <p className="text-sm text-ink/40">
             AI-powered predictions with confidence intervals and trend analysis
           </p>
