@@ -12,7 +12,10 @@ const profileSchema = z.object({
     .trim()
     .min(2, "Username must be at least 2 characters.")
     .max(32)
-    .regex(/^[a-zA-Z0-9][a-zA-Z0-9_-]*$/, "Letters, numbers, underscores, and hyphens only."),
+    .regex(
+      /^[a-zA-Z0-9][a-zA-Z0-9_-]*$/,
+      "Letters, numbers, underscores, and hyphens only.",
+    ),
   bio: z.string().max(280, "Bio must be 280 characters or fewer.").optional(),
   website: z.string().url("Enter a valid URL.").or(z.literal("")).optional(),
   twitter: z.string().max(50).optional(),
@@ -40,10 +43,13 @@ export function ProfileForm({ initialValues, onSave }: ProfileFormProps) {
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  const set = (field: keyof ProfileValues) => (value: string) => {
-    setValues((v) => ({ ...v, [field]: value }));
-    if (errors[field]) setErrors((e) => ({ ...e, [field]: undefined }));
-  };
+  const set =
+    (field: keyof ProfileValues) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      setValues((v) => ({ ...v, [field]: value }));
+      if (errors[field]) setErrors((e) => ({ ...e, [field]: undefined }));
+    };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,7 +98,10 @@ export function ProfileForm({ initialValues, onSave }: ProfileFormProps) {
       </div>
 
       <div className="mb-4">
-        <label htmlFor="bio" className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+        <label
+          htmlFor="bio"
+          className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200"
+        >
           Bio
         </label>
         <textarea
@@ -105,7 +114,11 @@ export function ProfileForm({ initialValues, onSave }: ProfileFormProps) {
           className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm text-slate-900 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/30"
         />
         <div className="mt-1 flex justify-between text-xs text-ink/50">
-          {errors.bio ? <span className="text-rose-500">{errors.bio}</span> : <span />}
+          {errors.bio ? (
+            <span className="text-rose-500">{errors.bio}</span>
+          ) : (
+            <span />
+          )}
           <span>{(values.bio ?? "").length}/280</span>
         </div>
       </div>
