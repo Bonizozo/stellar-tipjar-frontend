@@ -168,10 +168,10 @@ export function NotificationCenter() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 400 }}
             transition={{ type: "spring", damping: 20, stiffness: 300 }}
-            className="fixed right-0 top-16 z-50 h-[calc(100vh-64px)] w-full max-w-sm overflow-hidden rounded-l-2xl border-l border-ink/10 bg-[color:var(--surface)] shadow-xl dark:border-canvas/10"
+            className="fixed right-0 top-16 z-50 flex flex-col h-[calc(100vh-64px)] w-full max-w-sm overflow-hidden rounded-l-2xl border-l border-ink/10 bg-[color:var(--surface)] shadow-xl dark:border-canvas/10"
           >
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-ink/10 px-4 py-4 dark:border-canvas/10">
+            <div className="flex-shrink-0 flex items-center justify-between border-b border-ink/10 px-4 py-4 dark:border-canvas/10">
               <h2 className="text-lg font-semibold text-ink dark:text-canvas">
                 Notifications
               </h2>
@@ -187,7 +187,7 @@ export function NotificationCenter() {
 
             {/* Actions */}
             {hasNotifications && (
-              <div className="flex gap-2 border-b border-ink/10 px-4 py-3 dark:border-canvas/10">
+              <div className="flex-shrink-0 flex gap-2 border-b border-ink/10 px-4 py-3 dark:border-canvas/10">
                 <button
                   onClick={() => markAllAsRead()}
                   disabled={unreadCount === 0}
@@ -198,7 +198,7 @@ export function NotificationCenter() {
                 </button>
                 <button
                   onClick={() => clearAll()}
-                  className="flex-1 flex items-center justify-center gap-1.5 rounded-lg bg-error/5 px-3 py-2 text-xs font-semibold text-error hover:bg-error/10 transition-colors"
+                  className="flex-1 flex items-center justify-center gap-1.5 rounded-lg bg-semantic-error/10 px-3 py-2 text-xs font-semibold text-semantic-error hover:bg-semantic-error/20 transition-colors"
                 >
                   <TrashIcon className="h-4 w-4" />
                   Clear All
@@ -207,7 +207,7 @@ export function NotificationCenter() {
             )}
 
             {/* Notifications List */}
-            <div className="overflow-y-auto h-[calc(100%-128px)]">
+            <div className="flex-1 overflow-y-auto min-h-0">
               {!hasNotifications ? (
                 <div className="flex h-full items-center justify-center p-6 text-center">
                   <div>
