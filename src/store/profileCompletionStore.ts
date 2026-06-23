@@ -22,9 +22,12 @@ interface ProfileCompletionState {
   fields: ProfileField[];
 
   setFields: (fields: ProfileField[]) => void;
+  resetFields: () => void;
   dismissItem: (itemId: string) => void;
   restoreItem: (itemId: string) => void;
+  clearDismissedItems: () => void;
   getCompletionPercentage: () => number;
+  getVisibleFields: () => ProfileField[];
   getIncompleteFields: () => ProfileField[];
   hasDismissedAll: () => boolean;
 }
@@ -88,6 +91,7 @@ export const useProfileCompletionStore = create<ProfileCompletionState>()(
       fields: defaultFields,
 
       setFields: (fields) => set({ fields }),
+      resetFields: () => set({ fields: defaultFields }),
 
       dismissItem: (itemId) =>
         set((state) => ({
@@ -101,16 +105,17 @@ export const useProfileCompletionStore = create<ProfileCompletionState>()(
           return { dismissedItems: updated };
         }),
 
+      clearDismissedItems: () => set({ dismissedItems: new Set<string>() }),
+
       getCompletionPercentage: () => {
         const state = get();
         const filledCount = state.fields.filter((f) => f.filled).length;
         return Math.round((filledCount / state.fields.length) * 100);
       },
 
-      getIncompleteFields: () => {
+      getVisibleFields: () => {
         const state = get();
         return state.fields
-          .filter((f) => !f.filled)
           .filter((f) => !state.dismissedItems.has(f.id))
           .sort((a, b) => {
             const importanceOrder = { high: 0, medium: 1, low: 2 };
@@ -118,6 +123,11 @@ export const useProfileCompletionStore = create<ProfileCompletionState>()(
               importanceOrder[a.importance] - importanceOrder[b.importance]
             );
           });
+      },
+
+      getIncompleteFields: () => {
+        const state = get();
+        return state.getVisibleFields().filter((f) => !f.filled);
       },
 
       hasDismissedAll: () => {
@@ -132,6 +142,13 @@ export const useProfileCompletionStore = create<ProfileCompletionState>()(
       partialize: (state) => ({
         dismissedItems: Array.from(state.dismissedItems),
       }),
+      merge: (persisted, current) => {
+        const stored = persisted as { dismissedItems?: string[] } | undefined;
+        return {
+          ...current,
+          dismissedItems: new Set(stored?.dismissedItems ?? []),
+        };
+      },
     },
   ),
 );
@@ -140,6 +157,9 @@ export const useProfileCompletionStore = create<ProfileCompletionState>()(
 
 export const useCompletionPercentage = () =>
   useProfileCompletionStore((s) => s.getCompletionPercentage());
+
+export const useVisibleProfileFields = () =>
+  useProfileCompletionStore((s) => s.getVisibleFields());
 
 export const useIncompleteFields = () =>
   useProfileCompletionStore((s) => s.getIncompleteFields());

@@ -17,6 +17,7 @@ const profileSchema = z.object({
       "Letters, numbers, underscores, and hyphens only.",
     ),
   bio: z.string().max(280, "Bio must be 280 characters or fewer.").optional(),
+  tags: z.string().max(160, "Tags must be 160 characters or fewer.").optional(),
   website: z.string().url("Enter a valid URL.").or(z.literal("")).optional(),
   twitter: z.string().max(50).optional(),
   github: z.string().max(50).optional(),
@@ -35,6 +36,7 @@ export function ProfileForm({ initialValues, onSave }: ProfileFormProps) {
     displayName: initialValues?.displayName ?? "",
     username: initialValues?.username ?? "",
     bio: initialValues?.bio ?? "",
+    tags: initialValues?.tags ?? "",
     website: initialValues?.website ?? "",
     twitter: initialValues?.twitter ?? "",
     github: initialValues?.github ?? "",
@@ -123,6 +125,16 @@ export function ProfileForm({ initialValues, onSave }: ProfileFormProps) {
           <span>{(values.bio ?? "").length}/280</span>
         </div>
       </div>
+
+      <Input
+        id="tags"
+        label="Tags"
+        type="text"
+        value={values.tags ?? ""}
+        onChange={set("tags")}
+        placeholder="nft-art, education, stellar"
+        error={errors.tags}
+      />
 
       <Input
         id="website"

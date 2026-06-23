@@ -5,6 +5,8 @@ import { motion } from "framer-motion";
 import { UserCircleIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { AvatarUpload } from "@/components/profile/AvatarUpload";
 import { ProfileForm } from "@/components/profile/ProfileForm";
+import { useProfileDetailsStore } from "@/store/profileDetailsStore";
+import { useUserStore } from "@/store/userStore";
 
 // Stub: replace with real API calls
 async function uploadAvatar(file: File): Promise<string> {
@@ -12,14 +14,43 @@ async function uploadAvatar(file: File): Promise<string> {
   return URL.createObjectURL(file);
 }
 
-async function saveProfile(values: Record<string, unknown>): Promise<void> {
-  await new Promise((r) => setTimeout(r, 600));
-  console.log("Profile saved", values);
-}
-
-const fadeUp = { initial: { opacity: 0, y: 16 }, animate: { opacity: 1, y: 0 } };
+const fadeUp = {
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0 },
+};
 
 export default function ProfilePage() {
+  const { profile, updateProfile, setAvatarUrl } = useProfileDetailsStore();
+  const updateUser = useUserStore((state) => state.updateUser);
+
+  async function handleAvatarUpload(file: File): Promise<string> {
+    const url = await uploadAvatar(file);
+    setAvatarUrl(url);
+    updateUser({ avatarUrl: url });
+    return url;
+  }
+
+  async function handleSaveProfile(
+    values: Record<string, unknown>,
+  ): Promise<void> {
+    await new Promise((r) => setTimeout(r, 600));
+    const tags = String(values.tags ?? "")
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter(Boolean);
+
+    updateProfile({
+      displayName: String(values.displayName ?? ""),
+      username: String(values.username ?? ""),
+      bio: String(values.bio ?? ""),
+      tags,
+      website: String(values.website ?? ""),
+      twitter: String(values.twitter ?? ""),
+      github: String(values.github ?? ""),
+    });
+    updateUser({ displayName: String(values.displayName ?? "") });
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-ink/5 to-transparent">
       <div className="max-w-3xl mx-auto px-4 py-8 sm:px-6">
@@ -48,11 +79,17 @@ export default function ProfilePage() {
             transition={{ delay: 0.05 }}
             className="rounded-2xl border border-ink/10 bg-[color:var(--surface)] p-6"
           >
-            <h2 className="text-base font-semibold text-ink mb-4">Profile photo</h2>
+            <h2 className="text-base font-semibold text-ink mb-4">
+              Profile photo
+            </h2>
             <AvatarUpload
-              name="Creator"
-              onUpload={uploadAvatar}
-              onRemove={() => console.log("Avatar removed")}
+              currentSrc={profile.avatarUrl}
+              name={profile.displayName || "Creator"}
+              onUpload={handleAvatarUpload}
+              onRemove={() => {
+                setAvatarUrl(undefined);
+                updateUser({ avatarUrl: undefined });
+              }}
             />
           </motion.section>
 
@@ -62,8 +99,16 @@ export default function ProfilePage() {
             transition={{ delay: 0.1 }}
             className="rounded-2xl border border-ink/10 bg-[color:var(--surface)] p-6"
           >
-            <h2 className="text-base font-semibold text-ink mb-4">Profile information</h2>
-            <ProfileForm onSave={saveProfile} />
+            <h2 className="text-base font-semibold text-ink mb-4">
+              Profile information
+            </h2>
+            <ProfileForm
+              initialValues={{
+                ...profile,
+                tags: profile.tags.join(", "),
+              }}
+              onSave={handleSaveProfile}
+            />
           </motion.section>
         </div>
       </div>
