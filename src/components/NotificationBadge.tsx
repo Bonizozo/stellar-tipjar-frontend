@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 import { useWebSocketContext } from "@/contexts/WebSocketContext";
-import { useNotificationStore, useUnreadCount } from "@/store/notificationStore";
+import { useNotificationStore } from "@/store/notificationStore";
 
 /** Bell SVG icon */
 function BellIcon({ className }: { className?: string }) {
@@ -68,9 +68,8 @@ function SoundIcon({
 }
 
 export function NotificationBadge() {
-  const { isMuted, setMuted } = useWebSocketContext();
+  const { unreadCount, markAllRead, isMuted, setMuted } = useWebSocketContext();
   const { setOpen } = useNotificationStore();
-  const unreadCount = useUnreadCount();
 
   const handleBellClick = useCallback(() => {
     setOpen(true);
