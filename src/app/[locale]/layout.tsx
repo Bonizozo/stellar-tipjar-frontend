@@ -18,6 +18,7 @@ import { ToastProvider } from "@/contexts/ToastContext";
 import { ToastContainer } from "@/components/Toast";
 import { Footer } from "@/components/Footer";
 import { ProductTour } from "@/components/ProductTour";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import "@/styles/globals.css";
 
 export default async function LocaleLayout({
@@ -39,9 +40,29 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('stellar-tipjar-theme');
+                  if (!theme) {
+                    theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                  }
+                  if (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body>
         <SkipToContent />
         <PerformanceMonitor />
+        <ThemeProvider>
         <CurrencyProvider>
         <WalletProvider>
           <ReactQueryProvider>
@@ -68,6 +89,7 @@ export default async function LocaleLayout({
           </ReactQueryProvider>
         </WalletProvider>
         </CurrencyProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
