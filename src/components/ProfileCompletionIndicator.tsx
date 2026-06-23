@@ -5,24 +5,24 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronDownIcon,
-  CheckCircleIcon,
+  SparklesIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { ProgressBar } from "@/components/Progress/ProgressBar";
 import {
   useCompletionPercentage,
-  useIncompleteFields,
+  useVisibleProfileFields,
   useProfileCompletionStore,
 } from "@/store/profileCompletionStore";
 
 export function ProfileCompletionIndicator() {
   const percentage = useCompletionPercentage();
-  const incompleteFields = useIncompleteFields();
-  const { dismissItem, restoreItem } = useProfileCompletionStore();
+  const visibleFields = useVisibleProfileFields();
+  const { dismissItem } = useProfileCompletionStore();
   const [isExpanded, setIsExpanded] = useState(false);
   const isComplete = percentage === 100;
 
-  if (isComplete && incompleteFields.length === 0) {
+  if (isComplete) {
     return (
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -31,8 +31,8 @@ export function ProfileCompletionIndicator() {
         className="rounded-xl border border-moss/20 bg-moss/5 p-4 text-center"
       >
         <div className="flex items-center justify-center gap-2">
-          <CheckCircleIcon className="h-5 w-5 text-moss" />
-          <p className="font-semibold text-moss">🎉 Profile Complete!</p>
+          <SparklesIcon className="h-5 w-5 text-moss" />
+          <p className="font-semibold text-moss">🎉 Profile complete!</p>
         </div>
         <p className="mt-1 text-sm text-moss/70">
           Your profile is fully set up. Keep it updated to maintain
@@ -85,7 +85,7 @@ export function ProfileCompletionIndicator() {
 
       {/* Expanded Details */}
       <AnimatePresence>
-        {isExpanded && incompleteFields.length > 0 && (
+        {isExpanded && visibleFields.length > 0 && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
@@ -94,22 +94,30 @@ export function ProfileCompletionIndicator() {
             className="mt-4 space-y-2 border-t border-ink/10 dark:border-canvas/10 pt-4"
           >
             <p className="text-xs font-semibold uppercase tracking-wider text-ink/60 dark:text-canvas/60">
-              Complete these items to boost discoverability:
+              Complete missing items to boost discoverability:
             </p>
 
             <div className="space-y-2">
-              {incompleteFields.map((field) => (
+              {visibleFields.map((field) => (
                 <motion.div
                   key={field.id}
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -10 }}
-                  className="group flex items-start justify-between gap-3 rounded-lg bg-canvas/50 dark:bg-ink/30 p-3 transition-colors hover:bg-canvas dark:hover:bg-ink/40"
+                  className={`group flex items-start justify-between gap-3 rounded-lg p-3 transition-colors ${
+                    field.filled
+                      ? "bg-moss/10 dark:bg-moss/15"
+                      : "bg-canvas/50 hover:bg-canvas dark:bg-ink/30 dark:hover:bg-ink/40"
+                  }`}
                 >
                   <div className="flex-1 min-w-0">
                     <Link href={field.link as any}>
-                      <p className="text-sm font-semibold text-sunrise hover:underline">
-                        {field.label}
+                      <p
+                        className={`text-sm font-semibold hover:underline ${
+                          field.filled ? "text-moss" : "text-sunrise"
+                        }`}
+                      >
+                        {field.filled ? `✓ ${field.label}` : field.label}
                       </p>
                     </Link>
                     <p className="text-xs text-ink/60 dark:text-canvas/60">
@@ -122,7 +130,11 @@ export function ProfileCompletionIndicator() {
                     className="mt-1 flex-shrink-0 rounded p-1 text-ink/40 hover:bg-ink/10 dark:text-canvas/40 dark:hover:bg-canvas/10 transition-colors"
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
-                    title="Dismiss"
+                    title={
+                      field.filled
+                        ? "Dismiss completed item"
+                        : "Dismiss reminder"
+                    }
                   >
                     <XMarkIcon className="h-4 w-4" />
                   </motion.button>
@@ -134,7 +146,7 @@ export function ProfileCompletionIndicator() {
       </AnimatePresence>
 
       {/* No incomplete fields message */}
-      {isExpanded && incompleteFields.length === 0 && !isComplete && (
+      {isExpanded && visibleFields.length === 0 && !isComplete && (
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}

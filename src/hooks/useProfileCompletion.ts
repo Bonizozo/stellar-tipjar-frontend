@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useCurrentUser } from "@/store/userStore";
 import { useProfileCompletionStore } from "@/store/profileCompletionStore";
+import { useCreatorProfileDetails } from "@/store/profileDetailsStore";
 
 /**
  * Hook to sync user profile data with completion tracker.
@@ -10,6 +11,7 @@ import { useProfileCompletionStore } from "@/store/profileCompletionStore";
  */
 export function useProfileCompletion() {
   const user = useCurrentUser();
+  const profile = useCreatorProfileDetails();
   const { setFields } = useProfileCompletionStore();
 
   useEffect(() => {
@@ -21,7 +23,7 @@ export function useProfileCompletion() {
         label: "Profile Avatar",
         description: "Add a profile picture to make your profile memorable",
         link: "/profile#avatar",
-        filled: !!user.avatarUrl,
+        filled: Boolean(profile.avatarUrl || user.avatarUrl),
         importance: "high",
       },
       {
@@ -29,7 +31,7 @@ export function useProfileCompletion() {
         label: "Display Name",
         description: "Set a professional display name for your profile",
         link: "/profile#displayName",
-        filled: !!user.displayName,
+        filled: Boolean(profile.displayName || user.displayName),
         importance: "high",
       },
       {
@@ -38,7 +40,7 @@ export function useProfileCompletion() {
         description:
           "Write a short bio to help supporters understand what you do",
         link: "/profile#bio",
-        filled: false, // Would need to fetch from profile data
+        filled: profile.bio.trim().length > 0,
         importance: "high",
       },
       {
@@ -47,7 +49,7 @@ export function useProfileCompletion() {
         description:
           "Add tags to improve discoverability and help supporters find you",
         link: "/profile#tags",
-        filled: false, // Would need to fetch from profile data
+        filled: profile.tags.length > 0,
         importance: "medium",
       },
       {
@@ -55,7 +57,7 @@ export function useProfileCompletion() {
         label: "Website or Portfolio",
         description: "Link to your personal website or portfolio",
         link: "/profile#website",
-        filled: false, // Would need to fetch from profile data
+        filled: profile.website.trim().length > 0,
         importance: "medium",
       },
       {
@@ -63,9 +65,9 @@ export function useProfileCompletion() {
         label: "Social Links",
         description: "Connect your social media profiles",
         link: "/profile#social",
-        filled: false, // Would need to fetch from profile data
+        filled: Boolean(profile.twitter.trim() || profile.github.trim()),
         importance: "low",
       },
     ]);
-  }, [user, setFields]);
+  }, [profile, user, setFields]);
 }

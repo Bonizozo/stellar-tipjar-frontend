@@ -5,9 +5,8 @@ describe("Profile Completion Store", () => {
   beforeEach(() => {
     // Clear store before each test
     const store = useProfileCompletionStore.getState();
-    store.setFields(
-      store.getIncompleteFields().map((f) => ({ ...f, filled: false })),
-    );
+    store.clearDismissedItems();
+    store.resetFields();
   });
 
   it("should calculate completion percentage correctly", () => {
