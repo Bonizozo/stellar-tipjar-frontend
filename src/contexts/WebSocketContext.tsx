@@ -11,7 +11,6 @@ import React, {
 
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useNotifications, TipNotification } from "@/hooks/useNotifications";
-import { useNotificationStore } from "@/store/notificationStore";
 import { useToast } from "@/hooks/useToast";
 import { playNotificationSound, isSoundMuted, setSoundMuted } from "@/utils/soundUtils";
 import type { Tip } from "@/lib/websocket/client";
@@ -33,7 +32,6 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
   const { clientRef, status } = useWebSocket({ url: wsUrl });
   const { notifications, unreadCount, addNotification, markAllRead, clearNotifications } =
     useNotifications();
-  const { addNotification: addToStore } = useNotificationStore();
   const toast = useToast();
 
   const [isMuted, setIsMuted] = useState<boolean>(() =>
@@ -64,16 +62,6 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
 
       addNotification({ amount: String(tip.amount), from: tip.sender_address, memo: tip.memo });
 
-      // Also persist into the notification center store so the panel stays in sync
-      addToStore({
-        type: "tip",
-        title: "New tip received!",
-        description: tip.memo
-          ? `${tip.amount} XLM — "${tip.memo}"`
-          : `${tip.amount} XLM from ${shortFrom}`,
-        link: "/tips",
-      });
-
       const message = tip.memo
         ? `💸 New tip: ${tip.amount} XLM — "${tip.memo}"`
         : `💸 New tip: ${tip.amount} XLM from ${shortFrom}`;
@@ -97,7 +85,7 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
     return () => {
       client.unsubscribe(channel, handleTip);
     };
-  }, [status, clientRef, addNotification, addToStore, toast, isMuted]);
+  }, [status, clientRef, addNotification, toast, isMuted]);
 
   return (
     <WebSocketContext.Provider
