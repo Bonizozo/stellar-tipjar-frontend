@@ -358,10 +358,8 @@ export function HelpPageClient() {
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<string>("all");
 
-  // Normalise query for matching
   const q = query.trim().toLowerCase();
 
-  // Filter items per category
   const filteredCategories = useMemo(() => {
     return FAQ_DATA.map((cat) => ({
       ...cat,
@@ -373,7 +371,6 @@ export function HelpPageClient() {
     })).filter((cat) => cat.items.length > 0);
   }, [q]);
 
-  // Visible categories depending on tab selection
   const visibleCategories =
     activeCategory === "all"
       ? filteredCategories
@@ -381,7 +378,6 @@ export function HelpPageClient() {
 
   const totalResults = filteredCategories.reduce((n, c) => n + c.items.length, 0);
 
-  // Reset active category when it disappears from filtered results
   const activeCategoryExists = filteredCategories.some((c) => c.id === activeCategory);
   if (activeCategory !== "all" && !activeCategoryExists && filteredCategories.length > 0) {
     setActiveCategory("all");
@@ -394,10 +390,7 @@ export function HelpPageClient() {
         aria-labelledby="help-heading"
         className="relative overflow-hidden rounded-3xl border border-ink/10 bg-[color:var(--surface)] px-6 py-14 text-center shadow-card"
       >
-        <div
-          className="absolute inset-0 soft-grid rounded-3xl opacity-30"
-          aria-hidden="true"
-        />
+        <div className="absolute inset-0 soft-grid rounded-3xl opacity-30" aria-hidden="true" />
         <div className="absolute -top-20 -right-20 h-72 w-72 rounded-full bg-wave/10 blur-3xl pointer-events-none" aria-hidden="true" />
         <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-sunrise/10 blur-3xl pointer-events-none" aria-hidden="true" />
         <div className="relative z-10 max-w-2xl mx-auto space-y-6">
@@ -453,7 +446,7 @@ export function HelpPageClient() {
         <div
           role="status"
           aria-live="polite"
-          className="rounded-2xl border border-dashed border-ink/15 bg-ink/3 px-8 py-16 text-center dark:border-canvas/15 dark:bg-canvas/3"
+          className="rounded-2xl border border-dashed border-ink/15 px-8 py-16 text-center dark:border-canvas/15"
         >
           <p className="text-3xl mb-3" aria-hidden="true">🔍</p>
           <p className="text-lg font-semibold text-ink/60 dark:text-canvas/60">
@@ -472,7 +465,7 @@ export function HelpPageClient() {
         </div>
       )}
 
-      {/* ── Sections ── */}
+      {/* ── FAQ sections ── */}
       {visibleCategories.map((category) => (
         <section key={category.id} aria-labelledby={`cat-${category.id}`}>
           <div className="mb-5 flex items-center gap-3">
@@ -488,7 +481,7 @@ export function HelpPageClient() {
             >
               {category.label}
             </h2>
-            <span className="rounded-full bg-ink/8 px-2.5 py-0.5 text-xs font-semibold text-ink/50 dark:bg-canvas/8 dark:text-canvas/50">
+            <span className="rounded-full bg-ink/5 px-2.5 py-0.5 text-xs font-semibold text-ink/50 dark:bg-canvas/5 dark:text-canvas/50">
               {category.items.length}
             </span>
           </div>
@@ -520,7 +513,7 @@ export function HelpPageClient() {
           Still need help?
         </p>
         <p className="text-sm text-ink/55 dark:text-canvas/55 mb-6">
-          Can't find the answer? Reach out and we'll get back to you.
+          Can&apos;t find the answer? Reach out and we&apos;ll get back to you.
         </p>
         <div className="flex flex-wrap gap-3 justify-center">
           <a
