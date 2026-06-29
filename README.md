@@ -8,6 +8,13 @@ A modern, open-source frontend starter for tipping creators with the Stellar net
 
 This repository uses **Next.js (App Router)**, **TypeScript**, and **TailwindCSS** with a scalable folder structure designed for collaboration.
 
+## Related Repositories
+
+This frontend is one part of the Stellar Tip Jar project:
+
+- [stellar-tipjar-backend](https://github.com/Bonizozo/stellar-tipjar-backend) — REST API this app consumes
+- [stellar-tipjar-contracts](https://github.com/Bonizozo/stellar-tipjar-contracts) — Soroban smart contract underlying the on-chain tipping
+
 ## Project Description
 
 Stellar Tip Jar allows supporters to send tips to creators using Stellar assets. This frontend starter includes:
