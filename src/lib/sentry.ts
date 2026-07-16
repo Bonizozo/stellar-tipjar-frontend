@@ -7,12 +7,20 @@
  * All helpers are no-ops when NEXT_PUBLIC_SENTRY_DSN is not set.
  */
 
-let sentry: typeof import("@sentry/nextjs") | null = null;
+interface SentryScope { setExtras(extra: Record<string, unknown>): void; }
+interface SentryClient {
+  withScope(callback: (scope: SentryScope) => void): void;
+  captureException(error: unknown): void;
+  captureMessage(message: string, level: "info" | "warning" | "error"): void;
+  setUser(user: { id: string } | null): void;
+}
+let sentry: SentryClient | null = null;
 
 async function getSentry() {
   if (sentry) return sentry;
   try {
-    sentry = await import("@sentry/nextjs");
+    const moduleName = "@sentry/nextjs";
+    sentry = (await import(moduleName)) as SentryClient;
   } catch {
     // @sentry/nextjs is an optional peer dep — no-op if absent.
     sentry = null;

@@ -13,6 +13,7 @@ describe("RevenueSplit Component", () => {
       split: 50,
       createdAt: new Date().toISOString(),
       isActive: true,
+      role: "member",
     },
     {
       id: "2",
@@ -21,6 +22,7 @@ describe("RevenueSplit Component", () => {
       split: 50,
       createdAt: new Date().toISOString(),
       isActive: true,
+      role: "member",
     },
   ];
 

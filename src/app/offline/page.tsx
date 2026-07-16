@@ -1,5 +1,8 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
+import type { Route } from "next";
 import { MoveLeft, WifiOff } from "lucide-react";
 
 import { Button } from "@/components/Button";
@@ -27,7 +30,7 @@ export default function OfflinePage() {
           Check Connection
         </Button>
         
-        <Link href={"/" as any}>
+        <Link href={"/" as Route}>
           <Button variant="outline" className="px-8 flex items-center gap-2">
             <MoveLeft className="h-4 w-4" />
             Back Home

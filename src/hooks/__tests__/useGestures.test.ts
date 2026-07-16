@@ -15,8 +15,8 @@ function fireTouchEvent(el: HTMLElement, type: string, touches: Touch[], changed
   const event = new TouchEvent(type, {
     bubbles: true,
     cancelable: true,
-    touches: touches as unknown as TouchList,
-    changedTouches: changedTouches as unknown as TouchList,
+    touches,
+    changedTouches,
   })
   el.dispatchEvent(event)
 }
@@ -185,7 +185,7 @@ describe('useLongPress', () => {
     const el = document.createElement('div')
 
     const event = new MouseEvent('mousedown', { bubbles: true, clientX: 0, clientY: 0 })
-    act(() => result.current.onMouseDown(event as unknown as React.MouseEvent))
+    act(() => result.current.onMouseDown(event as unknown as React.MouseEvent<HTMLElement>))
     act(() => vi.advanceTimersByTime(500))
 
     expect(onLongPress).toHaveBeenCalledTimes(1)
@@ -198,9 +198,9 @@ describe('useLongPress', () => {
 
     const down = new MouseEvent('mousedown', { bubbles: true, clientX: 0, clientY: 0 })
     const up = new MouseEvent('mouseup', { bubbles: true, clientX: 0, clientY: 0 })
-    act(() => result.current.onMouseDown(down as unknown as React.MouseEvent))
+    act(() => result.current.onMouseDown(down as unknown as React.MouseEvent<HTMLElement>))
     act(() => vi.advanceTimersByTime(200))
-    act(() => result.current.onMouseUp(up as unknown as React.MouseEvent))
+    act(() => result.current.onMouseUp(up as unknown as React.MouseEvent<HTMLElement>))
 
     expect(onLongPress).not.toHaveBeenCalled()
     expect(onPress).toHaveBeenCalledTimes(1)
@@ -212,8 +212,8 @@ describe('useLongPress', () => {
 
     const down = new MouseEvent('mousedown', { bubbles: true, clientX: 0, clientY: 0 })
     const move = new MouseEvent('mousemove', { bubbles: true, clientX: 20, clientY: 0 })
-    act(() => result.current.onMouseDown(down as unknown as React.MouseEvent))
-    act(() => result.current.onMouseMove(move as unknown as React.MouseEvent))
+    act(() => result.current.onMouseDown(down as unknown as React.MouseEvent<HTMLElement>))
+    act(() => result.current.onMouseMove(move as unknown as React.MouseEvent<HTMLElement>))
     act(() => vi.advanceTimersByTime(500))
 
     expect(onLongPress).not.toHaveBeenCalled()
@@ -251,7 +251,7 @@ describe('useGestures', () => {
 
     // long-press via mouse
     const down = new MouseEvent('mousedown', { bubbles: true, clientX: 0, clientY: 0 })
-    act(() => result.current.handlers.onMouseDown?.(down as unknown as React.MouseEvent))
+    act(() => result.current.handlers.onMouseDown?.(down as unknown as React.MouseEvent<HTMLElement>))
     act(() => vi.advanceTimersByTime(500))
     expect(onLongPress).toHaveBeenCalledTimes(1)
 

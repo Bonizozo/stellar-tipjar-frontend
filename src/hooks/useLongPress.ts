@@ -1,8 +1,8 @@
 import { useRef, useCallback, type MouseEvent as ReactMouseEvent, type TouchEvent as ReactTouchEvent } from 'react';
 
 export interface UseLongPressOptions {
-  onLongPress: (e: TouchEvent | MouseEvent) => void;
-  onPress?: (e: TouchEvent | MouseEvent) => void;
+  onLongPress: (e: ReactTouchEvent | ReactMouseEvent) => void;
+  onPress?: (e: ReactTouchEvent | ReactMouseEvent) => void;
   /** Duration in ms before long-press fires. Default: 500 */
   duration?: number;
   /** Movement tolerance in px before cancelling. Default: 10 */
@@ -32,9 +32,11 @@ export function useLongPress(options: UseLongPressOptions) {
     startPosRef.current = null;
   }, []);
 
-  const start = useCallback((e: TouchEvent | MouseEvent) => {
+  const start = useCallback((e: ReactTouchEvent | ReactMouseEvent) => {
     firedRef.current = false;
-    const { clientX, clientY } = 'touches' in e ? e.touches[0] : e;
+    const point = 'touches' in e ? e.touches[0] : e;
+    if (!point) return;
+    const { clientX, clientY } = point;
     startPosRef.current = { x: clientX, y: clientY };
 
     timerRef.current = setTimeout(() => {
@@ -44,26 +46,28 @@ export function useLongPress(options: UseLongPressOptions) {
     }, duration);
   }, [onLongPress, duration, clear]);
 
-  const move = useCallback((e: TouchEvent | MouseEvent) => {
+  const move = useCallback((e: ReactTouchEvent | ReactMouseEvent) => {
     if (!startPosRef.current) return;
-    const { clientX, clientY } = 'touches' in e ? e.touches[0] : e;
+    const point = 'touches' in e ? e.touches[0] : e;
+    if (!point) return;
+    const { clientX, clientY } = point;
     const dx = Math.abs(clientX - startPosRef.current.x);
     const dy = Math.abs(clientY - startPosRef.current.y);
     if (dx > moveThreshold || dy > moveThreshold) clear();
   }, [moveThreshold, clear]);
 
-  const end = useCallback((e: TouchEvent | MouseEvent) => {
+  const end = useCallback((e: ReactTouchEvent | ReactMouseEvent) => {
     if (!firedRef.current) onPress?.(e);
     clear();
   }, [onPress, clear]);
 
   return {
-    onTouchStart: start as (e: ReactTouchEvent) => void,
-    onTouchMove: move as (e: ReactTouchEvent) => void,
-    onTouchEnd: end as (e: ReactTouchEvent) => void,
-    onMouseDown: start as (e: ReactMouseEvent) => void,
-    onMouseMove: move as (e: ReactMouseEvent) => void,
-    onMouseUp: end as (e: ReactMouseEvent) => void,
+    onTouchStart: start,
+    onTouchMove: move,
+    onTouchEnd: end,
+    onMouseDown: start,
+    onMouseMove: move,
+    onMouseUp: end,
     onMouseLeave: clear,
   };
 }

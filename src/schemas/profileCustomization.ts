@@ -1,8 +1,10 @@
 import { z } from "zod";
 
-export type ProfileTheme = "default" | "dark" | "light" | "ocean" | "sunset" | "forest" | "midnight";
+export const profileThemes = ["default", "dark", "light", "ocean", "sunset", "forest", "midnight"] as const;
+export type ProfileTheme = (typeof profileThemes)[number];
 
-export type ProfileLayout = "centered" | "left" | "compact";
+export const profileLayouts = ["centered", "left", "compact"] as const;
+export type ProfileLayout = (typeof profileLayouts)[number];
 
 export const profileThemeOptions: { value: ProfileTheme; label: string; colors: [string, string, string] }[] = [
   { value: "default", label: "Default", colors: ["#8b5cf6", "#0ea5e9", "#151515"] },
@@ -21,12 +23,12 @@ export const profileLayoutOptions: { value: ProfileLayout; label: string; descri
 ];
 
 export const profileCustomizationSchema = z.object({
-  theme: z.nativeEnum(ProfileTheme).default("default"),
+  theme: z.enum(profileThemes).default("default"),
   accentColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Invalid hex color").default("#8b5cf6"),
   secondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Invalid hex color").default("#0ea5e9"),
   backgroundColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Invalid hex color").default("#ffffff"),
   bannerUrl: z.string().url().optional().default(""),
-  layout: z.nativeEnum(ProfileLayout).default("centered"),
+  layout: z.enum(profileLayouts).default("centered"),
 });
 
 export type ProfileCustomizationValues = z.infer<typeof profileCustomizationSchema>;

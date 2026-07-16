@@ -7,14 +7,15 @@ export function useVerification() {
   const queryClient = useQueryClient();
 
   const { data: status, isLoading } = useQuery({
-    queryKey: ['verification-status'],
+    queryKey: ['verification-status', publicKey],
     queryFn: () => requestVerificationStatus(),
+    enabled: Boolean(publicKey),
   });
 
   const verificationMutation = useMutation({
-    mutationFn: requestVerification,
+    mutationFn: () => requestVerification(publicKey ?? ""),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['verification-status'] });
+      void queryClient.invalidateQueries({ queryKey: ['verification-status', publicKey] });
     },
   });
 
@@ -27,7 +28,7 @@ export function useVerification() {
     isLoading,
     submitRequest,
     isRequesting: verificationMutation.isPending,
-    isVerified: status?.isVerified || false,
+    isVerified: status?.status === "approved",
   };
 }
 

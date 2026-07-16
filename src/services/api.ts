@@ -860,3 +860,10 @@ export async function requestVerification(username: string): Promise<void> {
     body: JSON.stringify({ username }),
   });
 }
+
+
+export const api = {
+  getCreators: () => request<CreatorProfile[]>("/creators", undefined, { critical: false }),
+  getTips: () => request<unknown[]>("/tips", undefined, { critical: false }),
+  sendTip: (payload: unknown) => request<unknown>("/tips", { method: "POST", body: JSON.stringify(payload) }, { critical: true }),
+};
