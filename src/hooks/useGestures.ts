@@ -2,6 +2,7 @@ import { useCallback, useRef } from 'react';
 import { useSwipe, type UseSwipeOptions } from './useSwipe';
 import { usePinchZoom, type UsePinchZoomOptions } from './usePinchZoom';
 import { useLongPress, type UseLongPressOptions } from './useLongPress';
+import type { DOMAttributes } from 'react';
 
 export interface UseGesturesOptions {
   swipe?: UseSwipeOptions;
@@ -26,7 +27,7 @@ export interface UseGesturesOptions {
  */
 export function useGestures<T extends HTMLElement = HTMLElement>(
   options: UseGesturesOptions = {}
-) {
+): { ref: (node: T | null) => void; handlers: DOMAttributes<T>; commitScale: (scale: number) => void } {
   const swipeRef = useSwipe<T>(options.swipe ?? {});
   const { ref: pinchRef, commitScale } = usePinchZoom<T>(options.pinch ?? {});
   // Always call — pass a no-op when longPress is not needed (rules of hooks)

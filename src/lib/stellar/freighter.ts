@@ -102,7 +102,6 @@ export class FreighterWallet implements WalletProvider {
 
   async signTransaction(xdr: string, network: StellarNetwork): Promise<string> {
     const result = await signTransaction(xdr, {
-      network,
       networkPassphrase: NETWORK_PASSPHRASES[network],
     });
 

@@ -7,7 +7,7 @@ import type { StellarNetwork, WalletProviderType } from "@/lib/stellar/types";
 
 type WalletStatus = "idle" | "loading" | "connected";
 
-interface WalletContextType {
+export interface WalletContextType {
   isConnected: boolean;
   isInstalled: boolean;
   publicKey: string | null;

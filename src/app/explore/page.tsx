@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { Suspense, useState, useMemo } from "react";
 import Link from "next/link";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useSearchParams } from "@/hooks/useSearchParams";
@@ -74,7 +74,7 @@ const fetchCreatorsMock = async ({ pageParam = 1, queryKey }: any) => {
   };
 };
 
-export default function ExplorePage() {
+function ExplorePageContent() {
   const { getSearchParam, setSearchParams } = useSearchParams();
   const { trackInteraction } = useRecommendations(0);
 
@@ -308,5 +308,14 @@ export default function ExplorePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+
+export default function ExplorePage() {
+  return (
+    <Suspense fallback={<main className="mx-auto max-w-6xl px-4 py-10">Loading creators…</main>}>
+      <ExplorePageContent />
+    </Suspense>
   );
 }

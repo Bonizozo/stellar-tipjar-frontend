@@ -4,12 +4,13 @@ import { FormField } from './FormField';
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
   error?: string;
+  helperText?: string;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, className = '', ...props }, ref) => {
+  ({ label, error, helperText, className = '', ...props }, ref) => {
     return (
-      <FormField label={label} error={error} className={className}>
+      <FormField label={label} error={error} helperText={helperText} className={className}>
         <input
           ref={ref}
           className={`peer w-full px-4 py-3 border-2 ${

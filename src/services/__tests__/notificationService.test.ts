@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { notificationService } from "@/services/notificationService";
+import type { NotificationSettings } from "@/schemas/notificationSchema";
 
 describe("Notification Service", () => {
   beforeEach(() => {
@@ -85,7 +86,7 @@ describe("Notification Service", () => {
 
   describe("updateNotificationSettings", () => {
     it("should save settings to localStorage", async () => {
-      const settings = {
+      const settings: NotificationSettings = {
         categories: {
           tips: { email: false, push: false, inApp: false },
           comments: { email: true, push: true, inApp: true },
@@ -115,7 +116,7 @@ describe("Notification Service", () => {
     });
 
     it("should return the updated settings", async () => {
-      const settings = {
+      const settings: NotificationSettings = {
         categories: {
           tips: { email: false, push: false, inApp: false },
           comments: { email: true, push: true, inApp: true },
@@ -437,13 +438,13 @@ describe("Notification Service", () => {
         notificationService.getNotificationSettings(),
         notificationService.getCategories(),
         notificationService.getNotificationHistory(),
-      ];
+      ] as const;
 
-      const results = await Promise.all(promises);
+      const [settingsResult, categoriesResult, historyResult] = await Promise.all(promises);
 
-      expect(results[0].categories).toBeDefined();
-      expect(results[1]).toHaveLength(6);
-      expect(Array.isArray(results[2])).toBe(true);
+      expect(settingsResult.categories).toBeDefined();
+      expect(categoriesResult).toHaveLength(6);
+      expect(Array.isArray(historyResult)).toBe(true);
     });
   });
 });

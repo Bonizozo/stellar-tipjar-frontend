@@ -10,9 +10,6 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   typedRoutes: true,
 
-  typescript: {
-    ignoreBuildErrors: true,
-  },
 
   images: {
     formats: ["image/avif", "image/webp"],

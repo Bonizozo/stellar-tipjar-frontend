@@ -25,7 +25,7 @@ export interface Toast {
   position: ToastPosition;
 }
 
-type ToastOptions = Partial<Pick<Toast, "duration" | "action" | "position">>;
+export type ToastOptions = Partial<Pick<Toast, "duration" | "action" | "position">>;
 
 interface ToastContextValue {
   toasts: Toast[];
