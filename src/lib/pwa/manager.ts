@@ -77,7 +77,7 @@ class PWAManager {
     try {
       const subscription = await this.registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: this.urlBase64ToUint8Array(vapidPublicKey),
+        applicationServerKey: this.urlBase64ToArrayBuffer(vapidPublicKey),
       });
 
       // Send subscription to server
@@ -147,7 +147,7 @@ class PWAManager {
     }
 
     try {
-      await this.registration.sync.register(tag);
+      await this.registration.sync?.register(tag);
       return true;
     } catch (error) {
       console.error("[PWA] Background sync registration failed:", error);
@@ -181,7 +181,7 @@ class PWAManager {
     }
 
     try {
-      await this.registration.sync.register("tipjar-retry-requests");
+      await this.registration.sync?.register("tipjar-retry-requests");
     } catch (error) {
       console.error("[PWA] Background sync setup failed:", error);
     }
@@ -190,7 +190,7 @@ class PWAManager {
   /**
    * Convert VAPID key from base64 to Uint8Array
    */
-  private urlBase64ToUint8Array(base64String: string): Uint8Array {
+  private urlBase64ToArrayBuffer(base64String: string): ArrayBuffer {
     const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
     const base64 = (base64String + padding).replace(/\-/g, "+").replace(/_/g, "/");
 
@@ -201,7 +201,7 @@ class PWAManager {
       outputArray[i] = rawData.charCodeAt(i);
     }
 
-    return outputArray;
+    return outputArray.buffer;
   }
 }
 

@@ -16,19 +16,19 @@ export const teamNameSchema = z
 
 // Team member schema
 export const teamMemberSchema = z.object({
-  id: z.string().optional(),
+  id: z.string().default(() => crypto.randomUUID()),
   name: z
     .string()
     .min(1, "Member name is required")
     .max(100, "Member name is too long"),
   email: z.string().email("Invalid email address").optional().or(z.literal("")),
-  role: z.enum(["owner", "manager", "member"]).optional().default("member"),
+  role: z.enum(["owner", "admin", "member", "viewer"]).optional().default("member"),
   split: z
     .number()
     .min(0, "Split must be 0 or higher")
     .max(100, "Split cannot exceed 100%")
     .int("Split must be a whole number"),
-  createdAt: z.string().datetime().optional(),
+  createdAt: z.string().datetime().default(() => new Date().toISOString()),
   isActive: z.boolean().optional().default(true),
 });
 
@@ -36,9 +36,9 @@ export type TeamMemberInput = z.infer<typeof teamMemberSchema>;
 
 // Team invitation schema
 export const teamInvitationSchema = z.object({
-  id: z.string().optional(),
+  id: z.string().default(() => crypto.randomUUID()),
   email: z.string().email("Invalid email address"),
-  sentAt: z.string().datetime().optional(),
+  sentAt: z.string().datetime().default(() => new Date().toISOString()),
   status: z
     .enum(["pending", "accepted", "rejected"])
     .optional()
@@ -50,15 +50,15 @@ export type TeamInvitationInput = z.infer<typeof teamInvitationSchema>;
 
 // Team profile schema
 export const teamProfileSchema = z.object({
-  id: z.string().optional(),
+  id: z.string().default(() => crypto.randomUUID()),
   name: teamNameSchema,
   displayName: z.string().max(100, "Display name is too long").optional(),
   description: z.string().max(500, "Description is too long").optional(),
   members: z.array(teamMemberSchema).default([]),
   invitations: z.array(teamInvitationSchema).default([]),
   owner: z.string().optional(),
-  createdAt: z.string().datetime().optional(),
-  updatedAt: z.string().datetime().optional(),
+  createdAt: z.string().datetime().default(() => new Date().toISOString()),
+  updatedAt: z.string().datetime().default(() => new Date().toISOString()),
   totalTipsReceived: z.number().nonnegative().optional().default(0),
 });
 

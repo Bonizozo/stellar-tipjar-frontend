@@ -2,11 +2,32 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { WalletConnector } from '../WalletConnector'
 import { useWallet } from '@/hooks/useWallet'
+import type { WalletContextType } from '@/contexts/WalletContext'
 
 // Mock the useWallet hook
 vi.mock('@/hooks/useWallet')
 
 const mockUseWallet = vi.mocked(useWallet)
+
+const createWalletState = (overrides: Partial<WalletContextType>): WalletContextType => ({
+  isConnected: false,
+  isInstalled: true,
+  publicKey: null,
+  shortAddress: '',
+  balance: '0.0',
+  network: 'TESTNET',
+  provider: 'freighter',
+  status: 'idle',
+  isConnecting: false,
+  isLoading: false,
+  error: null,
+  connect: vi.fn(),
+  disconnect: vi.fn(),
+  refreshBalance: vi.fn(),
+  signStellarTransaction: vi.fn(),
+  ...overrides,
+})
+
 
 describe('WalletConnector Component', () => {
   const user = userEvent.setup()
@@ -16,14 +37,14 @@ describe('WalletConnector Component', () => {
   })
 
   it('shows connect button when wallet is not connected', () => {
-    mockUseWallet.mockReturnValue({
+    mockUseWallet.mockReturnValue(createWalletState({
       isConnected: false,
       publicKey: null,
       connect: vi.fn(),
       disconnect: vi.fn(),
       shortAddress: '',
-      network: ''
-    })
+      network: 'TESTNET'
+    }))
 
     render(<WalletConnector />)
 
@@ -33,32 +54,32 @@ describe('WalletConnector Component', () => {
   })
 
   it('shows wallet info when connected', () => {
-    mockUseWallet.mockReturnValue({
+    mockUseWallet.mockReturnValue(createWalletState({
       isConnected: true,
       publicKey: 'GBRP...PLACEHOLDER...2PR5',
       connect: vi.fn(),
       disconnect: vi.fn(),
       shortAddress: '0x1234...5678',
-      network: 'testnet'
-    })
+      network: 'TESTNET'
+    }))
 
     render(<WalletConnector />)
 
-    expect(screen.getByText('testnet')).toBeInTheDocument()
+    expect(screen.getByText('TESTNET')).toBeInTheDocument()
     expect(screen.getByText('0x1234...5678')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Disconnect' })).toBeInTheDocument()
   })
 
   it('calls connect when connect button is clicked', async () => {
     const mockConnect = vi.fn()
-    mockUseWallet.mockReturnValue({
+    mockUseWallet.mockReturnValue(createWalletState({
       isConnected: false,
       publicKey: null,
       connect: mockConnect,
       disconnect: vi.fn(),
       shortAddress: '',
-      network: ''
-    })
+      network: 'TESTNET'
+    }))
 
     render(<WalletConnector />)
 
@@ -70,14 +91,14 @@ describe('WalletConnector Component', () => {
 
   it('calls disconnect when disconnect button is clicked', async () => {
     const mockDisconnect = vi.fn()
-    mockUseWallet.mockReturnValue({
+    mockUseWallet.mockReturnValue(createWalletState({
       isConnected: true,
       publicKey: 'GBRP...PLACEHOLDER...2PR5',
       connect: vi.fn(),
       disconnect: mockDisconnect,
       shortAddress: '0x1234...5678',
-      network: 'testnet'
-    })
+      network: 'TESTNET'
+    }))
 
     render(<WalletConnector />)
 
@@ -88,30 +109,30 @@ describe('WalletConnector Component', () => {
   })
 
   it('displays network with correct styling when connected', () => {
-    mockUseWallet.mockReturnValue({
+    mockUseWallet.mockReturnValue(createWalletState({
       isConnected: true,
       publicKey: 'GBRP...PLACEHOLDER...2PR5',
       connect: vi.fn(),
       disconnect: vi.fn(),
       shortAddress: '0x1234...5678',
-      network: 'mainnet'
-    })
+      network: 'PUBLIC'
+    }))
 
     render(<WalletConnector />)
 
-    const networkElement = screen.getByText('mainnet')
+    const networkElement = screen.getByText('PUBLIC')
     expect(networkElement).toHaveClass('font-medium', 'text-wave')
   })
 
   it('displays address with correct styling when connected', () => {
-    mockUseWallet.mockReturnValue({
+    mockUseWallet.mockReturnValue(createWalletState({
       isConnected: true,
       publicKey: 'GBRP...PLACEHOLDER...2PR5',
       connect: vi.fn(),
       disconnect: vi.fn(),
       shortAddress: '0xABCD...EF12',
-      network: 'testnet'
-    })
+      network: 'TESTNET'
+    }))
 
     render(<WalletConnector />)
 
@@ -120,18 +141,18 @@ describe('WalletConnector Component', () => {
   })
 
   it('has correct container styling when connected', () => {
-    mockUseWallet.mockReturnValue({
+    mockUseWallet.mockReturnValue(createWalletState({
       isConnected: true,
       publicKey: 'GBRP...PLACEHOLDER...2PR5',
       connect: vi.fn(),
       disconnect: vi.fn(),
       shortAddress: '0x1234...5678',
-      network: 'testnet'
-    })
+      network: 'TESTNET'
+    }))
 
     render(<WalletConnector />)
 
-    const container = screen.getByText('testnet').parentElement
+    const container = screen.getByText('TESTNET').parentElement
     expect(container).toHaveClass(
       'flex',
       'items-center',
@@ -148,14 +169,14 @@ describe('WalletConnector Component', () => {
   })
 
   it('disconnect button has correct styling', () => {
-    mockUseWallet.mockReturnValue({
+    mockUseWallet.mockReturnValue(createWalletState({
       isConnected: true,
       publicKey: 'GBRP...PLACEHOLDER...2PR5',
       connect: vi.fn(),
       disconnect: vi.fn(),
       shortAddress: '0x1234...5678',
-      network: 'testnet'
-    })
+      network: 'TESTNET'
+    }))
 
     render(<WalletConnector />)
 
@@ -172,32 +193,32 @@ describe('WalletConnector Component', () => {
   })
 
   it('handles empty short address gracefully', () => {
-    mockUseWallet.mockReturnValue({
+    mockUseWallet.mockReturnValue(createWalletState({
       isConnected: true,
       publicKey: 'GBRP...PLACEHOLDER...2PR5',
       connect: vi.fn(),
       disconnect: vi.fn(),
       shortAddress: '',
-      network: 'testnet'
-    })
+      network: 'TESTNET'
+    }))
 
     render(<WalletConnector />)
 
-    expect(screen.getByText('testnet')).toBeInTheDocument()
+    expect(screen.getByText('TESTNET')).toBeInTheDocument()
     // Check that the address span exists but is empty
-    const addressSpan = screen.getByText('testnet').nextElementSibling
+    const addressSpan = screen.getByText('TESTNET').nextElementSibling
     expect(addressSpan).toHaveTextContent('')
   })
 
   it('handles empty network gracefully', () => {
-    mockUseWallet.mockReturnValue({
+    mockUseWallet.mockReturnValue(createWalletState({
       isConnected: true,
       publicKey: 'GBRP...PLACEHOLDER...2PR5',
       connect: vi.fn(),
       disconnect: vi.fn(),
       shortAddress: '0x1234...5678',
-      network: ''
-    })
+      network: 'TESTNET'
+    }))
 
     render(<WalletConnector />)
 

@@ -22,6 +22,7 @@ export interface InteractiveCardProps extends Omit<CardProps, "children"> {
   expandedContent?: ReactNode;
   badge?: ReactNode;
   status?: "default" | "success" | "warning" | "error" | "info";
+  ripple?: boolean;
 }
 
 const statusStyles = {
@@ -48,6 +49,7 @@ export function InteractiveCard({
   expandedContent,
   badge,
   status = "default",
+  ripple: _ripple,
   variant = "default",
   hoverEffect = "lift",
   className = "",

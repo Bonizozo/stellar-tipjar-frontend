@@ -100,7 +100,7 @@ export const emailNotificationSchema = z.object({
   category: notificationCategorySchema,
   subject: z.string(),
   template: z.string(),
-  data: z.record(z.any()),
+  data: z.record(z.string(), z.unknown()),
   includeUnsubscribeLink: z.boolean().optional().default(true),
 });
 export type EmailNotification = z.infer<typeof emailNotificationSchema>;

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import type { Route } from 'next';
 
 export interface UseVoiceCommandsOptions {
   lang?: string;
@@ -68,7 +69,7 @@ export function useVoiceCommands({
 
       if (text.includes('go home') || text.includes('navigate home')) {
         speak('Navigating home');
-        router.push('/');
+        router.push('/' as Route);
       } else if (text.startsWith('tip') || text.includes('send tip')) {
         const match = text.match(/tip\s+(\d+(?:\.\d+)?)/);
         const amount = match ? parseFloat(match[1]) : undefined;
@@ -77,12 +78,12 @@ export function useVoiceCommands({
         if (onTip) {
           onTip(amount);
         } else {
-          router.push('/tips');
+          router.push('/tips' as Route);
         }
       } else if (text.startsWith('go to ')) {
         const page = text.replace('go to ', '').trim();
         speak(`Navigating to ${page}`);
-        router.push(`/${page}`);
+        router.push(`/${page}` as Route);
       } else if (text.includes('stop listening')) {
         speak('Stopping');
         recognitionRef.current?.stop();
