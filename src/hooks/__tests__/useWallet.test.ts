@@ -43,21 +43,9 @@ describe('useWallet Hook', () => {
     expect(result.current.isConnected).toBeDefined()
   })
 
-  it('should persist wallet state', () => {
-    const { result } = renderHook(() => useWallet())
-
-    act(() => {
-      // Simulate wallet connection
-    })
-
-    // Check if state is persisted
-    const stored = localStorage.getItem('wallet_state')
-    expect(stored).toBeDefined()
-  })
-
   it('should handle wallet errors', async () => {
     const { result } = renderHook(() => useWallet())
 
-    expect(result.current.error).toBeUndefined()
+    expect(result.current.error).toBeNull()
   })
 })

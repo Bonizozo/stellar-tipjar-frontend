@@ -1,9 +1,14 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
+import React, { createContext, useContext, useEffect, useCallback, ReactNode } from "react";
 
-import { FreighterWallet } from "@/lib/stellar/freighter";
-import type { StellarNetwork, WalletProviderType } from "@/lib/stellar/types";
+import {
+  useWalletStore,
+  type WalletStatus as StoreWalletStatus,
+} from "@/store/walletStore";
+import type { StellarNetwork } from "@/lib/wallet";
+
+// ── Context types ─────────────────────────────────────────────────────────────
 
 type WalletStatus = "idle" | "loading" | "connected";
 
@@ -14,7 +19,7 @@ export interface WalletContextType {
   shortAddress: string;
   balance: string;
   network: StellarNetwork;
-  provider: WalletProviderType;
+  provider: "freighter";
   status: WalletStatus;
   isConnecting: boolean;
   isLoading: boolean;
@@ -25,158 +30,69 @@ export interface WalletContextType {
   signStellarTransaction: (xdr: string) => Promise<string>;
 }
 
-const STORAGE_KEYS = {
-  connected: "wallet_connected",
-  publicKey: "wallet_publicKey",
-  provider: "wallet_provider",
-} as const;
-
-const DEFAULT_NETWORK = (process.env.NEXT_PUBLIC_STELLAR_NETWORK ?? "TESTNET").toUpperCase() as StellarNetwork;
-
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
-const freighterWallet = new FreighterWallet();
+
+// ── Map store status → context status ─────────────────────────────────────────
+
+function toContextStatus(storeStatus: StoreWalletStatus): WalletStatus {
+  switch (storeStatus) {
+    case "connected":
+      return "connected";
+    case "connecting":
+      return "loading";
+    default:
+      return "idle";
+  }
+}
 
 function formatAddress(address: string | null): string {
-  if (!address) {
-    return "";
-  }
-
+  if (!address) return "";
   return `${address.slice(0, 4)}...${address.slice(-4)}`;
 }
 
-function safeStorageRead(key: string): string | null {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  return localStorage.getItem(key);
-}
-
-function saveConnection(publicKey: string) {
-  localStorage.setItem(STORAGE_KEYS.connected, "true");
-  localStorage.setItem(STORAGE_KEYS.publicKey, publicKey);
-  localStorage.setItem(STORAGE_KEYS.provider, "freighter");
-}
-
-function clearConnection() {
-  localStorage.removeItem(STORAGE_KEYS.connected);
-  localStorage.removeItem(STORAGE_KEYS.publicKey);
-  localStorage.removeItem(STORAGE_KEYS.provider);
-}
+// ── Provider ──────────────────────────────────────────────────────────────────
 
 export function WalletProvider({ children }: { children: ReactNode }) {
-  const [publicKey, setPublicKey] = useState<string | null>(null);
-  const [balance, setBalance] = useState<string>("0.0");
-  const [network, setNetwork] = useState<StellarNetwork>(DEFAULT_NETWORK);
-  const [status, setStatus] = useState<WalletStatus>("loading");
-  const [isInstalled, setIsInstalled] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const storeStatus = useWalletStore((s) => s.status);
+  const publicKey = useWalletStore((s) => s.publicKey);
+  const network = useWalletStore((s) => s.network);
+  const balance = useWalletStore((s) => s.balance);
+  const error = useWalletStore((s) => s.error);
 
-  const refreshBalance = useCallback(async () => {
-    if (!publicKey) {
-      setBalance("0.0");
-      return;
-    }
+  const initialize = useWalletStore((s) => s.initialize);
+  const storeConnect = useWalletStore((s) => s.connect);
+  const storeDisconnect = useWalletStore((s) => s.disconnect);
+  const refreshBalance = useWalletStore((s) => s.refreshBalance);
+  const signStellarTransaction = useWalletStore((s) => s.signStellarTransaction);
 
-    const nextBalance = await freighterWallet.getBalance(publicKey, network);
-    setBalance(nextBalance);
-  }, [network, publicKey]);
-
-  const refreshNetwork = useCallback(async () => {
-    const detectedNetwork = await freighterWallet.getNetwork();
-    setNetwork(detectedNetwork);
-  }, []);
-
-  const connect = useCallback(async () => {
-    setStatus("loading");
-    setError(null);
-
-    try {
-      const nextPublicKey = await freighterWallet.connect();
-      const detectedNetwork = await freighterWallet.getNetwork();
-      const nextBalance = await freighterWallet.getBalance(nextPublicKey, detectedNetwork);
-
-      setPublicKey(nextPublicKey);
-      setNetwork(detectedNetwork);
-      setBalance(nextBalance);
-      setStatus("connected");
-      saveConnection(nextPublicKey);
-    } catch (err) {
-      setStatus("idle");
-      setPublicKey(null);
-      setBalance("0.0");
-      setError(err instanceof Error ? err.message : "Failed to connect wallet.");
-      clearConnection();
-    }
-  }, []);
-
-  const disconnect = useCallback(async () => {
-    await freighterWallet.disconnect();
-    setPublicKey(null);
-    setBalance("0.0");
-    setStatus("idle");
-    setError(null);
-    clearConnection();
-  }, []);
-
-  const signStellarTransaction = useCallback(
-    async (xdr: string) => {
-      if (!publicKey) {
-        throw new Error("Wallet not connected.");
-      }
-
-      try {
-        return await freighterWallet.signTransaction(xdr, network);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Failed to sign transaction.";
-        setError(message);
-        throw new Error(message);
-      }
-    },
-    [network, publicKey],
-  );
-
+  // Initialize on mount — revalidates persisted sessions
   useEffect(() => {
-    const bootstrap = async () => {
-      try {
-        const installed = await freighterWallet.isInstalled();
-        setIsInstalled(installed);
-        await refreshNetwork();
+    void initialize();
+  }, [initialize]);
 
-        if (!installed) {
-          setStatus("idle");
-          clearConnection();
-          return;
-        }
-
-        const persistedConnected = safeStorageRead(STORAGE_KEYS.connected) === "true";
-        const persistedProvider = safeStorageRead(STORAGE_KEYS.provider) === "freighter";
-
-        if (persistedConnected && persistedProvider) {
-          await connect();
-          return;
-        }
-
-        setStatus("idle");
-      } catch {
-        setStatus("idle");
-        setError("Failed to initialize wallet.");
-      }
-    };
-
-    void bootstrap();
-  }, [connect, refreshNetwork]);
-
+  // Refresh balance when connected
   useEffect(() => {
-    if (status === "connected") {
+    if (storeStatus === "connected") {
       void refreshBalance();
     }
-  }, [refreshBalance, status]);
+  }, [refreshBalance, storeStatus]);
+
+  const connect = useCallback(async () => {
+    await storeConnect();
+  }, [storeConnect]);
+
+  const disconnect = useCallback(async () => {
+    await storeDisconnect();
+  }, [storeDisconnect]);
+
+  const status = toContextStatus(storeStatus);
+  const isInstalled = storeStatus !== "unavailable";
+  const isConnecting = storeStatus === "connecting";
 
   return (
     <WalletContext.Provider
       value={{
-        isConnected: status === "connected" && !!publicKey,
+        isConnected: storeStatus === "connected" && !!publicKey,
         isInstalled,
         publicKey,
         shortAddress: formatAddress(publicKey),
@@ -184,9 +100,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         network,
         provider: "freighter",
         status,
-        isConnecting: status === "loading",
-        isLoading: status === "loading",
-        error,
+        isConnecting,
+        isLoading: isConnecting,
+        error: error?.message ?? null,
         connect,
         disconnect,
         refreshBalance,
@@ -200,10 +116,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
 export function useWalletContext() {
   const context = useContext(WalletContext);
-
   if (context === undefined) {
     throw new Error("useWalletContext must be used within a WalletProvider");
   }
-
   return context;
 }
