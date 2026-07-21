@@ -9,6 +9,11 @@ import {
 import type { StellarNetwork } from "@/lib/wallet";
 
 // ── Context types ─────────────────────────────────────────────────────────────
+import { FreighterWallet } from "@/lib/stellar/freighter";
+import type { StellarNetwork, WalletProviderType } from "@/lib/stellar/types";
+import { createNamespacedStorage } from "@/lib/storage";
+
+const storage = createNamespacedStorage("wallet");
 
 type WalletStatus = "idle" | "loading" | "connected";
 
@@ -29,6 +34,8 @@ export interface WalletContextType {
   refreshBalance: () => Promise<void>;
   signStellarTransaction: (xdr: string) => Promise<string>;
 }
+
+const DEFAULT_NETWORK = (process.env.NEXT_PUBLIC_STELLAR_NETWORK ?? "TESTNET").toUpperCase() as StellarNetwork;
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
@@ -51,6 +58,17 @@ function formatAddress(address: string | null): string {
 }
 
 // ── Provider ──────────────────────────────────────────────────────────────────
+function saveConnection(publicKey: string) {
+  storage.setString("connected", "true");
+  storage.setString("publicKey", publicKey);
+  storage.setString("provider", "freighter");
+}
+
+function clearConnection() {
+  storage.remove("connected");
+  storage.remove("publicKey");
+  storage.remove("provider");
+}
 
 export function WalletProvider({ children }: { children: ReactNode }) {
   const storeStatus = useWalletStore((s) => s.status);
@@ -88,6 +106,42 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const status = toContextStatus(storeStatus);
   const isInstalled = storeStatus !== "unavailable";
   const isConnecting = storeStatus === "connecting";
+  useEffect(() => {
+    const bootstrap = async () => {
+      try {
+        const installed = await freighterWallet.isInstalled();
+        setIsInstalled(installed);
+        await refreshNetwork();
+
+        if (!installed) {
+          setStatus("idle");
+          clearConnection();
+          return;
+        }
+
+        const persistedConnected = storage.getString("connected", { legacyKey: "wallet_connected" }) === "true";
+        const persistedProvider = storage.getString("provider", { legacyKey: "wallet_provider" }) === "freighter";
+
+        if (persistedConnected && persistedProvider) {
+          await connect();
+          return;
+        }
+
+        setStatus("idle");
+      } catch {
+        setStatus("idle");
+        setError("Failed to initialize wallet.");
+      }
+    };
+
+    void bootstrap();
+  }, [connect, refreshNetwork]);
+
+  useEffect(() => {
+    if (status === "connected") {
+      void refreshBalance();
+    }
+  }, [refreshBalance, status]);
 
   return (
     <WalletContext.Provider

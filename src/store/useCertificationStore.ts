@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { createZustandStorage } from '@/lib/storage';
 
 interface CertificationState {
   completedCourseIds: string[];
@@ -31,6 +32,7 @@ export const useCertificationStore = create<CertificationState>()(
     }),
     {
       name: 'certification-storage',
+      storage: createJSONStorage(() => createZustandStorage('store', 'certification-storage')),
     }
   )
 );

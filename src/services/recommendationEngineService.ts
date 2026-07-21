@@ -7,6 +7,10 @@
  */
 
 import { loadAffinityProfile, scoreCreators, type ScoredCreator } from "@/utils/mlModel";
+import { createNamespacedStorage } from "@/lib/storage";
+import { z } from "zod";
+
+const storage = createNamespacedStorage("recommendations");
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -67,23 +71,21 @@ const CANDIDATE_POOL: {
 
 // ─── Preference Tracking ─────────────────────────────────────────────────────
 
-const USER_PREFERENCES_KEY = "recommendation_preferences";
+const preferenceSchema = z.object({
+  category: z.string(),
+  weight: z.number(),
+  lastInteracted: z.number(),
+});
 
 export function loadUserPreferences(): UserPreference[] {
-  try {
-    const raw = localStorage.getItem(USER_PREFERENCES_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
+  return storage.get<UserPreference[]>("preferences", {
+    schema: z.array(preferenceSchema),
+    legacyKey: "recommendation_preferences",
+  }) ?? [];
 }
 
 export function saveUserPreferences(prefs: UserPreference[]): void {
-  try {
-    localStorage.setItem(USER_PREFERENCES_KEY, JSON.stringify(prefs));
-  } catch {
-    // Silently fail if localStorage is unavailable
-  }
+  storage.set("preferences", prefs);
 }
 
 export function trackUserPreference(category: string, weight: number = 1): void {

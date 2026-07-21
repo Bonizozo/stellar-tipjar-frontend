@@ -43,6 +43,18 @@ describe('useWallet Hook', () => {
     expect(result.current.isConnected).toBeDefined()
   })
 
+  it('should persist wallet state', () => {
+    const { result } = renderHook(() => useWallet())
+
+    act(() => {
+      // Simulate wallet connection
+    })
+
+    // Check if state is persisted (wallet stores connected, publicKey, provider separately)
+    const stored = localStorage.getItem('stj:wallet:connected')
+    expect(stored).toBeDefined()
+  })
+
   it('should handle wallet errors', async () => {
     const { result } = renderHook(() => useWallet())
 

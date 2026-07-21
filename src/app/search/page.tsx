@@ -8,8 +8,10 @@ import { SearchResults } from "@/components/Search/SearchResults";
 import { useDebounce } from "@/hooks/useDebounce";
 import { CREATOR_EXAMPLES, type Creator } from "@/utils/creatorData";
 import { CATEGORIES } from "@/utils/categories";
+import { createNamespacedStorage } from "@/lib/storage";
+import { z } from "zod";
 
-const HISTORY_KEY = "stellar_search_history_page";
+const searchStorage = createNamespacedStorage("search");
 const DEFAULT_FILTERS: SearchFilterState = { categories: [], verifiedOnly: false, sort: "popular" };
 
 function trackSearch(query: string) {
@@ -88,9 +90,11 @@ export default function SearchPage() {
   const debouncedQuery = useDebounce(query, 300);
 
   useEffect(() => {
-    try {
-      setHistory(JSON.parse(localStorage.getItem(HISTORY_KEY) ?? "[]"));
-    } catch {}
+    const stored = searchStorage.get<string[]>("pageHistory", {
+      schema: z.array(z.string()),
+      legacyKey: "stellar_search_history_page",
+    });
+    setHistory(stored ?? []);
   }, []);
 
   useEffect(() => {
@@ -98,7 +102,7 @@ export default function SearchPage() {
     trackSearch(debouncedQuery);
     setHistory((prev) => {
       const next = [debouncedQuery, ...prev.filter((h) => h !== debouncedQuery)].slice(0, 10);
-      localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
+      searchStorage.set("pageHistory", next);
       return next;
     });
   }, [debouncedQuery]);
@@ -180,11 +184,11 @@ export default function SearchPage() {
                 className="h-3 w-3 opacity-50 hover:opacity-100"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setHistory((prev) => {
-                    const next = prev.filter((s) => s !== h);
-                    localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
-                    return next;
-                  });
+                    setHistory((prev) => {
+                      const next = prev.filter((s) => s !== h);
+                      searchStorage.set("pageHistory", next);
+                      return next;
+                    });
                 }}
               />
             </button>

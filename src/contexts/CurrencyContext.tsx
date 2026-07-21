@@ -1,6 +1,9 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createNamespacedStorage } from '@/lib/storage';
+
+const storage = createNamespacedStorage('currency');
 
 type CurrencyContextType = {
   selectedCurrency: string;
@@ -10,17 +13,16 @@ type CurrencyContextType = {
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
 
 export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Default to USD, but check localStorage first
   const [selectedCurrency, setSelectedCurrency] = useState('usd');
 
   useEffect(() => {
-    const saved = localStorage.getItem('user-fiat-preference');
+    const saved = storage.getString('currency', { legacyKey: 'user-fiat-preference' });
     if (saved) setSelectedCurrency(saved);
   }, []);
 
   const setCurrency = (currency: string) => {
     setSelectedCurrency(currency);
-    localStorage.setItem('user-fiat-preference', currency);
+    storage.setString('currency', currency);
   };
 
   return (

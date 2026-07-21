@@ -2,6 +2,8 @@ import { renderHook, act } from "@testing-library/react";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { useTeam, TeamMember, TeamProfile } from "@/hooks/useTeam";
 
+const TEAM_PROFILES_KEY = "stj:team:profiles";
+
 describe("useTeam Hook", () => {
   const testTeamName = "test-team";
 
@@ -205,12 +207,13 @@ describe("useTeam Hook", () => {
       result.current.addMember({ name: "Quinn", split: 100 });
     });
 
-    const stored = localStorage.getItem("stellar_tipjar_team_profiles");
+    const stored = localStorage.getItem(TEAM_PROFILES_KEY);
     expect(stored).toBeTruthy();
 
     const parsed = JSON.parse(stored!);
-    expect(parsed[testTeamName]).toBeDefined();
-    expect(parsed[testTeamName].members).toHaveLength(1);
+    expect(parsed.__v).toBe(1);
+    expect(parsed.d[testTeamName]).toBeDefined();
+    expect(parsed.d[testTeamName].members).toHaveLength(1);
   });
 
   it("should load data from localStorage", () => {

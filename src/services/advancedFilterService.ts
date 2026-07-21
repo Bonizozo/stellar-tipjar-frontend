@@ -5,7 +5,12 @@
  * complex query builder, and filter sharing.
  */
 
+import { createNamespacedStorage } from "@/lib/storage";
+import { z } from "zod";
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+
+const storage = createNamespacedStorage("filters");
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -81,6 +86,52 @@ export interface SavedFilter {
   updatedAt: string;
 }
 
+// ─── Zod Schemas for Storage Validation ──────────────────────────────────────
+
+const criterionSchema = z.object({
+  id: z.string(),
+  field: z.string(),
+  operator: z.string(),
+  value: z.string(),
+  logicOperator: z.enum(["AND", "OR"]).optional(),
+});
+
+const filterPresetSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string().optional(),
+  criteria: z.array(criterionSchema),
+  isDefault: z.boolean().optional(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+const complexQuerySchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string().optional(),
+  groups: z.array(
+    z.object({
+      id: z.string(),
+      logicOperator: z.enum(["AND", "OR"]),
+      criteria: z.array(criterionSchema),
+    }),
+  ),
+  createdAt: z.string(),
+});
+
+const savedFilterSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string().optional(),
+  query: complexQuerySchema,
+  isShared: z.boolean(),
+  shareUrl: z.string().optional(),
+  usageCount: z.number(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
 // ─── Field Metadata ──────────────────────────────────────────────────────────
 
 export const FILTER_FIELDS: {
@@ -138,16 +189,11 @@ export const OPERATORS_BY_TYPE: Record<string, { value: FilterOperator; label: s
 
 // ─── Local Storage Presets ───────────────────────────────────────────────────
 
-const PRESETS_KEY = "advanced_filter_presets";
-const SAVED_FILTERS_KEY = "advanced_saved_filters";
-
 export function getLocalPresets(): FilterPreset[] {
-  try {
-    const raw = localStorage.getItem(PRESETS_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
+  return storage.get<FilterPreset[]>("presets", {
+    schema: z.array(filterPresetSchema),
+    legacyKey: "advanced_filter_presets",
+  }) ?? [];
 }
 
 export function saveLocalPreset(preset: FilterPreset): void {
@@ -158,21 +204,19 @@ export function saveLocalPreset(preset: FilterPreset): void {
   } else {
     presets.push(preset);
   }
-  localStorage.setItem(PRESETS_KEY, JSON.stringify(presets));
+  storage.set("presets", presets);
 }
 
 export function deleteLocalPreset(presetId: string): void {
   const presets = getLocalPresets().filter((p) => p.id !== presetId);
-  localStorage.setItem(PRESETS_KEY, JSON.stringify(presets));
+  storage.set("presets", presets);
 }
 
 export function getLocalSavedFilters(): SavedFilter[] {
-  try {
-    const raw = localStorage.getItem(SAVED_FILTERS_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
+  return storage.get<SavedFilter[]>("saved", {
+    schema: z.array(savedFilterSchema),
+    legacyKey: "advanced_saved_filters",
+  }) ?? [];
 }
 
 export function saveLocalSavedFilter(filter: SavedFilter): void {
@@ -183,12 +227,12 @@ export function saveLocalSavedFilter(filter: SavedFilter): void {
   } else {
     filters.push(filter);
   }
-  localStorage.setItem(SAVED_FILTERS_KEY, JSON.stringify(filters));
+  storage.set("saved", filters);
 }
 
 export function deleteLocalSavedFilter(filterId: string): void {
   const filters = getLocalSavedFilters().filter((f) => f.id !== filterId);
-  localStorage.setItem(SAVED_FILTERS_KEY, JSON.stringify(filters));
+  storage.set("saved", filters);
 }
 
 // ─── API Service ─────────────────────────────────────────────────────────────

@@ -2,21 +2,28 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { Goal } from "@/components/goals/GoalCard";
+import { createNamespacedStorage } from "@/lib/storage";
+import { z } from "zod";
 
-const STORAGE_KEY = "stellar_tipjar_goals";
+const storage = createNamespacedStorage("goals");
 
-function load(): Goal[] {
-  if (typeof window === "undefined") return [];
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "[]");
-  } catch {
-    return [];
-  }
-}
-
-function save(goals: Goal[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(goals));
-}
+const goalSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string().optional(),
+  targetAmount: z.number(),
+  currentAmount: z.number(),
+  deadline: z.string(),
+  status: z.enum(["active", "completed", "expired"]),
+  supporters: z
+    .array(
+      z.object({
+        address: z.string(),
+        amount: z.number(),
+      }),
+    )
+    .optional(),
+});
 
 function deriveStatus(goal: Goal): Goal["status"] {
   if (goal.currentAmount >= goal.targetAmount) return "completed";
@@ -29,13 +36,17 @@ export function useGoals() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setGoals(load());
+    const loaded = storage.get<Goal[]>("goals", {
+      schema: z.array(goalSchema),
+      legacyKey: "stellar_tipjar_goals",
+    });
+    setGoals(loaded ?? []);
     setIsLoading(false);
   }, []);
 
   const persist = (next: Goal[]) => {
     setGoals(next);
-    save(next);
+    storage.set("goals", next);
   };
 
   const createGoal = useCallback(

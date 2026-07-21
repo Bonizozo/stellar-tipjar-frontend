@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect } from "react";
 import { NextIntlClientProvider } from "next-intl";
+import { createNamespacedStorage } from "@/lib/storage";
 
 import en from "@/i18n/locales/en.json";
 import es from "@/i18n/locales/es.json";
@@ -12,6 +13,8 @@ import ja from "@/i18n/locales/ja.json";
 export type Locale = "en" | "es" | "fr" | "de" | "ja";
 
 const messages: Record<Locale, any> = { en, es, fr, de, ja };
+
+const storage = createNamespacedStorage("i18n");
 
 interface LocaleContextValue {
   locale: Locale;
@@ -31,12 +34,12 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>("en");
 
   useEffect(() => {
-    const saved = localStorage.getItem("locale") as Locale;
+    const saved = storage.getString("locale", { legacyKey: "locale" }) as Locale;
     if (saved && saved in messages) setLocaleState(saved);
   }, []);
 
   const setLocale = (newLocale: Locale) => {
-    localStorage.setItem("locale", newLocale);
+    storage.setString("locale", newLocale);
     setLocaleState(newLocale);
   };
 

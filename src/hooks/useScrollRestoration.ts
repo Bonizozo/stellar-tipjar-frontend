@@ -2,8 +2,9 @@
 
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
+import { createNamespacedStorage } from "@/lib/storage";
 
-const STORAGE_KEY_PREFIX = "vscroll_pos_";
+const storage = createNamespacedStorage("scroll", "session");
 
 /**
  * Persists and restores scroll position for a given key (typically the route).
@@ -19,7 +20,7 @@ export function useScrollRestoration(
   enabled = true,
 ) {
   const pathname = usePathname();
-  const storageKey = STORAGE_KEY_PREFIX + (key ?? pathname);
+  const posKey = `pos:${key ?? pathname}`;
   const savedRef = useRef(false);
 
   // Restore on mount
@@ -27,7 +28,7 @@ export function useScrollRestoration(
     if (!enabled || savedRef.current) return;
 
     try {
-      const raw = sessionStorage.getItem(storageKey);
+      const raw = storage.getString(posKey);
       if (!raw) return;
       const saved = Number(raw);
       if (!Number.isFinite(saved) || saved <= 0) return;
@@ -40,9 +41,9 @@ export function useScrollRestoration(
       }
       savedRef.current = true;
     } catch {
-      // sessionStorage may be unavailable (private browsing, etc.)
+      // storage may be unavailable (private browsing, etc.)
     }
-  }, [enabled, storageKey, containerRef]);
+  }, [enabled, posKey, containerRef]);
 
   // Save on scroll
   useEffect(() => {
@@ -54,7 +55,7 @@ export function useScrollRestoration(
     const save = () => {
       try {
         const pos = el ? el.scrollTop : window.scrollY;
-        sessionStorage.setItem(storageKey, String(pos));
+        storage.setString(posKey, String(pos));
       } catch {
         // ignore
       }
@@ -62,21 +63,17 @@ export function useScrollRestoration(
 
     target.addEventListener("scroll", save, { passive: true });
     return () => target.removeEventListener("scroll", save);
-  }, [enabled, storageKey, containerRef]);
+  }, [enabled, posKey, containerRef]);
 
   // Clear saved position when navigating away
   useEffect(() => {
     return () => {
       // Only clear on actual navigation (pathname change), not on re-renders
     };
-  }, [pathname, storageKey]);
+  }, [pathname, posKey]);
 
   const clearSavedPosition = () => {
-    try {
-      sessionStorage.removeItem(storageKey);
-    } catch {
-      // ignore
-    }
+    storage.remove(posKey);
   };
 
   return { clearSavedPosition };

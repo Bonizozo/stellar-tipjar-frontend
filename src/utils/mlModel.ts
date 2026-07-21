@@ -2,11 +2,14 @@
  * mlModel.ts
  *
  * Privacy-first, client-side collaborative filtering model.
- * All preference data stays in localStorage — nothing is sent to a server.
+ * All preference data stays in namespaced storage — nothing is sent to a server.
  *
  * Algorithm: lightweight TF-IDF-style category affinity scoring combined
  * with interaction-weighted creator scoring.
  */
+
+import { createNamespacedStorage } from "@/lib/storage";
+import { z } from "zod";
 
 export interface InteractionEvent {
   type: "view" | "tip" | "search" | "click";
@@ -24,7 +27,8 @@ export interface AffinityProfile {
   lastUpdated: number;
 }
 
-const STORAGE_KEY = "stj_affinity_profile";
+const mlStorage = createNamespacedStorage("ml");
+
 const DECAY_HALF_LIFE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 /** Exponential time-decay weight so recent interactions matter more */
@@ -40,31 +44,33 @@ const EVENT_WEIGHTS: Record<InteractionEvent["type"], number> = {
   tip: 5,
 };
 
+const affinityProfileSchema = z.object({
+  categoryScores: z.record(z.number()),
+  creatorInteractions: z.record(z.number()),
+  lastUpdated: z.number(),
+});
+
 export function loadAffinityProfile(): AffinityProfile {
-  if (typeof window === "undefined") {
-    return { categoryScores: {}, creatorInteractions: {}, lastUpdated: 0 };
-  }
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw) as AffinityProfile;
-  } catch {
-    // corrupted storage — start fresh
-  }
-  return { categoryScores: {}, creatorInteractions: {}, lastUpdated: 0 };
+  const defaultProfile: AffinityProfile = {
+    categoryScores: {},
+    creatorInteractions: {},
+    lastUpdated: 0,
+  };
+
+  return (
+    mlStorage.get<AffinityProfile>("affinity", {
+      schema: affinityProfileSchema,
+      legacyKey: "stj_affinity_profile",
+    }) ?? defaultProfile
+  );
 }
 
 export function saveAffinityProfile(profile: AffinityProfile): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
-  } catch {
-    // storage quota exceeded — silently skip
-  }
+  mlStorage.set("affinity", profile);
 }
 
 export function clearAffinityProfile(): void {
-  if (typeof window === "undefined") return;
-  localStorage.removeItem(STORAGE_KEY);
+  mlStorage.remove("affinity");
 }
 
 /** Record a new interaction and update the stored affinity profile */
@@ -139,33 +145,28 @@ export interface FeedbackEntry {
   timestamp: number;
 }
 
-const FEEDBACK_KEY = "stj_cf_feedback";
-
 export function loadFeedback(): FeedbackEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(FEEDBACK_KEY);
-    return raw ? (JSON.parse(raw) as FeedbackEntry[]) : [];
-  } catch {
-    return [];
-  }
+  return mlStorage.get<FeedbackEntry[]>("feedback", {
+    schema: z.array(
+      z.object({
+        creatorUsername: z.string(),
+        feedback: z.enum(["like", "dislike", "not_interested"]),
+        timestamp: z.number(),
+      }),
+    ),
+    legacyKey: "stj_cf_feedback",
+  }) ?? [];
 }
 
 export function recordFeedback(entry: FeedbackEntry): void {
-  if (typeof window === "undefined") return;
   const existing = loadFeedback().filter(
     (f) => f.creatorUsername !== entry.creatorUsername,
   );
-  try {
-    localStorage.setItem(FEEDBACK_KEY, JSON.stringify([...existing, entry]));
-  } catch {
-    // quota exceeded
-  }
+  mlStorage.set("feedback", [...existing, entry]);
 }
 
 export function clearFeedback(): void {
-  if (typeof window === "undefined") return;
-  localStorage.removeItem(FEEDBACK_KEY);
+  mlStorage.remove("feedback");
 }
 
 /**

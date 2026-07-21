@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { useNotificationPrefs } from "@/hooks/useNotificationPrefs";
 
+const HOOK_SETTINGS_KEY = "stj:notifications:hookSettings";
+
 describe("useNotificationPrefs Hook", () => {
   beforeEach(() => {
     // Clear localStorage before each test
@@ -101,12 +103,12 @@ describe("useNotificationPrefs Hook", () => {
         result.current.updateCategoryChannel("tips", "email", false);
       });
 
-      const stored = localStorage.getItem("notificationSettings");
+      const stored = localStorage.getItem(HOOK_SETTINGS_KEY);
       expect(stored).toBeDefined();
 
       if (stored) {
         const parsed = JSON.parse(stored);
-        expect(parsed.categories.tips.email).toBe(false);
+        expect(parsed.d.categories.tips.email).toBe(false);
       }
     });
   });
@@ -361,7 +363,7 @@ describe("useNotificationPrefs Hook", () => {
     });
 
     it("should handle corrupted localStorage gracefully", () => {
-      localStorage.setItem("notificationSettings", "invalid json");
+      localStorage.setItem(HOOK_SETTINGS_KEY, "invalid json");
 
       const { result } = renderHook(() => useNotificationPrefs());
 
