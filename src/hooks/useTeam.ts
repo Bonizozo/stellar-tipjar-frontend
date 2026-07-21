@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { createNamespacedStorage } from "@/lib/storage";
+import { z } from "zod";
 
 export type TeamRole = "owner" | "admin" | "member" | "viewer";
 
@@ -78,16 +80,42 @@ export interface TeamStatistics {
   totalTipsReceived: number;
 }
 
-const STORAGE_KEY = "stellar_tipjar_team_profiles";
+const storage = createNamespacedStorage("team");
 
-const parse = (value: string | null): Record<string, TeamProfile> => {
-  if (!value) return {};
-  try {
-    return JSON.parse(value) as Record<string, TeamProfile>;
-  } catch {
-    return {};
-  }
-};
+const teamMemberSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  email: z.string().optional(),
+  role: z.enum(["owner", "admin", "member", "viewer"]),
+  split: z.number(),
+  createdAt: z.string(),
+  isActive: z.boolean(),
+  earnings: z.number().optional(),
+  walletAddress: z.string().optional(),
+});
+
+const teamInvitationSchema = z.object({
+  id: z.string(),
+  email: z.string(),
+  sentAt: z.string(),
+  status: z.enum(["pending", "accepted", "rejected"]),
+  expiredAt: z.string().optional(),
+});
+
+const teamProfileSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  displayName: z.string().optional(),
+  description: z.string().optional(),
+  members: z.array(teamMemberSchema),
+  invitations: z.array(teamInvitationSchema),
+  owner: z.string().optional(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  totalTipsReceived: z.number().optional(),
+});
+
+const profilesRecordSchema = z.record(teamProfileSchema);
 
 const fmt = (date = new Date()) => new Date(date).toISOString();
 
@@ -97,11 +125,13 @@ export function useTeam(teamName: string) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
     try {
       setIsLoading(true);
-      const raw = localStorage.getItem(STORAGE_KEY);
-      setProfiles(parse(raw));
+      const raw = storage.get<Record<string, TeamProfile>>("profiles", {
+        schema: profilesRecordSchema,
+        legacyKey: "stellar_tipjar_team_profiles",
+      });
+      setProfiles(raw ?? {});
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load team data");
@@ -111,12 +141,7 @@ export function useTeam(teamName: string) {
   }, []);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(profiles));
-    } catch (err) {
-      console.error("Failed to save team data:", err);
-    }
+    storage.set("profiles", profiles);
   }, [profiles]);
 
   const team = profiles[teamName] ?? {

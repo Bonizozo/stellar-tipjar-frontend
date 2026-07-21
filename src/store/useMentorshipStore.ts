@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { createZustandStorage } from '@/lib/storage';
 import { Mentor, MentorshipSession, Message } from '@/lib/mentorship-data';
 
 interface MentorshipState {
@@ -70,6 +71,7 @@ export const useMentorshipStore = create<MentorshipState>()(
     }),
     {
       name: 'mentorship-storage',
+      storage: createJSONStorage(() => createZustandStorage('store', 'mentorship-storage')),
     }
   )
 );

@@ -46,7 +46,7 @@ export default async function LocaleLayout({
             __html: `
               (function() {
                 try {
-                  var theme = localStorage.getItem('stellar-tipjar-theme');
+                  var theme = localStorage.getItem('stj:theme:theme') || localStorage.getItem('stellar-tipjar-theme') || localStorage.getItem('theme');
                   if (!theme) {
                     theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
                   }

@@ -1,30 +1,28 @@
 /**
  * soundUtils.ts
  * Web Audio API–based notification sound. No external audio files needed.
- * Mute and volume preferences are persisted in localStorage.
+ * Mute and volume preferences are persisted via the namespaced storage layer.
  */
 
-const MUTE_KEY = "tipjar:soundMuted";
-const VOLUME_KEY = "tipjar:soundVolume";
+import { createNamespacedStorage } from "@/lib/storage";
+
+const storage = createNamespacedStorage("sound");
 
 const DEFAULT_VOLUME = 0.5; // 0.0 – 1.0
 
 /** Returns true if the user has muted notification sounds. */
 export function isSoundMuted(): boolean {
-  if (typeof window === "undefined") return false;
-  return localStorage.getItem(MUTE_KEY) === "true";
+  return storage.getString("muted", { legacyKey: "tipjar:soundMuted" }) === "true";
 }
 
 /** Persists the mute preference. */
 export function setSoundMuted(muted: boolean): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(MUTE_KEY, String(muted));
+  storage.setString("muted", String(muted));
 }
 
 /** Returns the current volume (0.0 – 1.0). */
 export function getSoundVolume(): number {
-  if (typeof window === "undefined") return DEFAULT_VOLUME;
-  const stored = localStorage.getItem(VOLUME_KEY);
+  const stored = storage.getString("volume", { legacyKey: "tipjar:soundVolume" });
   if (stored === null) return DEFAULT_VOLUME;
   const parsed = parseFloat(stored);
   return isNaN(parsed) ? DEFAULT_VOLUME : Math.min(1, Math.max(0, parsed));
@@ -32,8 +30,7 @@ export function getSoundVolume(): number {
 
 /** Persists the volume preference (0.0 – 1.0). */
 export function setSoundVolume(volume: number): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(VOLUME_KEY, String(Math.min(1, Math.max(0, volume))));
+  storage.setString("volume", String(Math.min(1, Math.max(0, volume))));
 }
 
 /**

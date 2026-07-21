@@ -2,6 +2,9 @@
 
 import { createContext, useContext, useState, useEffect } from 'react';
 import { Locale, defaultLocale, isRTL } from './config';
+import { createNamespacedStorage } from '@/lib/storage';
+
+const storage = createNamespacedStorage('i18n');
 
 interface I18nContextType {
   locale: Locale;
@@ -17,7 +20,7 @@ export const I18nProvider = ({ children }: { children: React.ReactNode }) => {
   const [translations, setTranslations] = useState<Record<string, any>>({});
 
   useEffect(() => {
-    const saved = localStorage.getItem('locale') as Locale | null;
+    const saved = storage.getString('locale', { legacyKey: 'locale' }) as Locale | null;
     const detected = navigator.language.split('-')[0] as Locale;
     const initial = saved || detected || defaultLocale;
     setLocaleState(initial);
@@ -28,7 +31,7 @@ export const I18nProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         const module = await import(`./locales/${locale}.json`);
         setTranslations(module.default);
-        localStorage.setItem('locale', locale);
+        storage.setString('locale', locale);
         document.documentElement.lang = locale;
         document.documentElement.dir = isRTL(locale) ? 'rtl' : 'ltr';
       } catch (error) {

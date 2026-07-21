@@ -2,6 +2,12 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { notificationService } from "@/services/notificationService";
 import type { NotificationSettings } from "@/schemas/notificationSchema";
 
+const SETTINGS_KEY = "stj:notifications:settings";
+
+function wrapEnv(data: unknown): string {
+  return JSON.stringify({ __v: 1, d: data });
+}
+
 describe("Notification Service", () => {
   beforeEach(() => {
     localStorage.clear();
@@ -32,7 +38,7 @@ describe("Notification Service", () => {
         updatedAt: new Date().toISOString(),
       };
 
-      localStorage.setItem("notificationSettings", JSON.stringify(testSettings));
+      localStorage.setItem(SETTINGS_KEY, wrapEnv(testSettings));
 
       const result = await notificationService.getNotificationSettings();
       expect(result).toEqual(testSettings);
@@ -75,7 +81,7 @@ describe("Notification Service", () => {
     });
 
     it("should handle corrupted localStorage gracefully", async () => {
-      localStorage.setItem("notificationSettings", "invalid json");
+      localStorage.setItem(SETTINGS_KEY, "invalid json");
 
       const result = await notificationService.getNotificationSettings();
 
@@ -106,12 +112,13 @@ describe("Notification Service", () => {
 
       await notificationService.updateNotificationSettings(settings);
 
-      const stored = localStorage.getItem("notificationSettings");
+      const stored = localStorage.getItem(SETTINGS_KEY);
       expect(stored).toBeDefined();
 
       if (stored) {
         const parsed = JSON.parse(stored);
-        expect(parsed.categories.tips.email).toBe(false);
+        expect(parsed.__v).toBe(1);
+        expect(parsed.d.categories.tips.email).toBe(false);
       }
     });
 
@@ -254,12 +261,13 @@ describe("Notification Service", () => {
     it("should persist changes to localStorage", async () => {
       await notificationService.applyUnsubscribe("test-token", "tips", "email");
 
-      const stored = localStorage.getItem("notificationSettings");
+      const stored = localStorage.getItem(SETTINGS_KEY);
       expect(stored).toBeDefined();
 
       if (stored) {
         const parsed = JSON.parse(stored);
-        expect(parsed.categories.tips.email).toBe(false);
+        expect(parsed.__v).toBe(1);
+        expect(parsed.d.categories.tips.email).toBe(false);
       }
     });
   });
@@ -405,12 +413,13 @@ describe("Notification Service", () => {
     it("should persist to localStorage", async () => {
       await notificationService.resetToDefaults();
 
-      const stored = localStorage.getItem("notificationSettings");
+      const stored = localStorage.getItem(SETTINGS_KEY);
       expect(stored).toBeDefined();
 
       if (stored) {
         const parsed = JSON.parse(stored);
-        expect(parsed.categories.tips.email).toBe(true);
+        expect(parsed.__v).toBe(1);
+        expect(parsed.d.categories.tips.email).toBe(true);
       }
     });
   });

@@ -6,6 +6,7 @@
 
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
+import { createZustandStorage } from "@/lib/storage";
 
 export type NotificationType = "tip" | "follower" | "milestone";
 
@@ -124,7 +125,7 @@ export const useNotificationStore = create<NotificationStoreState>()(
     }),
     {
       name: "notification-store",
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => createZustandStorage('store', 'notification-store')),
       partialize: (state) => ({
         notifications: state.notifications.map((n) => ({
           ...n,

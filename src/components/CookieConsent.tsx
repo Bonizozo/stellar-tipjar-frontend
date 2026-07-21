@@ -3,22 +3,23 @@
 /**
  * GDPR / CCPA cookie consent banner (#228).
  *
- * Shown once on first visit. Stores the user's choice in localStorage
- * and updates Google Analytics consent accordingly.
+ * Shown once on first visit. Stores the user's choice via the namespaced
+ * storage layer and updates Google Analytics consent accordingly.
  * Hides immediately if consent has already been given or declined.
  */
 
 import { useEffect, useState } from "react";
 import { updateConsent } from "@/lib/analytics/gtag";
 import { trackConsentAccepted, trackConsentDeclined } from "@/lib/analytics/events";
+import { createNamespacedStorage } from "@/lib/storage";
 
-const CONSENT_KEY = "cookie-consent";
+const storage = createNamespacedStorage("consent");
 
 export function CookieConsent() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (!localStorage.getItem(CONSENT_KEY)) {
+    if (!storage.getString("consent", { legacyKey: "cookie-consent" })) {
       setVisible(true);
     }
   }, []);
@@ -26,14 +27,14 @@ export function CookieConsent() {
   if (!visible) return null;
 
   const handleAccept = () => {
-    localStorage.setItem(CONSENT_KEY, "accepted");
+    storage.setString("consent", "accepted");
     setVisible(false);
     updateConsent(true);
     trackConsentAccepted();
   };
 
   const handleDecline = () => {
-    localStorage.setItem(CONSENT_KEY, "declined");
+    storage.setString("consent", "declined");
     setVisible(false);
     updateConsent(false);
     trackConsentDeclined();

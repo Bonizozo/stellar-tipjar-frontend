@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
+import { createNamespacedStorage } from "@/lib/storage";
 
-const TOUR_KEY = "tipjar_tour_done";
+const storage = createNamespacedStorage("tour");
+
 const TOUR_REPLAY_EVENT = "tipjar:tour:replay";
 
 export interface TourStep {
@@ -46,7 +48,7 @@ export const TOUR_STEPS: TourStep[] = [
 
 /** Call this from anywhere (e.g. settings page) to restart the tour. */
 export function replayTour() {
-  localStorage.removeItem(TOUR_KEY);
+  storage.remove("done");
   window.dispatchEvent(new Event(TOUR_REPLAY_EVENT));
 }
 
@@ -56,7 +58,7 @@ export function useTour() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (!localStorage.getItem(TOUR_KEY)) {
+    if (!storage.getString("done", { legacyKey: "tipjar_tour_done" })) {
       setIsOpen(true);
     }
   }, []);
@@ -74,7 +76,7 @@ export function useTour() {
     setStep((s) => {
       if (s + 1 >= TOUR_STEPS.length) {
         setIsOpen(false);
-        localStorage.setItem(TOUR_KEY, "1");
+        storage.setString("done", "1");
         return 0;
       }
       return s + 1;
@@ -83,7 +85,7 @@ export function useTour() {
 
   const skip = useCallback(() => {
     setIsOpen(false);
-    localStorage.setItem(TOUR_KEY, "1");
+    storage.setString("done", "1");
     setStep(0);
   }, []);
 

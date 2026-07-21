@@ -4,6 +4,9 @@ import React, { createContext, useContext, useEffect, useState, ReactNode, useCa
 
 import { FreighterWallet } from "@/lib/stellar/freighter";
 import type { StellarNetwork, WalletProviderType } from "@/lib/stellar/types";
+import { createNamespacedStorage } from "@/lib/storage";
+
+const storage = createNamespacedStorage("wallet");
 
 type WalletStatus = "idle" | "loading" | "connected";
 
@@ -25,12 +28,6 @@ export interface WalletContextType {
   signStellarTransaction: (xdr: string) => Promise<string>;
 }
 
-const STORAGE_KEYS = {
-  connected: "wallet_connected",
-  publicKey: "wallet_publicKey",
-  provider: "wallet_provider",
-} as const;
-
 const DEFAULT_NETWORK = (process.env.NEXT_PUBLIC_STELLAR_NETWORK ?? "TESTNET").toUpperCase() as StellarNetwork;
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
@@ -44,24 +41,16 @@ function formatAddress(address: string | null): string {
   return `${address.slice(0, 4)}...${address.slice(-4)}`;
 }
 
-function safeStorageRead(key: string): string | null {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  return localStorage.getItem(key);
-}
-
 function saveConnection(publicKey: string) {
-  localStorage.setItem(STORAGE_KEYS.connected, "true");
-  localStorage.setItem(STORAGE_KEYS.publicKey, publicKey);
-  localStorage.setItem(STORAGE_KEYS.provider, "freighter");
+  storage.setString("connected", "true");
+  storage.setString("publicKey", publicKey);
+  storage.setString("provider", "freighter");
 }
 
 function clearConnection() {
-  localStorage.removeItem(STORAGE_KEYS.connected);
-  localStorage.removeItem(STORAGE_KEYS.publicKey);
-  localStorage.removeItem(STORAGE_KEYS.provider);
+  storage.remove("connected");
+  storage.remove("publicKey");
+  storage.remove("provider");
 }
 
 export function WalletProvider({ children }: { children: ReactNode }) {
@@ -149,8 +138,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        const persistedConnected = safeStorageRead(STORAGE_KEYS.connected) === "true";
-        const persistedProvider = safeStorageRead(STORAGE_KEYS.provider) === "freighter";
+        const persistedConnected = storage.getString("connected", { legacyKey: "wallet_connected" }) === "true";
+        const persistedProvider = storage.getString("provider", { legacyKey: "wallet_provider" }) === "freighter";
 
         if (persistedConnected && persistedProvider) {
           await connect();

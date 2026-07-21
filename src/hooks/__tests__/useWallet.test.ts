@@ -50,8 +50,8 @@ describe('useWallet Hook', () => {
       // Simulate wallet connection
     })
 
-    // Check if state is persisted
-    const stored = localStorage.getItem('wallet_state')
+    // Check if state is persisted (wallet stores connected, publicKey, provider separately)
+    const stored = localStorage.getItem('stj:wallet:connected')
     expect(stored).toBeDefined()
   })
 

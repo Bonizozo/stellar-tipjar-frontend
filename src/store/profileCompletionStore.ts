@@ -7,6 +7,7 @@
 
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
+import { createZustandStorage } from "@/lib/storage";
 
 export interface ProfileField {
   id: string;
@@ -138,7 +139,7 @@ export const useProfileCompletionStore = create<ProfileCompletionState>()(
     }),
     {
       name: "profile-completion-storage",
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => createZustandStorage('store', 'profile-completion-storage')),
       partialize: (state) => ({
         dismissedItems: Array.from(state.dismissedItems),
       }),
