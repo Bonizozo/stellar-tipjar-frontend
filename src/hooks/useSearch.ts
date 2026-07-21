@@ -5,6 +5,10 @@ import { useDebounce } from "./useDebounce";
 import { CREATOR_EXAMPLES, type Creator } from "@/utils/creatorData";
 import { CATEGORIES, TAGS_EXAMPLES } from "@/utils/categories";
 import { fuzzyMatch } from "@/utils/fuzzyMatch";
+import { createNamespacedStorage } from "@/lib/storage";
+import { z } from "zod";
+
+const storage = createNamespacedStorage("searchHistory");
 
 export type SuggestionType = "creator" | "category" | "tag";
 
@@ -30,9 +34,6 @@ export interface SearchHistoryItem {
   results: SearchSuggestion[];
 }
 
-const RECENT_SEARCHES_KEY = "stellar_recent_searches";
-const SAVED_SEARCHES_KEY = "stellar_saved_searches";
-const SEARCH_HISTORY_KEY = "stellar_search_history";
 const MAX_RECENT_SEARCHES = 5;
 const MAX_HISTORY_ITEMS = 20;
 
@@ -49,32 +50,21 @@ export function useSearch() {
 
   // Load recent searches, history, and saved searches on mount
   useEffect(() => {
-    const stored = localStorage.getItem(RECENT_SEARCHES_KEY);
-    if (stored) {
-      try {
-        setRecentSearches(JSON.parse(stored));
-      } catch (e) {
-        console.error("Failed to parse recent searches", e);
-      }
-    }
+    const recent = storage.get<string[]>("recent", {
+      schema: z.array(z.string()),
+      legacyKey: "stellar_recent_searches",
+    });
+    if (recent) setRecentSearches(recent);
 
-    const historyStored = localStorage.getItem(SEARCH_HISTORY_KEY);
-    if (historyStored) {
-      try {
-        setSearchHistory(JSON.parse(historyStored));
-      } catch (e) {
-        console.error("Failed to parse search history", e);
-      }
-    }
+    const history = storage.get<SearchHistoryItem[]>("history", {
+      legacyKey: "stellar_search_history",
+    });
+    if (history) setSearchHistory(history);
 
-    const savedStored = localStorage.getItem(SAVED_SEARCHES_KEY);
-    if (savedStored) {
-      try {
-        setSavedSearches(JSON.parse(savedStored));
-      } catch (e) {
-        console.error("Failed to parse saved searches", e);
-      }
-    }
+    const saved = storage.get<SavedSearch[]>("saved", {
+      legacyKey: "stellar_saved_searches",
+    });
+    if (saved) setSavedSearches(saved);
   }, []);
 
   // Update results based on query
@@ -137,7 +127,7 @@ export function useSearch() {
     setRecentSearches(prev => {
       const filtered = prev.filter(s => s !== searchTerm);
       const newRecent = [searchTerm, ...filtered].slice(0, MAX_RECENT_SEARCHES);
-      localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(newRecent));
+      storage.set("recent", newRecent);
       return newRecent;
     });
   }, []);
@@ -145,7 +135,7 @@ export function useSearch() {
   const removeRecentSearch = useCallback((searchTerm: string) => {
     setRecentSearches(prev => {
       const newRecent = prev.filter(s => s !== searchTerm);
-      localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(newRecent));
+      storage.set("recent", newRecent);
       return newRecent;
     });
   }, []);
@@ -160,7 +150,7 @@ export function useSearch() {
 
     setSearchHistory(prev => {
       const updated = [historyItem, ...prev].slice(0, MAX_HISTORY_ITEMS);
-      localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(updated));
+      storage.set("history", updated);
       return updated;
     });
   }, [query]);
@@ -168,7 +158,7 @@ export function useSearch() {
   // Advanced Search: Clear history
   const clearHistory = useCallback(() => {
     setSearchHistory([]);
-    localStorage.removeItem(SEARCH_HISTORY_KEY);
+    storage.remove("history");
   }, []);
 
   // Advanced Search: Save current search
@@ -185,7 +175,7 @@ export function useSearch() {
 
     setSavedSearches(prev => {
       const updated = [...prev, newSavedSearch];
-      localStorage.setItem(SAVED_SEARCHES_KEY, JSON.stringify(updated));
+      storage.set("saved", updated);
       return updated;
     });
 
@@ -196,7 +186,7 @@ export function useSearch() {
   const deleteSavedSearch = useCallback((searchId: string) => {
     setSavedSearches(prev => {
       const updated = prev.filter(s => s.id !== searchId);
-      localStorage.setItem(SAVED_SEARCHES_KEY, JSON.stringify(updated));
+      storage.set("saved", updated);
       return updated;
     });
   }, []);

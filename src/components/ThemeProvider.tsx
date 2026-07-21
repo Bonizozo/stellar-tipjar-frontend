@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
+import { createNamespacedStorage } from "@/lib/storage";
 
 type Theme = "light" | "dark";
 
@@ -10,6 +11,8 @@ interface ThemeContextType {
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+
+const storage = createNamespacedStorage("theme");
 
 export function useTheme() {
   const context = useContext(ThemeContext);
@@ -23,7 +26,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
-    const saved = localStorage.getItem("theme") as Theme;
+    const saved = storage.getString("theme", { legacyKey: "theme" }) as Theme | null;
     if (saved) {
       setTheme(saved);
     } else {
@@ -39,7 +42,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     } else {
       root.classList.remove("dark");
     }
-    localStorage.setItem("theme", theme);
+    storage.setString("theme", theme);
   }, [theme]);
 
   const toggleTheme = () => {

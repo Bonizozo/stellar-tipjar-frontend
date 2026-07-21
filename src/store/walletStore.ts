@@ -1,13 +1,14 @@
 /**
  * Wallet state store (#221).
  *
- * Persists connection status, public key, and network to localStorage so
+ * Persists connection status, public key, and network to storage so
  * users don't need to reconnect on every visit. Balance is excluded from
  * persistence because it must always be fetched live.
  */
 
 import { create } from "zustand";
 import { devtools, persist, createJSONStorage } from "zustand/middleware";
+import { createZustandStorage } from "@/lib/storage";
 
 interface WalletState {
   isConnected: boolean;
@@ -44,7 +45,7 @@ export const useWalletStore = create<WalletState>()(
       }),
       {
         name: "wallet-storage",
-        storage: createJSONStorage(() => localStorage),
+        storage: createJSONStorage(() => createZustandStorage('store', 'wallet-storage')),
         // Do not persist balance — always fetch fresh from Horizon.
         partialize: (state) => ({
           isConnected: state.isConnected,

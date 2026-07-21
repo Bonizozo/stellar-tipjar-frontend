@@ -3,6 +3,9 @@
 import { useRouter, usePathname } from "next/navigation";
 import { useLocale } from "next-intl";
 import { useTransition } from "react";
+import { createNamespacedStorage } from "@/lib/storage";
+
+const storage = createNamespacedStorage("i18n");
 
 const languages = [
   { code: "en", name: "English", flag: "🇬🇧" },
@@ -19,10 +22,7 @@ export function LanguageSwitcher() {
   const [isPending, startTransition] = useTransition();
 
   const switchLanguage = (newLocale: string) => {
-    // Persist preference in localStorage
-    if (typeof window !== "undefined") {
-      localStorage.setItem("locale", newLocale);
-    }
+    storage.setString("locale", newLocale);
 
     startTransition(() => {
       // Strip existing locale prefix and prepend new one

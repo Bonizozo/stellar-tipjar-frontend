@@ -2,6 +2,10 @@
 
 import { useState, useCallback, useEffect } from "react";
 import type { TipFilters } from "@/hooks/useTipHistory";
+import { createNamespacedStorage } from "@/lib/storage";
+import { z } from "zod";
+
+const storage = createNamespacedStorage("filterBuilder");
 
 export type FilterField = "search" | "status" | "dateFrom" | "dateTo" | "minAmount" | "maxAmount";
 export type FilterOperator = "contains" | "equals" | "gte" | "lte" | "between";
@@ -26,8 +30,6 @@ export interface FilterPreset {
   name: string;
   criteria: FilterCriterion[];
 }
-
-const STORAGE_KEY = "tipjar:saved-filters";
 
 const PRESETS: FilterPreset[] = [
   {
@@ -61,6 +63,21 @@ const PRESETS: FilterPreset[] = [
   },
 ];
 
+const criterionSchema = z.object({
+  id: z.string(),
+  field: z.string(),
+  operator: z.string(),
+  value: z.string(),
+  value2: z.string().optional(),
+});
+
+const savedFilterSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  criteria: z.array(criterionSchema),
+  createdAt: z.string(),
+});
+
 function criteriaToFilters(criteria: FilterCriterion[]): TipFilters {
   const filters: TipFilters = {};
   for (const c of criteria) {
@@ -78,12 +95,10 @@ function criteriaToFilters(criteria: FilterCriterion[]): TipFilters {
 }
 
 function loadSaved(): SavedFilter[] {
-  if (typeof window === "undefined") return [];
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "[]");
-  } catch {
-    return [];
-  }
+  return storage.get<SavedFilter[]>("saved", {
+    schema: z.array(savedFilterSchema),
+    legacyKey: "tipjar:saved-filters",
+  }) ?? [];
 }
 
 let idCounter = 0;
@@ -101,7 +116,7 @@ export function useFilterBuilder() {
 
   const persist = useCallback((filters: SavedFilter[]) => {
     setSavedFilters(filters);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
+    storage.set("saved", filters);
   }, []);
 
   const addCriterion = useCallback((field: FilterField = "search") => {

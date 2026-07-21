@@ -1,23 +1,26 @@
 import { useState, useCallback } from "react";
+import { createNamespacedStorage } from "@/lib/storage";
 
-const STORAGE_KEY_PREFIX = "banner_dismissed_";
+const storage = createNamespacedStorage("banner");
 
 export function useBanner(id: string, persistent = false) {
-  const storageKey = STORAGE_KEY_PREFIX + id;
+  const nsKey = `dismissed:${id}`;
+  const legacyKey = `banner_dismissed_${id}`;
 
   const [isVisible, setIsVisible] = useState(() => {
-    if (persistent && typeof window !== "undefined") {
-      return localStorage.getItem(storageKey) !== "true";
+    if (persistent) {
+      const val = storage.getString(nsKey, { legacyKey });
+      if (val !== null) return val !== "true";
     }
     return true;
   });
 
   const dismiss = useCallback(() => {
     setIsVisible(false);
-    if (persistent && typeof window !== "undefined") {
-      localStorage.setItem(storageKey, "true");
+    if (persistent) {
+      storage.setString(nsKey, "true");
     }
-  }, [persistent, storageKey]);
+  }, [persistent, nsKey]);
 
   return { isVisible, dismiss };
 }

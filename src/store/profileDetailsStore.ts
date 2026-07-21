@@ -6,6 +6,7 @@
 
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
+import { createZustandStorage } from "@/lib/storage";
 
 export interface CreatorProfileDetails {
   displayName: string;
@@ -46,7 +47,7 @@ export const useProfileDetailsStore = create<ProfileDetailsState>()(
     }),
     {
       name: "creator-profile-details-storage",
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => createZustandStorage('store', 'creator-profile-details-storage')),
     },
   ),
 );

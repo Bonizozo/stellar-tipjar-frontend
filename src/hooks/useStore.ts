@@ -3,6 +3,10 @@
 import { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useWalletContext } from "@/contexts/WalletContext";
+import { createNamespacedStorage } from "@/lib/storage";
+
+const storage = createNamespacedStorage("store");
+const ordersSchemaKey = "orders";
 
 export interface Product {
   id: string;
@@ -105,29 +109,6 @@ const mockProducts: Product[] = [
   },
 ];
 
-// Persist orders in localStorage so they survive page refresh
-const ORDERS_KEY = "store_orders";
-
-function loadOrders(): Order[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(ORDERS_KEY);
-    if (!raw) return [];
-    return (JSON.parse(raw) as Order[]).map((o) => ({
-      ...o,
-      createdAt: new Date(o.createdAt),
-      updatedAt: new Date(o.updatedAt),
-    }));
-  } catch {
-    return [];
-  }
-}
-
-function saveOrders(orders: Order[]) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
-}
-
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useStore(creatorUsername?: string) {
@@ -157,7 +138,15 @@ export function useStore(creatorUsername?: string) {
     error: ordersError,
   } = useQuery<Order[]>({
     queryKey: ["orders", creatorUsername],
-    queryFn: async () => loadOrders(),
+    queryFn: async () => {
+      const raw = storage.get<Order[]>("orders", { legacyKey: "store_orders" });
+      if (!raw) return [];
+      return raw.map((o) => ({
+        ...o,
+        createdAt: new Date(o.createdAt),
+        updatedAt: new Date(o.updatedAt),
+      }));
+    },
     staleTime: 0,
   });
 
@@ -245,8 +234,13 @@ export function useStore(creatorUsername?: string) {
       };
 
       // Persist locally (replace with API call in production)
-      const existing = loadOrders();
-      saveOrders([order, ...existing]);
+      const existingRaw = storage.get<Order[]>("orders", { legacyKey: "store_orders" }) ?? [];
+      const existing = existingRaw.map((o) => ({
+        ...o,
+        createdAt: new Date(o.createdAt),
+        updatedAt: new Date(o.updatedAt),
+      }));
+      storage.set("orders", [order, ...existing]);
 
       return order;
     },
