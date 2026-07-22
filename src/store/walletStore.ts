@@ -8,15 +8,16 @@
  * Handles session revalidation, network mismatch detection, and
  * typed error taxonomy.
  *
- * Persistence is handled manually via localStorage (key: "wallet-session")
- * in the connect/disconnect/initialize actions, not via zustand/persist,
- * to avoid middleware format conflicts and keep the store a pure runtime
- * state machine.
+ * Persistence goes through `createNamespacedStorage("wallet")` (not
+ * zustand/persist) so the store stays a clean runtime state machine while
+ * still sharing the same SSR-safe, namespaced backend as the rest of the
+ * app rather than calling `localStorage` directly.
  */
 
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
+import { createNamespacedStorage } from "@/lib/storage";
 import {
   FreighterWallet,
   WalletError,
@@ -34,21 +35,15 @@ export type WalletStatus =
   | "connected"
   | "error";
 
-// ── Persisted shape (saved to localStorage) ───────────────────────────────────
+// ── Persisted shape ────────────────────────────────────────────────────────────
 
 interface PersistedSession {
   publicKey: string | null;
   network: StellarNetwork;
   wasConnected: boolean;
 }
- * Persists connection status, public key, and network to storage so
- * users don't need to reconnect on every visit. Balance is excluded from
- * persistence because it must always be fetched live.
- */
 
-import { create } from "zustand";
-import { devtools, persist, createJSONStorage } from "zustand/middleware";
-import { createZustandStorage } from "@/lib/storage";
+const sessionStorage = createNamespacedStorage("wallet");
 
 // ── Store state ───────────────────────────────────────────────────────────────
 
@@ -107,16 +102,7 @@ export const useWalletStore = create<WalletState>()(
           return;
         }
 
-        // Read persisted session from localStorage
-        let persisted: PersistedSession | null = null;
-        try {
-          const raw = localStorage.getItem("wallet-session");
-          if (raw) {
-            persisted = JSON.parse(raw) as PersistedSession;
-          }
-        } catch {
-          // Corrupted storage — treat as no session
-        }
+        const persisted = sessionStorage.get<PersistedSession>("session");
 
         if (!persisted?.wasConnected || !persisted.publicKey) {
           set({ status: "available", error: null }, false, "wallet/init-available");
@@ -127,7 +113,7 @@ export const useWalletStore = create<WalletState>()(
         try {
           const stillConnected = await wallet.isInstalled();
           if (!stillConnected) {
-            localStorage.removeItem("wallet-session");
+            sessionStorage.remove("session");
             set(
               { status: "available", publicKey: null, error: null },
               false,
@@ -141,7 +127,7 @@ export const useWalletStore = create<WalletState>()(
 
           // Verify address still matches
           if (currentAddress !== persisted.publicKey) {
-            localStorage.removeItem("wallet-session");
+            sessionStorage.remove("session");
             set(
               { status: "available", publicKey: null, error: null },
               false,
@@ -166,25 +152,13 @@ export const useWalletStore = create<WalletState>()(
           );
         } catch {
           // Session is stale — silently downgrade
-          localStorage.removeItem("wallet-session");
+          sessionStorage.remove("session");
           set(
             { status: "available", publicKey: null, error: null },
             false,
             "wallet/init-failed",
           );
         }
-            "wallet/disconnect",
-          ),
-      }),
-      {
-        name: "wallet-storage",
-        storage: createJSONStorage(() => createZustandStorage('store', 'wallet-storage')),
-        // Do not persist balance — always fetch fresh from Horizon.
-        partialize: (state) => ({
-          isConnected: state.isConnected,
-          publicKey: state.publicKey,
-          network: state.network,
-        }),
       },
 
       // ── Connect ────────────────────────────────────────────────────────
@@ -203,7 +177,7 @@ export const useWalletStore = create<WalletState>()(
             network: detectedNetwork,
             wasConnected: true,
           };
-          localStorage.setItem("wallet-session", JSON.stringify(session));
+          sessionStorage.set("session", session);
 
           set(
             {
@@ -242,7 +216,7 @@ export const useWalletStore = create<WalletState>()(
       disconnect: async () => {
         const wallet = getProvider();
         await wallet.disconnect();
-        localStorage.removeItem("wallet-session");
+        sessionStorage.remove("session");
 
         set(
           {

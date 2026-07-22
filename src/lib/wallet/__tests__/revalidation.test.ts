@@ -36,6 +36,24 @@ vi.mock("@stellar/stellar-sdk", () => ({
 
 import { WalletError, WalletErrorCode } from "../errors";
 import { FreighterWallet } from "../provider";
+import { createNamespacedStorage } from "@/lib/storage";
+
+// The store persists through the shared namespaced storage layer, not raw
+// localStorage — these helpers read/write in the same shape it does so
+// assertions below don't hardcode `stj:wallet:...` key/envelope details.
+const walletStorage = createNamespacedStorage("wallet");
+function writeSession(session: unknown) {
+  walletStorage.set("session", session);
+}
+function readSession(): unknown {
+  return walletStorage.get("session");
+}
+function writeRawCorruptSession() {
+  // Matches `createNamespacedStorage("wallet")`'s own key scheme
+  // (`stj:<domain>:<key>`) so this exercises the same read path as a real
+  // corrupted entry, without depending on storage.ts's private helpers.
+  localStorage.setItem("stj:wallet:session", "NOT_VALID_JSON!!!");
+}
 
 // We need to import the store carefully — it may have been initialized by
 // a previous test file, so we reset it between tests.
@@ -124,7 +142,7 @@ describe("Wallet Store — State Machine", () => {
         network: "TESTNET",
         wasConnected: true,
       };
-      localStorage.setItem("wallet-session", JSON.stringify(session));
+      writeSession(session);
 
       const mock = createMockProvider({
         isInstalled: vi.fn().mockResolvedValue(true),
@@ -149,7 +167,7 @@ describe("Wallet Store — State Machine", () => {
         network: "TESTNET",
         wasConnected: true,
       };
-      localStorage.setItem("wallet-session", JSON.stringify(session));
+      writeSession(session);
 
       const mock = createMockProvider({
         isInstalled: vi.fn().mockResolvedValue(true),
@@ -163,7 +181,7 @@ describe("Wallet Store — State Machine", () => {
       expect(state.status).toBe("available");
       expect(state.publicKey).toBeNull();
       // Session should be cleared
-      expect(localStorage.getItem("wallet-session")).toBeNull();
+      expect(readSession()).toBeNull();
     });
 
     it("downgrades to 'available' when session revalidation fails", async () => {
@@ -172,7 +190,7 @@ describe("Wallet Store — State Machine", () => {
         network: "TESTNET",
         wasConnected: true,
       };
-      localStorage.setItem("wallet-session", JSON.stringify(session));
+      writeSession(session);
 
       const mock = createMockProvider({
         isInstalled: vi.fn().mockResolvedValue(true),
@@ -185,11 +203,11 @@ describe("Wallet Store — State Machine", () => {
       const state = useWalletStore.getState();
       expect(state.status).toBe("available");
       expect(state.publicKey).toBeNull();
-      expect(localStorage.getItem("wallet-session")).toBeNull();
+      expect(readSession()).toBeNull();
     });
 
     it("handles corrupted localStorage gracefully", async () => {
-      localStorage.setItem("wallet-session", "NOT_VALID_JSON!!!");
+      writeRawCorruptSession();
 
       const mock = createMockProvider({
         isInstalled: vi.fn().mockResolvedValue(true),
@@ -255,7 +273,7 @@ describe("Wallet Store — State Machine", () => {
       useWalletStore.setState({ status: "available" });
       await useWalletStore.getState().connect();
 
-      const stored = JSON.parse(localStorage.getItem("wallet-session")!);
+      const stored = readSession() as { publicKey: string; network: string; wasConnected: boolean };
       expect(stored.publicKey).toBe("GABC1234567890ABCDEF");
       expect(stored.network).toBe("TESTNET");
       expect(stored.wasConnected).toBe(true);
@@ -269,14 +287,11 @@ describe("Wallet Store — State Machine", () => {
       setWalletProvider(mock);
 
       // Set up a connected state with persisted session
-      localStorage.setItem(
-        "wallet-session",
-        JSON.stringify({
-          publicKey: "GABC",
-          network: "TESTNET",
-          wasConnected: true,
-        }),
-      );
+      writeSession({
+        publicKey: "GABC",
+        network: "TESTNET",
+        wasConnected: true,
+      });
       useWalletStore.setState({
         status: "connected",
         publicKey: "GABC",
@@ -290,7 +305,7 @@ describe("Wallet Store — State Machine", () => {
       expect(state.status).toBe("available");
       expect(state.publicKey).toBeNull();
       expect(state.balance).toBe("0.0");
-      expect(localStorage.getItem("wallet-session")).toBeNull();
+      expect(readSession()).toBeNull();
       expect(mockDisconnect).toHaveBeenCalled();
     });
   });
@@ -447,7 +462,7 @@ describe("Wallet Store — State Machine", () => {
         network: "TESTNET",
         wasConnected: true,
       };
-      localStorage.setItem("wallet-session", JSON.stringify(staleSession));
+      writeSession(staleSession);
 
       const mock = createMockProvider({
         isInstalled: vi.fn().mockResolvedValue(true),
