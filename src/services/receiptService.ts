@@ -1,5 +1,6 @@
 import jsPDF from 'jspdf';
 import QRCode from 'qrcode';
+import { API_BASE_URL } from "@/config/env";
 
 export interface TipReceipt {
   id: string;
@@ -69,7 +70,7 @@ export const receiptService = {
     formData.append('email', email);
     formData.append('receipt', pdfBlob, `receipt-${receipt.id}.pdf`);
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/receipts/send`, {
+    const res = await fetch(`${API_BASE_URL}/receipts/send`, {
       method: 'POST',
       body: formData,
     });

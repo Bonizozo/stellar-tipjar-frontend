@@ -1,6 +1,5 @@
 import { Leaderboard, TimeRange } from '@/types/leaderboards';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+import { API_BASE_URL as API_URL } from "@/config/env";
 
 export const leaderboardService = {
   async getTopCreators(timeRange: TimeRange): Promise<Leaderboard> {

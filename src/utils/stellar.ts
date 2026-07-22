@@ -1,10 +1,7 @@
 import { Horizon, Networks } from "@stellar/stellar-sdk";
+import { STELLAR_NETWORK, STELLAR_HORIZON_URL } from "@/config/env";
 
-export const STELLAR_NETWORK = (process.env.NEXT_PUBLIC_STELLAR_NETWORK ?? "TESTNET").toUpperCase();
-export const STELLAR_HORIZON_URL = process.env.NEXT_PUBLIC_STELLAR_HORIZON_URL ?? 
-  (STELLAR_NETWORK === "PUBLIC" 
-    ? "https://horizon.stellar.org" 
-    : "https://horizon-testnet.stellar.org");
+export { STELLAR_NETWORK, STELLAR_HORIZON_URL };
 
 export const stellarServer = new Horizon.Server(STELLAR_HORIZON_URL);
 

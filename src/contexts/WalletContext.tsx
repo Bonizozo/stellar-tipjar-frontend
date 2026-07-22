@@ -5,6 +5,7 @@ import React, { createContext, useContext, useEffect, useState, ReactNode, useCa
 import { FreighterWallet } from "@/lib/stellar/freighter";
 import type { StellarNetwork, WalletProviderType } from "@/lib/stellar/types";
 import { createNamespacedStorage } from "@/lib/storage";
+import { STELLAR_NETWORK } from "@/config/env";
 
 const storage = createNamespacedStorage("wallet");
 
@@ -28,7 +29,7 @@ export interface WalletContextType {
   signStellarTransaction: (xdr: string) => Promise<string>;
 }
 
-const DEFAULT_NETWORK = (process.env.NEXT_PUBLIC_STELLAR_NETWORK ?? "TESTNET").toUpperCase() as StellarNetwork;
+const DEFAULT_NETWORK = STELLAR_NETWORK as StellarNetwork;
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
 const freighterWallet = new FreighterWallet();

@@ -6,8 +6,9 @@
  * - GA_TRACKING_ID is not configured
  * - The user has declined cookie consent
  */
+import { appConfig } from "@/config/env";
 
-export const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GA_ID ?? "";
+export const GA_TRACKING_ID = appConfig.gaId ?? "";
 
 declare global {
   interface Window {

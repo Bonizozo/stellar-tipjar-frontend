@@ -7,13 +7,14 @@ import {
   getActivityFeed,
 } from "@/services/activityService";
 import { useWebSocket } from "@/hooks/useWebSocket";
+import { WS_BASE_URL } from "@/config/env";
 
 export function useActivityFeed(creator?: string) {
   const [items, setItems] = useState<ActivityItem[]>([]);
   const [filter, setFilter] = useState<ActivityType | "all">("all");
   const [loading, setLoading] = useState(true);
 
-  const wsUrl = process.env.NEXT_PUBLIC_WS_URL;
+  const wsUrl = WS_BASE_URL;
   const { clientRef, status } = useWebSocket({ url: wsUrl });
 
   const fetchFeed = useCallback(async () => {

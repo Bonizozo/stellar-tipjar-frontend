@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { WebSocketClient } from "@/lib/websocket/client";
+import { WS_BASE_URL } from "@/config/env";
 
 export type WsStatus = "connecting" | "connected" | "disconnected";
 
@@ -12,7 +13,7 @@ interface UseWebSocketOptions {
 export function useWebSocket(options?: UseWebSocketOptions) {
   // Only connect when an explicit WS URL is provided via env var.
   // Falling back to localhost causes noisy errors in dev when no backend is running.
-  const url = options?.url ?? process.env.NEXT_PUBLIC_WS_URL ?? "";
+  const url = options?.url ?? WS_BASE_URL;
   const clientRef = useRef<WebSocketClient | null>(null);
   const [status, setStatus] = useState<WsStatus>("disconnected");
 

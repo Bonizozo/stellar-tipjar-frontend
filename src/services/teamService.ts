@@ -9,8 +9,7 @@ import {
   type TeamStatistics,
 } from "@/schemas/teamSchema";
 import { TeamProfile, TeamMember } from "@/hooks/useTeam";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+import { API_BASE_URL } from "@/config/env";
 
 /**
  * Team service for communicating with the backend API
