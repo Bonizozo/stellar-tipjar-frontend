@@ -2,22 +2,11 @@ import {
   Asset,
   Horizon,
   Memo,
-  Networks,
   Operation,
   TransactionBuilder,
 } from "@stellar/stellar-sdk";
 
-import type { StellarNetwork } from "@/lib/stellar/types";
-
-const HORIZON_URLS: Record<StellarNetwork, string> = {
-  PUBLIC: "https://horizon.stellar.org",
-  TESTNET: "https://horizon-testnet.stellar.org",
-};
-
-const NETWORK_PASSPHRASES: Record<StellarNetwork, string> = {
-  PUBLIC: Networks.PUBLIC,
-  TESTNET: Networks.TESTNET,
-};
+import { type StellarNetwork, NETWORKS } from "@/lib/wallet";
 
 const BASE_FEE = "100";
 const TX_TIMEOUT_SECONDS = 30;
@@ -30,9 +19,6 @@ export interface TipTransactionParams {
   network: StellarNetwork;
 }
 
-/**
- * Builds an unsigned XDR-encoded payment transaction for tipping.
- */
 export async function buildTipTransaction({
   sourcePublicKey,
   destinationPublicKey,
@@ -40,12 +26,13 @@ export async function buildTipTransaction({
   memo,
   network,
 }: TipTransactionParams): Promise<string> {
-  const server = new Horizon.Server(HORIZON_URLS[network]);
+  const config = NETWORKS[network];
+  const server = new Horizon.Server(config.horizonUrl);
   const sourceAccount = await server.loadAccount(sourcePublicKey);
 
   const builder = new TransactionBuilder(sourceAccount, {
     fee: BASE_FEE,
-    networkPassphrase: NETWORK_PASSPHRASES[network],
+    networkPassphrase: config.passphrase,
   })
     .addOperation(
       Operation.payment({
@@ -63,15 +50,12 @@ export async function buildTipTransaction({
   return builder.build().toXDR();
 }
 
-/**
- * Submits a signed XDR transaction to the Stellar network.
- */
 export async function submitTransaction(
   signedXdr: string,
   network: StellarNetwork,
 ): Promise<Horizon.HorizonApi.SubmitTransactionResponse> {
-  const server = new Horizon.Server(HORIZON_URLS[network]);
-  const { TransactionBuilder } = await import("@stellar/stellar-sdk");
-  const tx = TransactionBuilder.fromXDR(signedXdr, NETWORK_PASSPHRASES[network]);
+  const config = NETWORKS[network];
+  const server = new Horizon.Server(config.horizonUrl);
+  const tx = TransactionBuilder.fromXDR(signedXdr, config.passphrase);
   return server.submitTransaction(tx);
 }

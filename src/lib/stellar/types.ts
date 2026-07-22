@@ -1,19 +1,8 @@
-export type WalletProviderType = "freighter";
-
-export type StellarNetwork = "PUBLIC" | "TESTNET";
-
-export interface WalletProvider {
-  readonly provider: WalletProviderType;
-  isInstalled: () => Promise<boolean>;
-  connect: () => Promise<string>;
-  disconnect: () => Promise<void>;
-  getNetwork: () => Promise<StellarNetwork>;
-  signTransaction: (xdr: string, network: StellarNetwork) => Promise<string>;
-  getBalance: (publicKey: string, network: StellarNetwork) => Promise<string>;
-}
-
-export interface WalletConnection {
-  provider: WalletProviderType;
-  publicKey: string;
-  network: StellarNetwork;
-}
+/**
+ * Re-exports canonical Stellar types from the unified wallet module.
+ *
+ * @deprecated Import from "@/lib/wallet" directly instead.
+ */
+export type { StellarNetwork } from "@/lib/wallet";
+export { WalletError, WalletErrorCode } from "@/lib/wallet";
+export { NETWORKS, networkPassphrase, horizonUrl } from "@/lib/wallet";
