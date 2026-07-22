@@ -58,6 +58,6 @@ describe('useWallet Hook', () => {
   it('should handle wallet errors', async () => {
     const { result } = renderHook(() => useWallet())
 
-    expect(result.current.error).toBeUndefined()
+    expect(result.current.error).toBeNull()
   })
 })

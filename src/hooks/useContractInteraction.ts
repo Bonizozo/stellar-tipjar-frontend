@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Contract, Networks, TransactionBuilder, BASE_FEE, rpc as StellarRpc } from "@stellar/stellar-sdk";
+import { Contract, TransactionBuilder, BASE_FEE, rpc as StellarRpc } from "@stellar/stellar-sdk";
 import { useWalletContext } from "@/contexts/WalletContext";
+import { WalletError, WalletErrorCode, NETWORKS, type StellarNetwork } from "@/lib/wallet";
 
 export type TxStatus = "idle" | "estimating" | "signing" | "submitting" | "success" | "error";
 
@@ -20,15 +21,9 @@ export interface ContractCallResult {
   error: string | null;
 }
 
-const SOROBAN_RPC_URLS: Record<string, string> = {
-  TESTNET: "https://soroban-testnet.stellar.org",
-  PUBLIC: "https://soroban.stellar.org",
-};
-
-const NETWORK_PASSPHRASES: Record<string, string> = {
-  TESTNET: Networks.TESTNET,
-  PUBLIC: Networks.PUBLIC,
-};
+function networkConfig(network: StellarNetwork) {
+  return NETWORKS[network];
+}
 
 function buildScVal(param: ContractParam) {
   const { xdr } = require("@stellar/stellar-sdk");
@@ -76,8 +71,8 @@ export function useContractInteraction() {
       setError(null);
 
       try {
-        const rpcUrl = SOROBAN_RPC_URLS[network] ?? SOROBAN_RPC_URLS.TESTNET;
-        const server = new StellarRpc.Server(rpcUrl);
+        const config = networkConfig(network);
+        const server = new StellarRpc.Server(config.sorobanRpcUrl);
         const account = await server.getAccount(publicKey);
 
         const contract = new Contract(contractId);
@@ -85,7 +80,7 @@ export function useContractInteraction() {
 
         const tx = new TransactionBuilder(account, {
           fee: BASE_FEE,
-          networkPassphrase: NETWORK_PASSPHRASES[network] ?? NETWORK_PASSPHRASES.TESTNET,
+          networkPassphrase: config.passphrase,
         })
           .addOperation(contract.call(functionName, ...scArgs))
           .setTimeout(30)
@@ -130,8 +125,8 @@ export function useContractInteraction() {
       setResult(null);
 
       try {
-        const rpcUrl = SOROBAN_RPC_URLS[network] ?? SOROBAN_RPC_URLS.TESTNET;
-        const server = new StellarRpc.Server(rpcUrl);
+        const config = networkConfig(network);
+        const server = new StellarRpc.Server(config.sorobanRpcUrl);
         const account = await server.getAccount(publicKey);
 
         const contract = new Contract(contractId);
@@ -139,7 +134,7 @@ export function useContractInteraction() {
 
         const tx = new TransactionBuilder(account, {
           fee: BASE_FEE,
-          networkPassphrase: NETWORK_PASSPHRASES[network] ?? NETWORK_PASSPHRASES.TESTNET,
+          networkPassphrase: config.passphrase,
         })
           .addOperation(contract.call(functionName, ...scArgs))
           .setTimeout(30)
@@ -164,7 +159,7 @@ export function useContractInteraction() {
 
         setStatus("submitting");
         const { TransactionBuilder: TB } = require("@stellar/stellar-sdk");
-        const signedTx = TB.fromXDR(signedXdr, NETWORK_PASSPHRASES[network] ?? NETWORK_PASSPHRASES.TESTNET);
+        const signedTx = TB.fromXDR(signedXdr, config.passphrase);
         const sendResult = await server.sendTransaction(signedTx);
 
         if (sendResult.status === "ERROR") {
