@@ -1,7 +1,8 @@
-import { jsPDF } from 'jspdf';
+import { loadJsPDF } from '@/lib/pdf/loadJsPdf';
 
-export const generateCertificate = (userName: string, courseTitle: string, date: string) => {
-  const doc = new jsPDF({
+export const generateCertificate = async (userName: string, courseTitle: string, date: string) => {
+  const JsPDF = await loadJsPDF();
+  const doc = new JsPDF({
     orientation: 'landscape',
     unit: 'mm',
     format: 'a4'

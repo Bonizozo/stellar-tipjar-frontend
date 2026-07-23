@@ -2,7 +2,7 @@ import { TipButton } from "@/components/widgets/TipButton";
 import { TipCard } from "@/components/widgets/TipCard";
 
 interface EmbedPageProps {
-  searchParams: {
+  searchParams: Promise<{
     username?: string;
     type?: string;
     accentColor?: string;
@@ -13,10 +13,10 @@ interface EmbedPageProps {
     defaultAsset?: string;
     displayName?: string;
     bio?: string;
-  };
+  }>;
 }
 
-export default function EmbedPage({ searchParams }: EmbedPageProps) {
+export default async function EmbedPage({ searchParams }: EmbedPageProps) {
   const {
     username = "creator",
     type = "card",
@@ -28,7 +28,7 @@ export default function EmbedPage({ searchParams }: EmbedPageProps) {
     defaultAsset = "XLM",
     displayName,
     bio,
-  } = searchParams;
+  } = await searchParams;
 
   return (
     <div

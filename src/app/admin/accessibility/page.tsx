@@ -1,12 +1,18 @@
 "use client";
 
 import { useEffect } from "react";
+import dynamic from "next/dynamic";
 import { RefreshCw, TrendingUp } from "lucide-react";
 import { useAccessibilityAudit } from "@/hooks/useAccessibilityAudit";
 import { AccessibilityScoreCard } from "@/components/accessibility/AccessibilityScoreCard";
 import { ViolationList } from "@/components/accessibility/ViolationList";
-import { AccessibilityTrendChart } from "@/components/accessibility/AccessibilityTrendChart";
+import { ChartSkeleton } from "@/components/charts";
 import { Button } from "@/components/Button";
+
+const AccessibilityTrendChart = dynamic(
+  () => import("@/components/accessibility/AccessibilityTrendChart").then((m) => m.AccessibilityTrendChart),
+  { loading: () => <ChartSkeleton />, ssr: false },
+);
 
 export default function AccessibilityAuditPage() {
   const { score, violations, trends, loading, running, fetchAuditData, runAudit } =

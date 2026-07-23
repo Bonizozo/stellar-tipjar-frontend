@@ -45,8 +45,8 @@ const EVENT_WEIGHTS: Record<InteractionEvent["type"], number> = {
 };
 
 const affinityProfileSchema = z.object({
-  categoryScores: z.record(z.number()),
-  creatorInteractions: z.record(z.number()),
+  categoryScores: z.record(z.string(), z.number()),
+  creatorInteractions: z.record(z.string(), z.number()),
   lastUpdated: z.number(),
 });
 

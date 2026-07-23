@@ -1,4 +1,4 @@
-import jsPDF from "jspdf";
+import { loadJsPDF } from "./loadJsPdf";
 
 export interface Transaction {
   id: string;
@@ -11,8 +11,9 @@ export interface Transaction {
   message?: string;
 }
 
-export function generateReceipt(tx: Transaction): void {
-  const doc = new jsPDF();
+export async function generateReceipt(tx: Transaction): Promise<void> {
+  const JsPDF = await loadJsPDF();
+  const doc = new JsPDF();
   const date = new Date(tx.createdAt).toLocaleDateString();
 
   doc.setFontSize(22);

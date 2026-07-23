@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, use, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { TeamInvite } from "@/components/TeamInvite";
@@ -27,7 +27,7 @@ import {
 } from "@heroicons/react/24/outline";
 
 interface TeamPageProps {
-  params: { teamname: string };
+  params: Promise<{ teamname: string }>;
 }
 
 type ActiveTab = "members" | "splits" | "roles" | "earnings" | "invitations";
@@ -61,7 +61,7 @@ const TABS: { id: ActiveTab; label: string; icon: React.ReactNode }[] = [
 ];
 
 export default function TeamPage({ params }: TeamPageProps) {
-  const { teamname } = params;
+  const { teamname } = use(params);
   const {
     team,
     stats,

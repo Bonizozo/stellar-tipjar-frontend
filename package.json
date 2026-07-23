@@ -6,10 +6,12 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "analyze": "ANALYZE=true next build --webpack",
     "start": "next start",
     "lint": "eslint .",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
+    "check:bundle-budget": "node scripts/check-bundle-budget.js",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report",
@@ -40,7 +42,6 @@
     "qrcode": "^1.5.4",
     "react": "latest",
     "react-dom": "latest",
-    "react-force-graph-2d": "^1.25.5",
     "react-hook-form": "^7.82.0",
     "react-hot-toast": "^2.6.0",
     "recharts": "^3.9.2",
@@ -53,6 +54,7 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^16.2.11",
     "@playwright/test": "^1.61.1",
     "@tailwindcss/postcss": "^4.3.3",
     "@testing-library/dom": "^10.4.1",

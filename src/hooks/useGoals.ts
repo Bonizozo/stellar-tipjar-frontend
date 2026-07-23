@@ -10,7 +10,7 @@ const storage = createNamespacedStorage("goals");
 const goalSchema = z.object({
   id: z.string(),
   title: z.string(),
-  description: z.string().optional(),
+  description: z.string(),
   targetAmount: z.number(),
   currentAmount: z.number(),
   deadline: z.string(),
