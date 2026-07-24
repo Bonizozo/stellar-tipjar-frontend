@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import {
   CurrencyDollarIcon,
   HashtagIcon,
@@ -10,10 +11,15 @@ import {
 import { useCreatorStats } from "@/hooks/queries/useCreatorStats";
 import { useHeatmapData } from "@/hooks/queries/useHeatmapData";
 import { GoalProgressBar } from "./GoalProgressBar";
-import { TipChart } from "./TipChart";
 import { TopSupporters } from "./TopSupporters";
 import { StatCard } from "@/components/StatCard";
 import { TipHeatmapCalendar } from "@/components/TipHeatmapCalendar";
+import { ChartSkeleton } from "@/components/charts";
+
+const TipChart = dynamic(() => import("./TipChart").then((m) => m.TipChart), {
+  loading: () => <ChartSkeleton />,
+  ssr: false,
+});
 
 interface CreatorStatsDashboardProps {
   username: string;

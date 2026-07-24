@@ -1,8 +1,12 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
+import createBundleAnalyzer from "@next/bundle-analyzer";
 import { getSecurityHeaders } from "./src/utils/security";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n.ts");
+const withBundleAnalyzer = createBundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+});
 
 // i18n is handled via next-intl with locale routing
 // Supported locales: en, es, fr, zh, ar, he — preference persisted in localStorage
@@ -72,4 +76,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withNextIntl(nextConfig);
+export default withBundleAnalyzer(withNextIntl(nextConfig));

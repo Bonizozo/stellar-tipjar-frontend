@@ -26,12 +26,17 @@
   --background: #f5f3ff;
   --surface: #ede9fe;
   --foreground: #4c1d95;
-  --muted: #7c3aed;
+  /* #5b21b6 on #f5f3ff → ~8.6:1 contrast ratio (WCAG AA ✓) */
+  --muted: #5b21b6;
   --accent: #06b6d4;
   --accent-alt: #a855f7;
   --ring: #ec4899;
   --ink: #4c1d95;
   --wave: #0f6c7b;
+  /* Text placed on --surface (#ede9fe) needs ≥4.5:1; #3b0764 → ~10.5:1 ✓ */
+  --text-on-surface: #3b0764;
+  /* High-contrast focus ring visible in both themes */
+  --focus-ring: #7c3aed;
   --primary-50: #f5f3ff;
   --primary-100: #ede9fe;
   --primary-500: #8b5cf6;
@@ -52,12 +57,16 @@
   --background: #1a1a2e;
   --surface: #16213e;
   --foreground: #e6edf3;
+  /* #8b949e on #1a1a2e → ~5.5:1 contrast ratio (WCAG AA ✓) */
   --muted: #8b949e;
   --accent: #06b6d4;
   --accent-alt: #a855f7;
   --ring: #ec4899;
   --ink: #e6edf3;
   --wave: #58a6ff;
+  /* Text on dark --surface (#16213e): #c9d1d9 → ~7.5:1 ✓ */
+  --text-on-surface: #c9d1d9;
+  --focus-ring: #a78bfa;
   --primary-50: #2d1b69;
   --primary-100: #3b2a7a;
   --primary-500: #8b5cf6;
@@ -101,8 +110,8 @@ a {
 
 /* Ensure visible focus indicators for keyboard users */
 :focus-visible {
-  outline: 2px solid var(--accent-alt);
-  outline-offset: 2px;
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 3px;
 }
 
 /* Screen-reader only utility (complements Tailwind's sr-only) */

@@ -1,5 +1,10 @@
 import CategoryPage from '@/components/CategoryPage';
 
-export default function CategoryPageRoute({ params }: { params: { category: string } }) {
-  return <CategoryPage category={params.category} />;
+export default async function CategoryPageRoute({
+  params,
+}: {
+  params: Promise<{ category: string }>;
+}) {
+  const { category } = await params;
+  return <CategoryPage category={category} />;
 }

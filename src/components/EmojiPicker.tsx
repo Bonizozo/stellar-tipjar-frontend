@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 
 const EMOJIS = ["❤️", "🔥", "⭐", "👏", "😂", "🙏", "💎", "🚀"];
 
@@ -11,7 +12,8 @@ interface EmojiPickerProps {
 }
 
 export function EmojiPicker({ onSelect, onClose, selected }: EmojiPickerProps) {
-  const ref = useRef<HTMLDivElement>(null);
+  // Focus trap: always active when the picker is mounted (parent controls mounting)
+  const ref = useFocusTrap<HTMLDivElement>(true);
 
   // Close on outside click or Escape
   useEffect(() => {
@@ -27,7 +29,7 @@ export function EmojiPicker({ onSelect, onClose, selected }: EmojiPickerProps) {
       document.removeEventListener("keydown", handleKey);
       document.removeEventListener("mousedown", handleClick);
     };
-  }, [onClose]);
+  }, [onClose, ref]);
 
   return (
     <div
