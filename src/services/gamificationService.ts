@@ -9,8 +9,7 @@ import type {
   XPEvent,
 } from "@/types/gamification";
 import { generateAvatarUrl } from "@/utils/imageUtils";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+import { API_BASE_URL as API_BASE } from "@/config/env";
 
 // ── Level table ────────────────────────────────────────────────────────────
 

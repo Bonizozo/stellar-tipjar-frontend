@@ -17,8 +17,7 @@ import {
   type ActionType,
   type QueuedAction,
 } from "@/utils/offlineStorage";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+import { API_BASE_URL as API_BASE } from "@/config/env";
 
 interface SyncResult {
   synced: number;

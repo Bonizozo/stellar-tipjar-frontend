@@ -70,7 +70,7 @@ export const receiptService = {
     formData.append('email', email);
     formData.append('receipt', pdfBlob, `receipt-${receipt.id}.pdf`);
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/receipts/send`, {
+    const res = await fetch(`${API_BASE_URL}/receipts/send`, {
       method: 'POST',
       body: formData,
     });

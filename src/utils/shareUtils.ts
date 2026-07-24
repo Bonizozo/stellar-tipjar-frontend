@@ -1,6 +1,8 @@
 export type SharePlatform = "twitter" | "facebook" | "linkedin" | "copy";
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/?$/, "") || "https://stellar-tipjar.app";
+import { SITE_BASE_URL } from "@/config/env";
+
+const BASE_URL = SITE_BASE_URL.replace(/\/?$/, "");
 
 export function getCreatorShareUrl(username: string) {
   return `${BASE_URL}/creator/${encodeURIComponent(username)}`;

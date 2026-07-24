@@ -14,6 +14,7 @@ import { useNotifications, TipNotification } from "@/hooks/useNotifications";
 import { useToast } from "@/hooks/useToast";
 import { playNotificationSound, isSoundMuted, setSoundMuted } from "@/utils/soundUtils";
 import type { Tip } from "@/lib/websocket/client";
+import { WS_BASE_URL } from "@/config/env";
 
 interface WebSocketContextType {
   notifications: TipNotification[];
@@ -28,7 +29,7 @@ interface WebSocketContextType {
 const WebSocketContext = createContext<WebSocketContextType | undefined>(undefined);
 
 export function WebSocketProvider({ children }: { children: ReactNode }) {
-  const wsUrl = process.env.NEXT_PUBLIC_WS_URL;
+  const wsUrl = WS_BASE_URL;
   const { clientRef, status } = useWebSocket({ url: wsUrl });
   const { notifications, unreadCount, addNotification, markAllRead, clearNotifications } =
     useNotifications();

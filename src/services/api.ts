@@ -1,8 +1,7 @@
 import { RequestQueue } from "@/utils/requestQueue";
 import { RateLimiter } from "@/utils/rateLimiter";
 import type { TagWithCount } from "@/utils/categories";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+import { API_BASE_URL } from "@/config/env";
 const DEFAULT_RETRIES = 3;
 
 export interface CreatorProfile {
