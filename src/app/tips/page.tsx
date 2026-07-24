@@ -60,10 +60,10 @@ export default function TipsPage() {
   }, 0);
 
   return (
-    <section className="space-y-6">
+    <section aria-labelledby="tips-heading" className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-ink">
+          <h1 id="tips-heading" className="text-3xl font-bold tracking-tight text-ink">
             Tip History
           </h1>
           <p className="mt-2 max-w-2xl text-ink/75">

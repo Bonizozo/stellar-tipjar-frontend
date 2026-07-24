@@ -153,7 +153,7 @@ function ExplorePageContent() {
   return (
     <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
       {/* Header Section */}
-      <section className="mb-12">
+      <section aria-labelledby="explore-heading" className="mb-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -161,7 +161,7 @@ function ExplorePageContent() {
         >
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="text-4xl md:text-5xl font-black tracking-tight text-ink mb-4">
+              <h1 id="explore-heading" className="text-4xl md:text-5xl font-black tracking-tight text-ink mb-4">
                 Explore <span className="text-wave">Creators</span>
               </h1>
               <p className="text-lg text-ink/60 leading-relaxed translate-y-[-4px]">
