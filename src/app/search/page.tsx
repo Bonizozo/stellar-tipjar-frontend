@@ -136,10 +136,10 @@ export default function SearchPage() {
   };
 
   return (
-    <section className="space-y-6">
+    <section aria-labelledby="search-heading" className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-ink">Search Creators</h1>
+        <h1 id="search-heading" className="text-3xl font-bold tracking-tight text-ink">Search Creators</h1>
         <p className="mt-1 text-ink/60">Find creators by name, category, or tag.</p>
       </div>
 

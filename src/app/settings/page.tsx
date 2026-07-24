@@ -309,11 +309,11 @@ export default function SettingsPage() {
       <div className="max-w-3xl mx-auto px-4 py-8 sm:px-6">
         {/* Header */}
         <motion.div {...fadeUp(0)} className="mb-8">
-          <h1 className="text-3xl font-bold text-ink">Settings</h1>
+          <h1 id="settings-heading" className="text-3xl font-bold text-ink">Settings</h1>
           <p className="text-ink/60 mt-1 text-sm">Manage your account and preferences</p>
         </motion.div>
 
-        <div className="space-y-6">
+        <section aria-labelledby="settings-heading" className="space-y-6">
           {/* Quick nav */}
           <motion.div {...fadeUp(0.05)}>
             <SectionCard>
@@ -369,7 +369,7 @@ export default function SettingsPage() {
           <motion.div {...fadeUp(0.25)}>
             <DangerZone />
           </motion.div>
-        </div>
+        </section>
       </div>
     </div>
   );
