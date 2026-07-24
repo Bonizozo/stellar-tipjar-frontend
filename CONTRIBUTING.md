@@ -139,6 +139,93 @@ npm run test:e2e:ui  # Interactive mode
 npm run test -- --coverage
 ```
 
+---
+
+## Accessibility (a11y) Testing
+
+This project uses [`@axe-core/playwright`](https://github.com/dequelabs/axe-core-npm/tree/develop/packages/playwright) for automated accessibility enforcement. The a11y suite is part of `npm run test:e2e` and **must stay green on every PR**.
+
+### Running the a11y suite
+
+```bash
+# Run all E2E tests (includes a11y suite)
+npm run test:e2e
+
+# Run only the a11y specs
+npx playwright test tests/e2e/a11y.spec.ts tests/e2e/a11y-keyboard.spec.ts
+
+# Interactive UI mode
+npm run test:e2e:ui
+```
+
+### What is tested
+
+| File | What it covers |
+|------|----------------|
+| `tests/e2e/a11y.spec.ts` | Axe scans of all 7 required routes in **both light and dark themes**: home, explore, creator profile, tips (including open-modal state), dashboard, settings, search |
+| `tests/e2e/a11y-keyboard.spec.ts` | Keyboard-only journey: connect wallet → pick creator → send tip. All interactions use `keyboard.press()` — no mouse events. |
+
+### Gate: zero serious/critical violations
+
+The gate is `serious` and `critical` impact per [axe-core impact levels](https://www.deque.com/axe/core-documentation/api-documentation/#axe-core-tags). `minor` and `moderate` issues are reported but do not fail the build.
+
+### Excluding a known-unfixable rule
+
+If a third-party library introduces a violation you cannot fix, you may exclude the rule **only** with an inline justification in `tests/helpers/a11y.ts`:
+
+```ts
+const EXCLUDED_RULES: { id: string; reason: string }[] = [
+  {
+    id: 'color-contrast',
+    reason: 'Third-party <Widget> uses vendor-locked colors. Tracked in #999.',
+  },
+];
+```
+
+Exclusions without a `reason` string will fail the TypeScript build.
+
+### Helper API (`tests/helpers/a11y.ts`)
+
+```ts
+// Run axe and return violations at or above minImpact
+runAxe(page, minImpact?, include?)
+
+// Assert zero serious/critical violations (throws with full report on failure)
+expectNoViolations(page, contextLabel?, include?)
+
+// Force light or dark theme via classList + localStorage
+forceTheme(page, 'light' | 'dark')
+
+// Navigate and wait for networkidle before scanning
+gotoAndSettle(page, '/en/explore')
+```
+
+### Accessibility primitives available in the codebase
+
+| Hook / Component | Purpose |
+|-----------------|---------|
+| `useFocusTrap(active)` | Traps Tab focus inside a container while `active === true`. Used in `<Modal>`, `<MobileMenu>`, `<EmojiPicker>`. |
+| `useAnnouncer()` | Returns an `announce(message, 'polite' \| 'assertive')` function that posts to a visually-hidden live region. |
+| `useArrowKeyNavigation(items)` | Handles ↑↓←→ roving tabindex for custom list/grid widgets. |
+| `<SkipToContent>` | Skip-to-main-content link rendered at the top of every page in the locale layout. |
+| `<VisuallyHidden>` | Renders children in a screen-reader-only span (wraps `.sr-only`). |
+
+### Keeping the gate green
+
+1. **New interactive components** — wire `useFocusTrap` for any new modal/drawer/popover.
+2. **New icon-only buttons** — always add `aria-label` describing the action.
+3. **New route pages** — include a single `<h1>` with a unique `id`, and wrap the page body in `<section aria-labelledby="...">` matching that id.
+4. **Color choices** — verify contrast with the [WebAIM contrast checker](https://webaim.org/resources/contrastchecker/). WCAG AA requires 4.5:1 for normal text, 3:1 for large text and UI components.
+5. **Custom widgets** (carousels, date pickers, comboboxes) — add `useArrowKeyNavigation` and ensure keyboard operability before merging.
+
+### Before/after fix example
+
+**Before** (color-contrast failure):  
+`--muted: #7c3aed` on `--background: #f5f3ff` → contrast ratio ~4.2:1 (FAILS AA)
+
+**After** (fixed in `src/styles/globals.css`):  
+`--muted: #5b21b6` on `--background: #f5f3ff` → contrast ratio ~8.6:1 (PASSES AAA)
+
 ## Pull Request Process
 
 1. **Update documentation** if needed
