@@ -1,5 +1,5 @@
-import jsPDF from 'jspdf';
 import QRCode from 'qrcode';
+import { loadJsPDF } from '@/lib/pdf/loadJsPdf';
 
 export interface TipReceipt {
   id: string;
@@ -14,7 +14,8 @@ export interface TipReceipt {
 
 export const receiptService = {
   async generatePDF(receipt: TipReceipt): Promise<Blob> {
-    const doc = new jsPDF();
+    const JsPDF = await loadJsPDF();
+    const doc = new JsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
 

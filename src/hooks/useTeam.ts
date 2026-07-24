@@ -115,7 +115,7 @@ const teamProfileSchema = z.object({
   totalTipsReceived: z.number().optional(),
 });
 
-const profilesRecordSchema = z.record(teamProfileSchema);
+const profilesRecordSchema = z.record(z.string(), teamProfileSchema);
 
 const fmt = (date = new Date()) => new Date(date).toISOString();
 

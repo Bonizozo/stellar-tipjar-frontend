@@ -1,8 +1,9 @@
-import { jsPDF } from "jspdf";
 import type { PressKit } from "@/services/pressKitService";
+import { loadJsPDF } from "@/lib/pdf/loadJsPdf";
 
 export async function generatePressKitPDF(kit: PressKit): Promise<void> {
-  const doc = new jsPDF();
+  const JsPDF = await loadJsPDF();
+  const doc = new JsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 20;
   let y = 30;

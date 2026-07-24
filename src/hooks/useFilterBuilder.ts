@@ -65,8 +65,8 @@ const PRESETS: FilterPreset[] = [
 
 const criterionSchema = z.object({
   id: z.string(),
-  field: z.string(),
-  operator: z.string(),
+  field: z.enum(["search", "status", "dateFrom", "dateTo", "minAmount", "maxAmount"]),
+  operator: z.enum(["contains", "equals", "gte", "lte", "between"]),
   value: z.string(),
   value2: z.string().optional(),
 });

@@ -1,16 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { CreatorSelector } from "./CreatorSelector";
-import { PredictionCharts } from "./PredictionCharts";
 import { PredictionSummary } from "./PredictionSummary";
 import { TimeframeSelector } from "./TimeframeSelector";
 import { ModelExplanation } from "./ModelExplanation";
 import { Button } from "@/components/Button";
+import { ChartSkeleton } from "@/components/charts";
 import {
   ChartBarIcon,
   InformationCircleIcon,
 } from "@heroicons/react/24/outline";
+
+const PredictionCharts = dynamic(
+  () => import("./PredictionCharts").then((m) => m.PredictionCharts),
+  { loading: () => <ChartSkeleton />, ssr: false },
+);
 
 export type Timeframe = "7d" | "30d" | "90d" | "1y";
 

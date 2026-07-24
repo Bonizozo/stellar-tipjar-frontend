@@ -1,12 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { CreatorSelector } from "./CreatorSelector";
 import { ComparisonTable } from "./ComparisonTable";
-import { ComparisonCharts } from "./ComparisonCharts";
 import { ExportButton } from "./ExportButton";
 import { Button } from "@/components/Button";
+import { ChartSkeleton } from "@/components/charts";
 import { TrashIcon } from "@heroicons/react/24/outline";
+
+const ComparisonCharts = dynamic(
+  () => import("./ComparisonCharts").then((m) => m.ComparisonCharts),
+  { loading: () => <ChartSkeleton />, ssr: false },
+);
 
 export interface SelectedCreator {
   username: string;

@@ -205,7 +205,7 @@ describe("createZustandStorage", () => {
     zs.setItem("settings", JSON.stringify({ theme: "dark" }));
     const raw = localStorage.getItem("stj:store:settings");
     expect(raw).toBe(JSON.stringify({ theme: "dark" }));
-    const parsed = JSON.parse(zs.getItem("settings")!);
+    const parsed = JSON.parse(zs.getItem("settings") as string);
     expect(parsed).toEqual({ theme: "dark" });
   });
 });

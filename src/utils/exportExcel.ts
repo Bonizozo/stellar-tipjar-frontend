@@ -1,7 +1,8 @@
-import * as XLSX from "xlsx";
 import type { Tip } from "@/hooks/queries/useTips";
 
-export function exportToExcel(tips: Tip[], filename: string): void {
+export async function exportToExcel(tips: Tip[], filename: string): Promise<void> {
+  const XLSX = await import("xlsx");
+
   const rows = tips.map((t) => ({
     Date: new Date(t.date).toLocaleString(),
     "Amount (XLM)": t.amount,
