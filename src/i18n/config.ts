@@ -1,15 +1,17 @@
-export const locales = ['en', 'es', 'fr', 'de', 'ar', 'zh'] as const;
+import { routing } from './routing';
+
+export const locales = routing.locales;
 export type Locale = (typeof locales)[number];
 
-export const defaultLocale: Locale = 'en';
+export const defaultLocale: Locale = routing.defaultLocale as Locale;
 
 export const localeNames: Record<Locale, string> = {
   en: 'English',
   es: 'Español',
   fr: 'Français',
-  de: 'Deutsch',
-  ar: 'العربية',
   zh: '中文',
+  ar: 'العربية',
 };
 
-export const isRTL = (locale: Locale) => locale === 'ar';
+export const isRTL = (locale: Locale | string) => locale === 'ar';
+
