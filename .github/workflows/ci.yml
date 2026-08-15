@@ -137,3 +137,7 @@ jobs:
 
       - name: Build Next.js app
         run: npm run build
+
+      - name: Check bundle budget
+        run: npm run check:bundle-budget
+
