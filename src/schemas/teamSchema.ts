@@ -1,8 +1,14 @@
 import { z } from "zod";
 
 // Basic validation patterns
-const TEAM_NAME_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9_-]{1,31}$/;
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const TEAM_NAME_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9_-]{1,31}$/;
+export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Email schema helper
+export const emailSchema = z
+  .string()
+  .email("Invalid email address")
+  .regex(EMAIL_PATTERN, "Invalid email address");
 
 // Team name schema
 export const teamNameSchema = z
@@ -21,7 +27,7 @@ export const teamMemberSchema = z.object({
     .string()
     .min(1, "Member name is required")
     .max(100, "Member name is too long"),
-  email: z.string().email("Invalid email address").optional().or(z.literal("")),
+  email: emailSchema.optional().or(z.literal("")),
   role: z.enum(["owner", "admin", "member", "viewer"]).optional().default("member"),
   split: z
     .number()
@@ -37,7 +43,7 @@ export type TeamMemberInput = z.infer<typeof teamMemberSchema>;
 // Team invitation schema
 export const teamInvitationSchema = z.object({
   id: z.string().default(() => crypto.randomUUID()),
-  email: z.string().email("Invalid email address"),
+  email: emailSchema,
   sentAt: z.string().datetime().default(() => new Date().toISOString()),
   status: z
     .enum(["pending", "accepted", "rejected"])
@@ -88,7 +94,7 @@ export type CreateTeamRequest = z.infer<typeof createTeamSchema>;
 // Add member request schema
 export const addMemberSchema = z.object({
   name: z.string().min(1).max(100),
-  email: z.string().email().optional(),
+  email: emailSchema.optional(),
   split: z.number().min(0).max(100).int(),
 });
 
@@ -104,7 +110,7 @@ export type UpdateSplitRequest = z.infer<typeof updateSplitSchema>;
 
 // Invite member schema
 export const inviteMemberSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: emailSchema,
   message: z.string().max(500).optional(),
 });
 

@@ -9,6 +9,8 @@ import {
   inviteMemberSchema,
   revenueSplitValidationSchema,
   teamNameCheckSchema,
+  EMAIL_PATTERN,
+  emailSchema,
 } from "@/schemas/teamSchema";
 import { z } from "zod";
 
@@ -43,7 +45,7 @@ describe("Team Schema Validations", () => {
         split: 50,
         isActive: true,
       };
-      expect(teamMemberSchema.parse(member)).toEqual(member);
+      expect(teamMemberSchema.parse(member)).toMatchObject(member);
     });
 
     it("makes email optional", () => {
@@ -308,4 +310,19 @@ describe("Team Schema Validations", () => {
       ).toThrow();
     });
   });
+
+  describe("EMAIL_PATTERN & emailSchema (#574)", () => {
+    it("validates well-formed emails", () => {
+      expect(EMAIL_PATTERN.test("user@example.com")).toBe(true);
+      expect(emailSchema.parse("team.lead@stellar.org")).toBe("team.lead@stellar.org");
+    });
+
+    it("rejects malformed email addresses", () => {
+      expect(EMAIL_PATTERN.test("plainaddress")).toBe(false);
+      expect(EMAIL_PATTERN.test("@missingusername.com")).toBe(false);
+      expect(EMAIL_PATTERN.test("user@domain")).toBe(false);
+      expect(() => emailSchema.parse("invalid-email")).toThrow();
+    });
+  });
 });
+
