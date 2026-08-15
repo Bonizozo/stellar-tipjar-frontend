@@ -1,4 +1,4 @@
-import { useRef, useCallback, type MouseEvent as ReactMouseEvent, type TouchEvent as ReactTouchEvent } from 'react';
+import { useRef, useCallback, useEffect, type MouseEvent as ReactMouseEvent, type TouchEvent as ReactTouchEvent } from 'react';
 
 export interface UseLongPressOptions {
   onLongPress: (e: ReactTouchEvent | ReactMouseEvent) => void;
@@ -31,6 +31,10 @@ export function useLongPress(options: UseLongPressOptions) {
     }
     startPosRef.current = null;
   }, []);
+
+  useEffect(() => {
+    return () => clear();
+  }, [clear]);
 
   const start = useCallback((e: ReactTouchEvent | ReactMouseEvent) => {
     firedRef.current = false;

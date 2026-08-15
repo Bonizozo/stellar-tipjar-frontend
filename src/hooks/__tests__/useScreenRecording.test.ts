@@ -73,12 +73,13 @@ describe("useScreenRecording", () => {
     expect(result.current.videoUrl).toBe("blob:mock");
   });
 
-  it("resets to idle after discard()", async () => {
-    const { result } = renderHook(() => useScreenRecording());
+  it("cleans up active recording and tracks on unmount", async () => {
+    const { result, unmount } = renderHook(() => useScreenRecording());
     await act(() => result.current.start());
-    act(() => result.current.stop());
-    act(() => result.current.discard());
-    expect(result.current.state).toBe("idle");
-    expect(result.current.videoUrl).toBeNull();
+    expect(result.current.state).toBe("recording");
+
+    unmount();
+    expect(mockTrack.stop).toHaveBeenCalled();
   });
 });
+

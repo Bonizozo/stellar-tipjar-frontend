@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 
 export interface UseScreenRecordingOptions {
   /** Max recording duration in seconds. Default: 300 (5 min) */
@@ -45,17 +45,27 @@ export function useScreenRecording({
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const elapsedRef = useRef(0);
 
-  const clearTimer = () => {
+  const clearTimer = useCallback(() => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-  };
+  }, []);
 
-  const stopStream = () => {
+  const stopStream = useCallback(() => {
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
-  };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      clearTimer();
+      stopStream();
+      if (recorderRef.current && recorderRef.current.state !== "inactive") {
+        recorderRef.current.stop();
+      }
+    };
+  }, [clearTimer, stopStream]);
 
   const start = useCallback(async () => {
     if (!isSupported) {
