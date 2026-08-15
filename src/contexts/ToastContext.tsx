@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useReducer } from "react";
+import { createContext, useCallback, useContext, useReducer, useMemo } from "react";
 
 export type ToastVariant = "success" | "error" | "warning" | "info";
 export type ToastPosition =
@@ -67,8 +67,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
+  const value = useMemo(() => ({ toasts, add, remove }), [toasts, add, remove]);
+
   return (
-    <ToastContext.Provider value={{ toasts, add, remove }}>
+    <ToastContext.Provider value={value}>
       {children}
     </ToastContext.Provider>
   );

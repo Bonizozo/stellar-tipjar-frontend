@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useCallback, ReactNode } from "react";
+import React, { createContext, useContext, useEffect, useCallback, useMemo, ReactNode } from "react";
 
 import {
   useWalletStore,
@@ -94,26 +94,42 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const isInstalled = storeStatus !== "unavailable";
   const isConnecting = storeStatus === "connecting";
 
+  const value = useMemo<WalletContextType>(
+    () => ({
+      isConnected: storeStatus === "connected" && !!publicKey,
+      isInstalled,
+      publicKey,
+      shortAddress: formatAddress(publicKey),
+      balance,
+      network,
+      provider: "freighter",
+      status,
+      isConnecting,
+      isLoading: isConnecting,
+      error: error?.message ?? null,
+      connect,
+      disconnect,
+      refreshBalance,
+      signStellarTransaction,
+    }),
+    [
+      storeStatus,
+      publicKey,
+      isInstalled,
+      balance,
+      network,
+      status,
+      isConnecting,
+      error,
+      connect,
+      disconnect,
+      refreshBalance,
+      signStellarTransaction,
+    ]
+  );
+
   return (
-    <WalletContext.Provider
-      value={{
-        isConnected: storeStatus === "connected" && !!publicKey,
-        isInstalled,
-        publicKey,
-        shortAddress: formatAddress(publicKey),
-        balance,
-        network,
-        provider: "freighter",
-        status,
-        isConnecting,
-        isLoading: isConnecting,
-        error: error?.message ?? null,
-        connect,
-        disconnect,
-        refreshBalance,
-        signStellarTransaction,
-      }}
-    >
+    <WalletContext.Provider value={value}>
       {children}
     </WalletContext.Provider>
   );

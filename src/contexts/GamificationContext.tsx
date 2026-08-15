@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect, useMemo, ReactNode } from "react";
 import type { GamificationState, XPEvent } from "@/types/gamification";
 import {
   getUserGamificationState,
@@ -91,43 +91,39 @@ export function GamificationProvider({ children, username = "demo-user" }: Gamif
     setXpHistory((prev) => [{ amount, reason, timestamp: new Date().toISOString() }, ...prev]);
   }, []);
 
-  if (!state) {
-    return (
-      <GamificationContext.Provider
-        value={{
-          isLoading,
-          totalXP: 0,
-          currentLevel: { level: 1, title: "Newcomer", minXP: 0, maxXP: 100, color: "text-gray-500", bgColor: "bg-gray-100", icon: "🌱" },
-          nextLevel: null,
-          levelProgress: 0,
-          xpIntoLevel: 0,
-          xpNeeded: 100,
-          badges: [],
-          achievements: [],
-          rewards: [],
-          stats: { tipCount: 0, totalTipped: 0, uniqueRecipients: 0, currentStreak: 0 },
-          xpHistory: [],
-          refresh,
-          claimReward,
-          addXP,
-        }}
-      >
-        {children}
-      </GamificationContext.Provider>
-    );
-  }
-
-  return (
-    <GamificationContext.Provider
-      value={{
-        ...state,
+  const value = useMemo<GamificationContextValue>(() => {
+    if (!state) {
+      return {
         isLoading,
-        xpHistory,
+        totalXP: 0,
+        currentLevel: { level: 1, title: "Newcomer", minXP: 0, maxXP: 100, color: "text-gray-500", bgColor: "bg-gray-100", icon: "🌱" },
+        nextLevel: null,
+        levelProgress: 0,
+        xpIntoLevel: 0,
+        xpNeeded: 100,
+        badges: [],
+        achievements: [],
+        rewards: [],
+        stats: { tipCount: 0, totalTipped: 0, uniqueRecipients: 0, currentStreak: 0 },
+        xpHistory: [],
         refresh,
         claimReward,
         addXP,
-      }}
-    >
+      };
+    }
+
+    return {
+      ...state,
+      isLoading,
+      xpHistory,
+      refresh,
+      claimReward,
+      addXP,
+    };
+  }, [state, isLoading, xpHistory, refresh, claimReward, addXP]);
+
+  return (
+    <GamificationContext.Provider value={value}>
       {children}
     </GamificationContext.Provider>
   );

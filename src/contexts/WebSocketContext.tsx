@@ -6,6 +6,7 @@ import React, {
   useEffect,
   useState,
   useCallback,
+  useMemo,
   ReactNode,
 } from "react";
 
@@ -88,10 +89,21 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
     };
   }, [status, clientRef, addNotification, toast, isMuted]);
 
+  const value = useMemo<WebSocketContextType>(
+    () => ({
+      notifications,
+      unreadCount,
+      markAllRead,
+      clearNotifications,
+      isMuted,
+      setMuted,
+      connectionStatus: status,
+    }),
+    [notifications, unreadCount, markAllRead, clearNotifications, isMuted, setMuted, status]
+  );
+
   return (
-    <WebSocketContext.Provider
-      value={{ notifications, unreadCount, markAllRead, clearNotifications, isMuted, setMuted, connectionStatus: status }}
-    >
+    <WebSocketContext.Provider value={value}>
       {children}
     </WebSocketContext.Provider>
   );
