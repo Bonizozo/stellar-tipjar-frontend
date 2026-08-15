@@ -48,11 +48,11 @@ export function TagBadge({
     >
       #{tag}
       {isCopied ? (
-        <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+        <svg role="img" aria-label="Copied" className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
         </svg>
       ) : (
-        <svg className="h-3 w-3 opacity-70" fill="currentColor" viewBox="0 0 20 20">
+        <svg role="img" aria-label="Copy tag" className="h-3 w-3 opacity-70" fill="currentColor" viewBox="0 0 20 20">
           <path d="M8 2a1 1 0 000 2h2a1 1 0 100-2H8zM4 5a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 8a1 1 0 100 2h2a1 1 0 100-2H2zm18 0a1 1 0 100-2h-2a1 1 0 100 2h2zM2 13a1 1 0 100 2h2a1 1 0 100-2H2zm16 0a1 1 0 100-2h2a1 1 0 100 2h-2zM4 17a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 17a1 1 0 100 2h2a1 1 0 100-2H2z" />
         </svg>
       )}

@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { TagBadge } from '../TagBadge';
 
@@ -40,7 +40,9 @@ describe('TagBadge', () => {
     render(<TagBadge tag="web3" />);
     
     const element = screen.getByText('#web3');
-    fireEvent.mouseDown(element);
+    await act(async () => {
+      fireEvent.mouseDown(element);
+    });
     
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith('web3');
   });
@@ -49,7 +51,9 @@ describe('TagBadge', () => {
     render(<TagBadge tag="nft" />);
     
     const element = screen.getByText('#nft');
-    fireEvent.mouseDown(element);
+    await act(async () => {
+      fireEvent.mouseDown(element);
+    });
     
     // Should show checkmark icon after copy
     await screen.findByRole('img', { hidden: true });
