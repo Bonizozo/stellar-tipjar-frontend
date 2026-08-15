@@ -7,6 +7,7 @@ import {
   inviteMemberSchema,
   type TeamProfileInput,
   type TeamStatistics,
+  type AddMemberRequest,
 } from "@/schemas/teamSchema";
 import { TeamProfile, TeamMember } from "@/hooks/useTeam";
 import { API_BASE_URL } from "@/config/env";
@@ -97,10 +98,12 @@ export class TeamService {
    */
   static async addTeamMember(
     teamName: string,
-    member: TeamMember | Omit<TeamMember, "id" | "createdAt">
+    member: TeamMember | Omit<TeamMember, "id" | "createdAt"> | AddMemberRequest
   ): Promise<TeamMember> {
     try {
-      const validated = teamMemberSchema.omit({ id: true, createdAt: true }).parse(member);
+      const validated = addMemberSchema.safeParse(member).success
+        ? addMemberSchema.parse(member)
+        : teamMemberSchema.omit({ id: true, createdAt: true }).parse(member);
 
       const response = await fetch(`${API_BASE_URL}/api/teams/${encodeURIComponent(teamName)}/members`, {
         method: "POST",
@@ -261,7 +264,7 @@ export class TeamService {
       }
 
       const result = await response.json();
-      return (Array.isArray(result) ? result : result.teams || []).map((team: any) =>
+      return (Array.isArray(result) ? result : result.teams || []).map((team: unknown) =>
         teamProfileSchema.parse(team)
       );
     } catch (error) {
