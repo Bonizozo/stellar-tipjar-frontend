@@ -290,3 +290,69 @@ export function clearAllNamespaced(
     /* ignore */
   }
 }
+
+// ─── Legacy Migration Utility ────────────────────────────────────────────────
+
+export interface LegacyMapping {
+  legacyKey: string;
+  domain: string;
+  newKey: string;
+  type?: "local" | "session";
+}
+
+/**
+ * Migrates multiple legacy unnamespaced keys in batch into their namespaced destinations.
+ * Safe to run on every startup; will only read/write if the legacy key exists and new key is unset.
+ */
+export function migrateLegacyKeys(mappings: LegacyMapping[]): number {
+  if (isServer()) return 0;
+  let count = 0;
+
+  for (const { legacyKey, domain, newKey, type = "local" } of mappings) {
+    const backend = getBackend(type);
+    if (!backend) continue;
+
+    try {
+      const nk = nsKey(domain, newKey);
+      const existing = backend.getItem(nk);
+      if (existing === null) {
+        const legacy = backend.getItem(legacyKey);
+        if (legacy !== null) {
+          backend.setItem(nk, legacy);
+          backend.removeItem(legacyKey);
+          count++;
+        }
+      }
+    } catch {
+      /* ignore storage errors during migration */
+    }
+  }
+
+  return count;
+}
+
+// ─── Key Enumeration ─────────────────────────────────────────────────────────
+
+export function getAllNamespacedKeys(
+  domain?: string,
+  type: "local" | "session" = "local",
+): string[] {
+  const backend = getBackend(type);
+  if (!backend) return [];
+  const prefix = domain ? nsKey(domain, "") : PREFIX;
+  const result: string[] = [];
+
+  try {
+    for (let i = 0; i < backend.length; i++) {
+      const k = backend.key(i);
+      if (k && k.startsWith(prefix)) {
+        result.push(k);
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+
+  return result;
+}
+
