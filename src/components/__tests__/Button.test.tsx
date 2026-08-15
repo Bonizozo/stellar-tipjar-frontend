@@ -10,21 +10,43 @@ describe('Button Component', () => {
     const button = screen.getByRole('button', { name: 'Click me' })
     
     expect(button).toBeInTheDocument()
-    expect(button).toHaveClass('bg-sunrise', 'text-white')
+    expect(button).toHaveClass('bg-purple-600', 'text-white')
   })
 
   it('renders with secondary variant', () => {
     render(<Button variant="secondary">Secondary</Button>)
     const button = screen.getByRole('button', { name: 'Secondary' })
     
-    expect(button).toHaveClass('bg-wave', 'text-white')
+    expect(button).toHaveClass('bg-gray-200', 'text-gray-900')
   })
 
   it('renders with ghost variant', () => {
     render(<Button variant="ghost">Ghost</Button>)
     const button = screen.getByRole('button', { name: 'Ghost' })
     
-    expect(button).toHaveClass('bg-transparent', 'border', 'border-ink/20')
+    expect(button).toHaveClass('hover:bg-gray-100', 'text-gray-700')
+  })
+
+  it('renders with outline variant', () => {
+    render(<Button variant="outline">Outline</Button>)
+    const button = screen.getByRole('button', { name: 'Outline' })
+    
+    expect(button).toHaveClass('border-2', 'border-purple-600', 'text-purple-600')
+  })
+
+  it('renders with danger variant', () => {
+    render(<Button variant="danger">Danger</Button>)
+    const button = screen.getByRole('button', { name: 'Danger' })
+    
+    expect(button).toHaveClass('bg-red-600', 'text-white')
+  })
+
+  it('renders loading state with disabled button and spinner', () => {
+    render(<Button loading>Loading</Button>)
+    const button = screen.getByRole('button', { name: 'Loading' })
+    
+    expect(button).toBeDisabled()
+    expect(button.querySelector('svg.animate-spin')).toBeInTheDocument()
   })
 
   it('applies custom className', () => {
