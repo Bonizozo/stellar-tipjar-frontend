@@ -7,11 +7,12 @@
 export interface ErrorInfo {
   componentStack?: string;
   digest?: string;
+  context?: string;
 }
 
 export function logError(error: Error, info?: ErrorInfo): void {
   if (process.env.NODE_ENV === "development") {
-    console.group("[ErrorBoundary]");
+    console.group(`[ErrorBoundary${info?.context ? `: ${info.context}` : ""}]`);
     console.error("Error:", error);
     if (info?.componentStack) {
       console.error("Component stack:", info.componentStack);
@@ -28,6 +29,7 @@ export function logError(error: Error, info?: ErrorInfo): void {
     JSON.stringify({
       message: error.message,
       name: error.name,
+      context: info?.context,
       digest: info?.digest,
       timestamp: new Date().toISOString(),
     })
