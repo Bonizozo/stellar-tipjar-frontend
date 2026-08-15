@@ -8,6 +8,31 @@ function wrapEnv(data: unknown): string {
   return JSON.stringify({ __v: 1, d: data });
 }
 
+const createStorageMock = () => {
+  let store: Record<string, string> = {};
+  return {
+    getItem: (key: string) => (key in store ? store[key] : null),
+    setItem: (key: string, value: string) => {
+      store[key] = String(value);
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      store = {};
+    },
+  };
+};
+
+const storageMock = createStorageMock();
+if (typeof globalThis.localStorage === "undefined" || !globalThis.localStorage.clear) {
+  Object.defineProperty(globalThis, "localStorage", {
+    value: storageMock,
+    writable: true,
+    configurable: true,
+  });
+}
+
 describe("Notification Service", () => {
   beforeEach(() => {
     localStorage.clear();
@@ -154,7 +179,9 @@ describe("Notification Service", () => {
       };
 
       await expect(
-        notificationService.updateNotificationSettings(invalidSettings as any)
+        notificationService.updateNotificationSettings(
+          invalidSettings as unknown as NotificationSettings
+        )
       ).rejects.toThrow();
     });
 
@@ -178,7 +205,9 @@ describe("Notification Service", () => {
       };
 
       await expect(
-        notificationService.updateNotificationSettings(invalidSettings as any)
+        notificationService.updateNotificationSettings(
+          invalidSettings as unknown as NotificationSettings
+        )
       ).rejects.toThrow();
     });
   });
