@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi } from "vitest";
 import { RevenueSplit } from "@/components/RevenueSplit";
@@ -53,7 +53,7 @@ describe("RevenueSplit Component", () => {
       <RevenueSplit members={mockMembers} onUpdateSplit={handleUpdateSplit} totalSplit={100} />
     );
 
-    expect(screen.getByText(/Balanced/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Balanced/i).length).toBeGreaterThanOrEqual(1);
   });
 
   it("shows warning when split is incomplete", () => {
@@ -62,7 +62,7 @@ describe("RevenueSplit Component", () => {
       <RevenueSplit members={mockMembers} onUpdateSplit={handleUpdateSplit} totalSplit={80} />
     );
 
-    expect(screen.getByText(/incomplete/i)).toBeInTheDocument();
+    expect(screen.getByText(/Incomplete/i)).toBeInTheDocument();
     expect(screen.getByText(/20% remaining to allocate/i)).toBeInTheDocument();
   });
 
@@ -72,12 +72,11 @@ describe("RevenueSplit Component", () => {
       <RevenueSplit members={mockMembers} onUpdateSplit={handleUpdateSplit} totalSplit={120} />
     );
 
-    expect(screen.getByText(/Overflow/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Overflow/i).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText(/exceed 100%/i)).toBeInTheDocument();
   });
 
-  it("calls onUpdateSplit when range input changes", async () => {
-    const user = userEvent.setup();
+  it("calls onUpdateSplit when range input changes", () => {
     const handleUpdateSplit = vi.fn();
 
     render(
@@ -85,26 +84,23 @@ describe("RevenueSplit Component", () => {
     );
 
     const rangeInputs = screen.getAllByRole("slider");
-    await user.click(rangeInputs[0]);
+    fireEvent.change(rangeInputs[0], { target: { value: "75" } });
 
-    expect(handleUpdateSplit).toHaveBeenCalled();
+    expect(handleUpdateSplit).toHaveBeenCalledWith("1", 75);
   });
 
-  it("calls onUpdateSplit when number input changes", async () => {
-    const user = userEvent.setup();
+  it("calls onUpdateSplit when number input changes", () => {
     const handleUpdateSplit = vi.fn();
 
-    render(
+    const { container } = render(
       <RevenueSplit members={mockMembers} onUpdateSplit={handleUpdateSplit} totalSplit={100} />
     );
 
-    const numberInputs = screen.getAllByDisplayValue(/50/);
-    if (numberInputs.length > 0) {
-      await user.clear(numberInputs[0]);
-      await user.type(numberInputs[0], "75");
+    const numberInputs = container.querySelectorAll<HTMLInputElement>('input[type="number"]');
+    expect(numberInputs.length).toBeGreaterThan(0);
 
-      expect(handleUpdateSplit).toHaveBeenCalled();
-    }
+    fireEvent.change(numberInputs[0], { target: { value: "75" } });
+    expect(handleUpdateSplit).toHaveBeenCalledWith("1", 75);
   });
 
   it("displays split percentage for each member", () => {
