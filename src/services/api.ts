@@ -434,7 +434,7 @@ export async function searchCreatorsByTag(query: string): Promise<CreatorProfile
   }
 }
 
-export interface CreatorWithCategoriesTags extends CreatorProfile {} // for type consistency
+export type CreatorWithCategoriesTags = CreatorProfile;
 
 // ─── Categories & Tags ──────────────────────────────────────────────────────
 

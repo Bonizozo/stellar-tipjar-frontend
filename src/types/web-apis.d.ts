@@ -5,7 +5,10 @@ interface BeforeInstallPromptEvent extends Event {
 
 type XRSessionMode = "immersive-ar";
 type XRReferenceSpaceType = "local" | "viewer";
-interface XRReferenceSpace {}
+interface XRReferenceSpace extends EventTarget {
+  getOffsetReferenceSpace(originOffset?: unknown): XRReferenceSpace;
+  onreset?: ((this: XRReferenceSpace, ev: Event) => unknown) | null;
+}
 interface XRHitTestSource { cancel(): void; }
 interface XRFrame { getHitTestResults(source: XRHitTestSource): unknown[]; }
 interface XRSession extends EventTarget {
