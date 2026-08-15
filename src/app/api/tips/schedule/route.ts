@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { recipient, amount, scheduledDate, recurring, frequency } = body;
+    const { recipient: _recipient, amount, scheduledDate, recurring, frequency } = body;
 
     // TODO: Save to database and set up cron job
     // const scheduledTip = await db.scheduledTip.create({

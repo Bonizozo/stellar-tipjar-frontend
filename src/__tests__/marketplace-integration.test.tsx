@@ -2,20 +2,19 @@ import { describe, it, expect } from "vitest";
 import * as marketplaceTypes from "@/types/marketplace";
 import { useMarketplace } from "@/hooks/useMarketplace";
 import { useCreatorMarketplace } from "@/hooks/useCreatorMarketplace";
-import * as CreatorStoreCard from "@/components/marketplace/CreatorStoreCard";
-import * as MarketplaceFilters from "@/components/marketplace/MarketplaceFilters";
-import * as ProductListingForm from "@/components/marketplace/ProductListingForm";
-import * as CheckoutFlow from "@/components/marketplace/CheckoutFlow";
-import * as ShippingAddressForm from "@/components/marketplace/ShippingAddressForm";
-import * as PaymentMethod from "@/components/marketplace/PaymentMethod";
-import * as OrderSummary from "@/components/marketplace/OrderSummary";
-import * as OrderManagement from "@/components/marketplace/OrderManagement";
-import * as OrderDetailsModal from "@/components/marketplace/OrderDetailsModal";
-import * as DigitalDelivery from "@/components/marketplace/DigitalDelivery";
+import { CreatorStoreCard } from "@/components/marketplace/CreatorStoreCard";
+import { MarketplaceFilters } from "@/components/marketplace/MarketplaceFilters";
+import { ProductListingForm } from "@/components/marketplace/ProductListingForm";
+import { CheckoutFlow } from "@/components/marketplace/CheckoutFlow";
+import { ShippingAddressForm } from "@/components/marketplace/ShippingAddressForm";
+import { PaymentMethod } from "@/components/marketplace/PaymentMethod";
+import { OrderSummary } from "@/components/marketplace/OrderSummary";
+import { OrderManagement } from "@/components/marketplace/OrderManagement";
+import { OrderDetailsModal } from "@/components/marketplace/OrderDetailsModal";
+import { DigitalDelivery } from "@/components/marketplace/DigitalDelivery";
 
 describe("Marketplace Integration", () => {
   it("should have all required types exported", () => {
-    // Test that types can be imported
     expect(marketplaceTypes).toBeDefined();
     expect(typeof marketplaceTypes).toBe("object");
   });
