@@ -5,7 +5,7 @@
  * in both next.config.ts (static headers) and src/middleware.ts (dynamic headers).
  */
 
-import { buildCspHeader } from "../lib/csp";
+import { buildCspHeader, type CspOptions } from "../lib/csp";
 
 export interface SecurityHeader {
   key: string;
@@ -16,11 +16,11 @@ export interface SecurityHeader {
  * Returns the complete list of security headers to apply to every response.
  * Call this at build-time (next.config.ts) or at request-time (middleware).
  */
-export function getSecurityHeaders(): SecurityHeader[] {
+export function getSecurityHeaders(options?: CspOptions): SecurityHeader[] {
   return [
     {
       key: "Content-Security-Policy",
-      value: buildCspHeader(),
+      value: buildCspHeader(options),
     },
     {
       // 2-year max-age; includeSubDomains + preload for HSTS preload list eligibility
