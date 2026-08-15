@@ -17,18 +17,18 @@ export interface SpeechRecognitionOptions {
 }
 
 class SpeechRecognitionService {
-  private recognition: any;
+  private recognition: ISpeechRecognition | undefined;
   private isListening = false;
   private isSpeaking = false;
 
   constructor() {
-    const SpeechRecognition =
-      typeof window !== 'undefined' &&
-      ((window as any).SpeechRecognition ||
-        (window as any).webkitSpeechRecognition);
+    const SpeechRecognitionClass =
+      typeof window !== 'undefined'
+        ? window.SpeechRecognition || window.webkitSpeechRecognition
+        : undefined;
 
-    if (SpeechRecognition) {
-      this.recognition = new SpeechRecognition();
+    if (SpeechRecognitionClass) {
+      this.recognition = new SpeechRecognitionClass();
     }
   }
 
@@ -41,7 +41,7 @@ class SpeechRecognitionService {
     onError?: (error: string) => void,
     options?: SpeechRecognitionOptions
   ): void {
-    if (!this.isSupported()) {
+    if (!this.recognition) {
       onError?.('Speech recognition not supported in this browser');
       return;
     }
@@ -56,7 +56,7 @@ class SpeechRecognitionService {
       this.isListening = true;
     };
 
-    this.recognition.onresult = (event: any) => {
+    this.recognition.onresult = (event: SpeechRecognitionEvent) => {
       let transcript = '';
       let confidence = 0;
 
@@ -75,7 +75,7 @@ class SpeechRecognitionService {
       });
     };
 
-    this.recognition.onerror = (event: any) => {
+    this.recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       onError?.(event.error);
     };
 
@@ -87,7 +87,7 @@ class SpeechRecognitionService {
   }
 
   stopListening(): void {
-    if (this.isSupported() && this.isListening) {
+    if (this.recognition && this.isListening) {
       this.recognition.stop();
       this.isListening = false;
     }
