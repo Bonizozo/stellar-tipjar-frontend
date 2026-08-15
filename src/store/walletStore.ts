@@ -16,6 +16,7 @@
 
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
+import { z } from "zod";
 
 import { createNamespacedStorage } from "@/lib/storage";
 import {
@@ -37,11 +38,13 @@ export type WalletStatus =
 
 // ── Persisted shape ────────────────────────────────────────────────────────────
 
-interface PersistedSession {
-  publicKey: string | null;
-  network: StellarNetwork;
-  wasConnected: boolean;
-}
+export const persistedSessionSchema = z.object({
+  publicKey: z.string().nullable(),
+  network: z.enum(["TESTNET", "PUBLIC"]),
+  wasConnected: z.boolean(),
+});
+
+export type PersistedSession = z.infer<typeof persistedSessionSchema>;
 
 const sessionStorage = createNamespacedStorage("wallet");
 
@@ -102,7 +105,9 @@ export const useWalletStore = create<WalletState>()(
           return;
         }
 
-        const persisted = sessionStorage.get<PersistedSession>("session");
+        const persisted = sessionStorage.get<PersistedSession>("session", {
+          schema: persistedSessionSchema,
+        });
 
         if (!persisted?.wasConnected || !persisted.publicKey) {
           set({ status: "available", error: null }, false, "wallet/init-available");
