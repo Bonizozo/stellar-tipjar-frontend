@@ -18,7 +18,22 @@ export interface Notification {
   timestamp: Date;
   read: boolean;
   link?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
+}
+
+interface PersistedNotification {
+  id: string;
+  type: NotificationType;
+  title: string;
+  description: string;
+  timestamp: string | Date;
+  read: boolean;
+  link?: string;
+  metadata?: Record<string, unknown>;
+}
+
+interface PersistedNotificationStoreState {
+  notifications?: PersistedNotification[];
 }
 
 interface NotificationStoreState {
@@ -139,14 +154,15 @@ export const useNotificationStore = create<NotificationStoreState>()(
         if (
           persistedState &&
           typeof persistedState === "object" &&
-          "notifications" in persistedState
+          "notifications" in persistedState &&
+          Array.isArray((persistedState as PersistedNotificationStoreState).notifications)
         ) {
-          const notifs = (persistedState as any).notifications.map(
-            (n: any) => ({
-              ...n,
-              timestamp: new Date(n.timestamp),
-            }),
-          );
+          const rawNotifications =
+            (persistedState as PersistedNotificationStoreState).notifications ?? [];
+          const notifs: Notification[] = rawNotifications.map((n) => ({
+            ...n,
+            timestamp: new Date(n.timestamp),
+          }));
           return {
             ...currentState,
             notifications: notifs,
