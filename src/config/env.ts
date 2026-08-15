@@ -17,7 +17,7 @@ import { z } from "zod";
 
 const stellarNetworkEnum = z.enum(["testnet", "public", "TESTNET", "PUBLIC"]);
 
-const AppConfigSchema = z.object({
+export const AppConfigSchema = z.object({
   // API
   apiUrl: z
     .string()
@@ -70,18 +70,18 @@ export type AppConfig = z.infer<typeof AppConfigSchema>;
 // Loader — runs once at module load
 // ---------------------------------------------------------------------------
 
-function loadConfig(): AppConfig {
+export function loadConfig(customEnv?: Record<string, string | undefined>): AppConfig {
   const raw = {
-    apiUrl: process.env.NEXT_PUBLIC_API_URL,
-    wsUrl: process.env.NEXT_PUBLIC_WS_URL,
-    stellarNetwork: process.env.NEXT_PUBLIC_STELLAR_NETWORK,
-    stellarHorizonUrl: process.env.NEXT_PUBLIC_STELLAR_HORIZON_URL,
-    siteUrl: process.env.NEXT_PUBLIC_SITE_URL,
-    appUrl: process.env.NEXT_PUBLIC_APP_URL,
-    gaId: process.env.NEXT_PUBLIC_GA_ID,
-    sentryDsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-    vapidPublicKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
-    nodeEnv: process.env.NODE_ENV,
+    apiUrl: customEnv?.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_API_URL,
+    wsUrl: customEnv?.NEXT_PUBLIC_WS_URL ?? process.env.NEXT_PUBLIC_WS_URL,
+    stellarNetwork: customEnv?.NEXT_PUBLIC_STELLAR_NETWORK ?? process.env.NEXT_PUBLIC_STELLAR_NETWORK,
+    stellarHorizonUrl: customEnv?.NEXT_PUBLIC_STELLAR_HORIZON_URL ?? process.env.NEXT_PUBLIC_STELLAR_HORIZON_URL,
+    siteUrl: customEnv?.NEXT_PUBLIC_SITE_URL ?? process.env.NEXT_PUBLIC_SITE_URL,
+    appUrl: customEnv?.NEXT_PUBLIC_APP_URL ?? process.env.NEXT_PUBLIC_APP_URL,
+    gaId: customEnv?.NEXT_PUBLIC_GA_ID ?? process.env.NEXT_PUBLIC_GA_ID,
+    sentryDsn: customEnv?.NEXT_PUBLIC_SENTRY_DSN ?? process.env.NEXT_PUBLIC_SENTRY_DSN,
+    vapidPublicKey: customEnv?.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+    nodeEnv: customEnv?.NODE_ENV ?? process.env.NODE_ENV,
   };
 
   const result = AppConfigSchema.safeParse(raw);
