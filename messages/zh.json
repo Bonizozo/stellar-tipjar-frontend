@@ -15,13 +15,19 @@
     "confirm": "确认"
   },
   "nav": {
+    "brandName": "Stellar Tip Jar",
     "home": "首页",
-    "explore": "探索创作者",
+    "explore": "发现创作者",
     "tips": "发送小费",
     "about": "关于",
-    "dashboard": "仪表板",
+    "dashboard": "控制面板",
     "settings": "设置",
-    "profile": "个人资料"
+    "profile": "个人资料",
+    "searchPlaceholder": "搜索创作者...",
+    "openMenu": "打开移动菜单",
+    "achievements": "成就",
+    "widgets": "小组件",
+    "marketplace": "市场"
   },
   "wallet": {
     "connect": "连接钱包",
