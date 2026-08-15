@@ -37,3 +37,7 @@ pnpm-debug.log*
 
 #logs
 
+# coverage
+/coverage
+coverage/
+*.lcov
