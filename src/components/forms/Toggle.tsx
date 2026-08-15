@@ -14,6 +14,7 @@ export const Toggle = forwardRef<HTMLInputElement, ToggleProps>(
           <div className="relative">
             <input
               type="checkbox"
+              role="switch"
               ref={ref}
               className="sr-only peer"
               {...props}

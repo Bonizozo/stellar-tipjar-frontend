@@ -2,6 +2,31 @@ import { renderHook, act } from "@testing-library/react";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { useTeam, TeamMember, TeamProfile } from "@/hooks/useTeam";
 
+const localStorageMock = (() => {
+  let store: Record<string, string> = {};
+  return {
+    getItem: (key: string) => store[key] ?? null,
+    setItem: (key: string, value: string) => {
+      store[key] = value.toString();
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      store = {};
+    },
+    key: (index: number) => Object.keys(store)[index] ?? null,
+    get length() {
+      return Object.keys(store).length;
+    },
+  };
+})();
+
+Object.defineProperty(globalThis, "localStorage", {
+  value: localStorageMock,
+  writable: true,
+});
+
 const TEAM_PROFILES_KEY = "stj:team:profiles";
 
 describe("useTeam Hook", () => {
@@ -53,17 +78,15 @@ describe("useTeam Hook", () => {
   it("should remove a team member", () => {
     const { result } = renderHook(() => useTeam(testTeamName));
 
-    let memberId: string;
-
     act(() => {
       result.current.addMember({ name: "Bob", email: "bob@example.com", split: 50 });
-      memberId = result.current.team.members[0].id;
     });
 
     expect(result.current.team.members).toHaveLength(1);
+    const memberId = result.current.team.members[0].id;
 
     act(() => {
-      result.current.removeMember(memberId!);
+      result.current.removeMember(memberId);
     });
 
     expect(result.current.team.members).toHaveLength(0);
@@ -72,15 +95,14 @@ describe("useTeam Hook", () => {
   it("should update member split", () => {
     const { result } = renderHook(() => useTeam(testTeamName));
 
-    let memberId: string;
-
     act(() => {
       result.current.addMember({ name: "Charlie", email: "charlie@example.com", split: 50 });
-      memberId = result.current.team.members[0].id;
     });
 
+    const memberId = result.current.team.members[0].id;
+
     act(() => {
-      result.current.updateSplit(memberId!, 75);
+      result.current.updateSplit(memberId, 75);
     });
 
     expect(result.current.team.members[0].split).toBe(75);
@@ -89,21 +111,20 @@ describe("useTeam Hook", () => {
   it("should clamp split values between 0 and 100", () => {
     const { result } = renderHook(() => useTeam(testTeamName));
 
-    let memberId: string;
-
     act(() => {
       result.current.addMember({ name: "Dave", email: "dave@example.com", split: 50 });
-      memberId = result.current.team.members[0].id;
     });
 
+    const memberId = result.current.team.members[0].id;
+
     act(() => {
-      result.current.updateSplit(memberId!, 150);
+      result.current.updateSplit(memberId, 150);
     });
 
     expect(result.current.team.members[0].split).toBe(100);
 
     act(() => {
-      result.current.updateSplit(memberId!, -50);
+      result.current.updateSplit(memberId, -50);
     });
 
     expect(result.current.team.members[0].split).toBe(0);
@@ -150,17 +171,15 @@ describe("useTeam Hook", () => {
   it("should cancel an invitation", () => {
     const { result } = renderHook(() => useTeam(testTeamName));
 
-    let invitationId: string;
-
     act(() => {
       result.current.inviteMember("kate@example.com");
-      invitationId = result.current.team.invitations[0].id;
     });
 
     expect(result.current.pendingInvitations).toHaveLength(1);
+    const invitationId = result.current.team.invitations[0].id;
 
     act(() => {
-      result.current.cancelInvitation(invitationId!);
+      result.current.cancelInvitation(invitationId);
     });
 
     expect(result.current.pendingInvitations).toHaveLength(0);
@@ -181,18 +200,16 @@ describe("useTeam Hook", () => {
   it("should mark inactive members correctly", () => {
     const { result } = renderHook(() => useTeam(testTeamName));
 
-    let memberId: string;
-
     act(() => {
       result.current.addMember({ name: "Olivia", split: 50 });
       result.current.addMember({ name: "Paul", split: 50 });
-      memberId = result.current.team.members[0].id;
     });
 
     expect(result.current.stats.activeMemberCount).toBe(2);
+    const memberId = result.current.team.members[0].id;
 
     act(() => {
-      result.current.removeSplit(memberId!);
+      result.current.removeSplit(memberId);
     });
 
     expect(result.current.stats.activeMemberCount).toBe(1);
@@ -261,7 +278,12 @@ describe("useTeam Hook", () => {
 
     act(() => {
       result.current.addMember({ name: "Sam", split: 50 });
-      result.current.removeSplit(result.current.team.members[0].id);
+    });
+
+    const memberId = result.current.team.members[0].id;
+
+    act(() => {
+      result.current.removeSplit(memberId);
     });
 
     expect(result.current.stats.activeMemberCount).toBe(0);
