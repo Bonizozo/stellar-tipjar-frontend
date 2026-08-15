@@ -20,6 +20,8 @@ const nextConfig: NextConfig = {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 60 * 60 * 24, // 24 hours
+    // Security note: Keep remotePatterns strictly scoped to specific, verified HTTPS hostnames.
+    // Never use wildcards (*.domain.com) or HTTP protocols to avoid SSRF and unauthorized image optimization proxying.
     remotePatterns: [
       {
         protocol: "https",
@@ -27,14 +29,12 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**",
       },
-      // CDN integration — add your CDN hostname here
       {
         protocol: "https",
         hostname: "cdn.stellartipjar.app",
         port: "",
         pathname: "/**",
       },
-      // Allow common avatar/image CDNs used in development
       {
         protocol: "https",
         hostname: "avatars.githubusercontent.com",
