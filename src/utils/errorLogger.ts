@@ -1,3 +1,5 @@
+import { IS_DEV } from "@/config/env";
+
 /**
  * Centralized error logging utility.
  * In dev: logs to console with full details.
@@ -10,7 +12,7 @@ export interface ErrorInfo {
 }
 
 export function logError(error: Error, info?: ErrorInfo): void {
-  if (process.env.NODE_ENV === "development") {
+  if (IS_DEV) {
     console.group("[ErrorBoundary]");
     console.error("Error:", error);
     if (info?.componentStack) {
