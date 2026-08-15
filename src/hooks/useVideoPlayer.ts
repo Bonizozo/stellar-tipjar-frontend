@@ -60,24 +60,27 @@ export function useVideoPlayer(options: UseVideoPlayerOptions = {}) {
   }, [seek]);
 
   const setVolume = useCallback((volume: number) => {
-    const video = videoRef.current;
-    if (!video) return;
     const clampedVolume = Math.max(0, Math.min(1, volume));
-    video.volume = clampedVolume;
+    const video = videoRef.current;
+    if (video) {
+      video.volume = clampedVolume;
+    }
     setState(prev => ({ ...prev, volume: clampedVolume, muted: clampedVolume === 0 }));
   }, []);
 
   const toggleMute = useCallback(() => {
     const video = videoRef.current;
-    if (!video) return;
-    video.muted = !video.muted;
+    if (video) {
+      video.muted = !video.muted;
+    }
     setState(prev => ({ ...prev, muted: !prev.muted }));
   }, []);
 
   const setPlaybackRate = useCallback((rate: number) => {
     const video = videoRef.current;
-    if (!video) return;
-    video.playbackRate = rate;
+    if (video) {
+      video.playbackRate = rate;
+    }
     setState(prev => ({ ...prev, playbackRate: rate }));
   }, []);
 
