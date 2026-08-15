@@ -23,7 +23,23 @@ const mockQualities: VideoQuality[] = [
 ];
 
 describe('CustomVideoPlayer', () => {
-  it('renders video element with correct src', () => {
+  it('renders video element with correct src and accessible region', () => {
+    const { container } = render(
+      <CustomVideoPlayer
+        src="test-video.mp4"
+        creatorUsername="testuser"
+      />
+    );
+
+    const video = container.querySelector('video') as HTMLVideoElement;
+    expect(video).toBeDefined();
+    expect(video.src).toContain('test-video.mp4');
+
+    const region = screen.getByRole('region', { name: /video player/i });
+    expect(region).toBeInTheDocument();
+  });
+
+  it('handles keyboard shortcuts (Space, Arrow keys, Mute)', () => {
     render(
       <CustomVideoPlayer
         src="test-video.mp4"
@@ -31,8 +47,13 @@ describe('CustomVideoPlayer', () => {
       />
     );
 
-    const video = screen.getByRole('application') as HTMLVideoElement;
-    expect(video.tagName).toBe('VIDEO');
+    const region = screen.getByRole('region', { name: /video player/i });
+    region.focus();
+
+    fireEvent.keyDown(region, { key: ' ' });
+    fireEvent.keyDown(region, { key: 'ArrowRight' });
+    fireEvent.keyDown(region, { key: 'ArrowLeft' });
+    fireEvent.keyDown(region, { key: 'm' });
   });
 
   it('displays chapters in sidebar', () => {

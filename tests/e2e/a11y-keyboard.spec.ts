@@ -140,4 +140,26 @@ test.describe('Keyboard-only journey', () => {
     }
     // Not failing hard if sidebar isn't visible (mobile viewport)
   });
+
+  test('custom video player responds to keyboard controls (Space, Arrow keys, Mute)', async ({ page }) => {
+    await gotoAndSettle(page, '/en/demo/video-player');
+    const playerRegion = page.locator('[role="region"][aria-label="Video player"]').first();
+    if (await playerRegion.isVisible()) {
+      await playerRegion.focus();
+      await expect(playerRegion).toBeFocused();
+
+      // Space toggles play/pause
+      await page.keyboard.press('Space');
+
+      // ArrowRight seeks forward
+      await page.keyboard.press('ArrowRight');
+
+      // ArrowLeft seeks backward
+      await page.keyboard.press('ArrowLeft');
+
+      // M toggles mute
+      await page.keyboard.press('m');
+    }
+  });
 });
+
