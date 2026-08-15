@@ -2,7 +2,7 @@ import { RequestQueue } from "@/utils/requestQueue";
 import { RateLimiter } from "@/utils/rateLimiter";
 import type { TagWithCount } from "@/utils/categories";
 import { API_BASE_URL } from "@/config/env";
-const DEFAULT_RETRIES = 3;
+export const DEFAULT_RETRIES = 3;
 
 export interface CreatorProfile {
   username: string;
@@ -50,6 +50,7 @@ interface RequestOptions {
    */
   critical?: boolean;
   throttleMs?: number;
+  retries?: number;
 }
 
 const sleep = (delayMs: number) => new Promise<void>((resolve) => setTimeout(resolve, delayMs));
@@ -186,7 +187,7 @@ async function request<T>(path: string, init?: RequestInit, options?: RequestOpt
 
         return executeFetch<T>(path, init, throttleMs);
       },
-      { maxRetries: 4, baseDelayMs: 250 },
+      { maxRetries: options?.retries ?? DEFAULT_RETRIES, baseDelayMs: 250 },
     );
 
     notifyStatusChange();
