@@ -58,5 +58,33 @@ for (const theme of THEMES) {
         test.skip();
       }
     });
+
+    test('mobile navigation drawer has no serious/critical violations when open', async ({ page }) => {
+      await page.setViewportSize({ width: 375, height: 667 });
+      await gotoAndSettle(page, '/en/');
+      await forceTheme(page, theme);
+
+      const menuBtn = page.getByRole('button', { name: /menu|navigation|toggle/i }).first();
+      if (await menuBtn.isVisible()) {
+        await menuBtn.click();
+        await page.waitForTimeout(500);
+        await expectNoViolations(page, `${theme} theme > mobile nav drawer`);
+      }
+    });
+
+    test('tip form validation-error state has no serious/critical violations', async ({ page }) => {
+      await mockCreatorProfile(page);
+      await mockTipSubmit(page);
+      await gotoAndSettle(page, `/en/creator/${MOCK_CREATOR.username}`);
+      await forceTheme(page, theme);
+
+      const submitBtn = page.getByRole('button', { name: /send tip|tip/i }).first();
+      if (await submitBtn.isVisible()) {
+        // Click submit without entering amount to trigger validation errors
+        await submitBtn.click();
+        await page.waitForTimeout(300);
+        await expectNoViolations(page, `${theme} theme > tip form validation error`);
+      }
+    });
   });
 }
