@@ -15,6 +15,16 @@ const languages = [
   { code: "ar", name: "العربية", flag: "🇸🇦" },
 ];
 
+export function getLocalizedPath(pathname: string, newLocale: string): string {
+  const segments = pathname.split("/").filter(Boolean);
+  const knownLocales = languages.map((l) => l.code);
+  if (knownLocales.includes(segments[0])) {
+    segments.shift();
+  }
+  const cleanPath = segments.length > 0 ? `/${segments.join("/")}` : "";
+  return newLocale === "en" ? cleanPath || "/" : `/${newLocale}${cleanPath}`;
+}
+
 export function LanguageSwitcher() {
   const router = useRouter();
   const pathname = usePathname();
@@ -25,13 +35,7 @@ export function LanguageSwitcher() {
     storage.setString("locale", newLocale);
 
     startTransition(() => {
-      // Strip existing locale prefix and prepend new one
-      const segments = pathname.split("/");
-      const knownLocales = languages.map((l) => l.code);
-      if (knownLocales.includes(segments[1])) {
-        segments.splice(1, 1);
-      }
-      const newPath = newLocale === "en" ? segments.join("/") || "/" : `/${newLocale}${segments.join("/")}`;
+      const newPath = getLocalizedPath(pathname, newLocale);
       router.replace(newPath as any);
     });
   };
