@@ -22,6 +22,38 @@ export interface UseVoiceCommandsResult {
   isSupported: boolean;
 }
 
+/**
+ * Allowlist of routes reachable via voice navigation, keyed by the spoken word.
+ *
+ * The `go to <page>` command previously did `router.push(`/${page}` as Route)`,
+ * pushing arbitrary transcribed speech straight into the router. `typedRoutes`
+ * cannot guard this: `/${page}` is a runtime `/${string}`, which matches the
+ * app's top-level `/[locale]` dynamic route, so it type-checks as a valid
+ * "locale" regardless of the cast (see docs/typed-routes-audit.md).
+ * Validating the transcript against this explicit map keeps navigation confined
+ * to real, intended destinations.
+ */
+const VOICE_NAV_ROUTES: Record<string, Route> = {
+  tips: '/tips',
+  dashboard: '/dashboard',
+  profile: '/profile',
+  settings: '/settings',
+  explore: '/explore',
+  discover: '/discover',
+  activity: '/activity',
+  campaigns: '/campaigns',
+  goals: '/goals',
+  milestones: '/milestones',
+  network: '/network',
+  predictions: '/predictions',
+  search: '/search',
+  stories: '/stories',
+  streak: '/streak',
+  transactions: '/transactions',
+  videos: '/videos',
+  help: '/help',
+};
+
 export function useVoiceCommands({
   lang,
   onTip,
@@ -69,6 +101,10 @@ export function useVoiceCommands({
 
       if (text.includes('go home') || text.includes('navigate home')) {
         speak('Navigating home');
+        // '/' has no typed app route (there is no root page.tsx — home is served
+        // via the [locale] segment + middleware), so it is legitimately not a
+        // `Route`. This cast is the justified exception, unlike the arbitrary
+        // `go to <page>` transcript handled below.
         router.push('/' as Route);
       } else if (text.startsWith('tip') || text.includes('send tip')) {
         const match = text.match(/tip\s+(\d+(?:\.\d+)?)/);
@@ -78,12 +114,17 @@ export function useVoiceCommands({
         if (onTip) {
           onTip(amount);
         } else {
-          router.push('/tips' as Route);
+          router.push(VOICE_NAV_ROUTES.tips);
         }
       } else if (text.startsWith('go to ')) {
         const page = text.replace('go to ', '').trim();
-        speak(`Navigating to ${page}`);
-        router.push(`/${page}` as Route);
+        const target = VOICE_NAV_ROUTES[page];
+        if (target) {
+          speak(`Navigating to ${page}`);
+          router.push(target);
+        } else {
+          speak(`Sorry, I can't navigate to ${page}`);
+        }
       } else if (text.includes('stop listening')) {
         speak('Stopping');
         recognitionRef.current?.stop();
