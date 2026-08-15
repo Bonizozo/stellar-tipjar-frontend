@@ -1,11 +1,13 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { createZustandStorage } from '@/lib/storage';
-import { Mentor, MentorshipSession, Message } from '@/lib/mentorship-data';
+import type { MentorshipSession, Message } from '@/lib/mentorship-data';
 
 interface MentorshipState {
   sessions: MentorshipSession[];
   messages: Message[];
+  getSessionById: (sessionId: string) => MentorshipSession | undefined;
+  getMessagesBySessionId: (sessionId: string) => Message[];
   requestMentorship: (mentorId: string, menteeId: string) => string;
   sendMessage: (sessionId: string, senderId: string, text: string) => void;
   updateProgress: (sessionId: string, progress: number) => void;
@@ -17,6 +19,8 @@ export const useMentorshipStore = create<MentorshipState>()(
     (set, get) => ({
       sessions: [],
       messages: [],
+      getSessionById: (sessionId) => get().sessions.find((s) => s.id === sessionId),
+      getMessagesBySessionId: (sessionId) => get().messages.filter((m) => m.sessionId === sessionId),
       requestMentorship: (mentorId, menteeId) => {
         const id = Math.random().toString(36).substr(2, 9);
         const newSession: MentorshipSession = {
