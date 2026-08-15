@@ -22,11 +22,12 @@ import {
   type QueuedAction,
 } from "@/utils/offlineStorage";
 
-const MAX_ATTEMPTS = 3;
+export const MAX_ATTEMPTS = 3;
 
-async function executeAction(
+export async function executeAction(
   action: QueuedAction,
   apiBase: string,
+  signal?: AbortSignal,
 ): Promise<void> {
   switch (action.type) {
     case "TIP_INTENT": {
@@ -34,6 +35,7 @@ async function executeAction(
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(action.payload),
+        signal,
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       break;
@@ -49,6 +51,7 @@ async function executeAction(
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
+        signal,
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       break;
@@ -60,6 +63,7 @@ async function executeAction(
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ emoji }),
+        signal,
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       break;
@@ -70,29 +74,40 @@ async function executeAction(
   }
 }
 
-async function runSync(apiBase: string): Promise<void> {
-  self.postMessage({ type: "SYNC_STARTED" });
+export async function runSync(
+  apiBase: string,
+  signal?: AbortSignal,
+  postMessageFn: (msg: unknown) => void = (msg) => self.postMessage(msg),
+): Promise<{ synced: number; failed: number }> {
+  postMessageFn({ type: "SYNC_STARTED" });
 
   const actions = await getPendingActions();
   let synced = 0;
   let failed = 0;
 
   for (const action of actions) {
+    if (signal?.aborted) break;
+
     await updateAction(action.id, { status: "syncing" });
 
     try {
-      await executeAction(action, apiBase);
+      await executeAction(action, apiBase, signal);
       await removeAction(action.id);
       synced++;
-      self.postMessage({ type: "ACTION_SUCCESS", id: action.id });
+      postMessageFn({ type: "ACTION_SUCCESS", id: action.id });
     } catch (err) {
+      if (signal?.aborted) {
+        await updateAction(action.id, { status: "pending" });
+        break;
+      }
+
       const attempts = action.attempts + 1;
       const error = err instanceof Error ? err.message : String(err);
 
       if (attempts >= MAX_ATTEMPTS) {
         await updateAction(action.id, { status: "failed", attempts, error });
         failed++;
-        self.postMessage({ type: "ACTION_FAILED", id: action.id, error });
+        postMessageFn({ type: "ACTION_FAILED", id: action.id, error });
       } else {
         // Back to pending for next sync cycle
         await updateAction(action.id, { status: "pending", attempts, error });
@@ -100,20 +115,37 @@ async function runSync(apiBase: string): Promise<void> {
     }
   }
 
-  self.postMessage({ type: "SYNC_COMPLETE", synced, failed });
+  postMessageFn({ type: "SYNC_COMPLETE", synced, failed });
+  return { synced, failed };
 }
 
-self.addEventListener("message", async (e: MessageEvent) => {
-  const { type, apiBase } = e.data as { type: string; apiBase?: string };
+let activeAbortController: AbortController | null = null;
 
-  if (type === "START_SYNC" && apiBase) {
-    try {
-      await runSync(apiBase);
-    } catch (err) {
-      self.postMessage({
-        type: "ERROR",
-        message: err instanceof Error ? err.message : "Sync failed",
-      });
+if (typeof self !== "undefined" && "addEventListener" in self) {
+  self.addEventListener("message", async (e: MessageEvent) => {
+    const { type, apiBase } = e.data as { type: string; apiBase?: string };
+
+    if (type === "STOP") {
+      if (activeAbortController) {
+        activeAbortController.abort();
+        activeAbortController = null;
+      }
+      return;
     }
-  }
-});
+
+    if (type === "START_SYNC" && apiBase) {
+      try {
+        activeAbortController = new AbortController();
+        await runSync(apiBase, activeAbortController.signal);
+      } catch (err) {
+        self.postMessage({
+          type: "ERROR",
+          message: err instanceof Error ? err.message : "Sync failed",
+        });
+      } finally {
+        activeAbortController = null;
+      }
+    }
+  });
+}
+
