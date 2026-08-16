@@ -152,6 +152,6 @@ describe('CreatorForm', () => {
       'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN'
     )
     await user.click(screen.getByRole('button', { name: /register as creator/i }))
-    expect(screen.getByRole('button', { name: /submitting/i })).toBeDisabled()
+    expect(await screen.findByRole('button', { name: /submitting/i })).toBeDisabled()
   })
 })
