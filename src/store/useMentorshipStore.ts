@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { createZustandStorage } from '@/lib/storage';
-import { Mentor, MentorshipSession, Message } from '@/lib/mentorship-data';
+import { MentorshipSession, Message } from '@/lib/mentorship-data';
 
 interface MentorshipState {
   sessions: MentorshipSession[];
@@ -14,7 +14,7 @@ interface MentorshipState {
 
 export const useMentorshipStore = create<MentorshipState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       sessions: [],
       messages: [],
       requestMentorship: (mentorId, menteeId) => {

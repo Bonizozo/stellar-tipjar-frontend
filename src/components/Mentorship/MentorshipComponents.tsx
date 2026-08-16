@@ -1,13 +1,15 @@
 'use client';
 import React from 'react';
+import Image from 'next/image';
 import { Mentor, MentorshipSession } from '@/lib/mentorship-data';
-import { Star, Users, MessageSquare, CheckCircle2 } from 'lucide-react';
+import { useMentorshipStore } from '@/store/useMentorshipStore';
+import { Star, CheckCircle2 } from 'lucide-react';
 
 export const MentorCard: React.FC<{ mentor: Mentor; onSelect: (id: string) => void }> = ({ mentor, onSelect }) => {
   return (
     <div className="mentor-card fade-in">
       <div className="mentor-header">
-        <img src={mentor.avatar} alt={mentor.name} className="mentor-avatar" />
+        <Image src={mentor.avatar} alt={mentor.name} width={80} height={80} className="mentor-avatar" unoptimized />
         <div className="mentor-info">
           <h3>{mentor.name}</h3>
           <div className="mentor-rating">
@@ -46,32 +48,80 @@ export const MentorCard: React.FC<{ mentor: Mentor; onSelect: (id: string) => vo
 };
 
 export const MentorshipProgress: React.FC<{ session: MentorshipSession }> = ({ session }) => {
+  const { completeMilestone } = useMentorshipStore();
+
+  const handleMilestone = (index: number) => {
+    if (session.milestones[index].completed) return; // already done, no-op
+    completeMilestone(session.id, index);
+  };
+
   return (
     <div className="mentor-card" style={{ gap: '1rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3 style={{ fontSize: '1.2rem', fontWeight: '700' }}>Current Progress</h3>
         <span style={{ color: 'var(--mentor-primary)', fontWeight: 'bold' }}>{session.progress}%</span>
       </div>
-      
+
       <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', overflow: 'hidden' }}>
-        <div 
-          style={{ 
-            width: `${session.progress}%`, 
-            height: '100%', 
+        <div
+          style={{
+            width: `${session.progress}%`,
+            height: '100%',
             background: 'linear-gradient(90deg, var(--mentor-primary), var(--mentor-secondary))',
             transition: 'width 0.5s ease'
-          }} 
+          }}
         />
       </div>
-      
+
       <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
         {session.milestones.map((m, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', opacity: m.completed ? 1 : 0.5 }}>
-            <CheckCircle2 size={18} color={m.completed ? 'var(--mentor-primary)' : '#666'} />
+          <button
+            key={i}
+            type="button"
+            onClick={() => handleMilestone(i)}
+            disabled={m.completed}
+            aria-label={m.completed ? `${m.title} — completed` : `Mark "${m.title}" as complete`}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              background: 'none',
+              border: 'none',
+              padding: '4px 0',
+              cursor: m.completed ? 'default' : 'pointer',
+              opacity: m.completed ? 1 : 0.5,
+              color: 'inherit',
+              textAlign: 'left',
+              transition: 'opacity 0.2s ease',
+            }}
+            onMouseEnter={(e) => { if (!m.completed) (e.currentTarget as HTMLButtonElement).style.opacity = '0.8'; }}
+            onMouseLeave={(e) => { if (!m.completed) (e.currentTarget as HTMLButtonElement).style.opacity = '0.5'; }}
+          >
+            <CheckCircle2
+              size={18}
+              color={m.completed ? 'var(--mentor-primary)' : '#666'}
+              fill={m.completed ? 'rgba(16,185,129,0.15)' : 'none'}
+            />
             <span style={{ fontSize: '0.9rem' }}>{m.title}</span>
-          </div>
+          </button>
         ))}
       </div>
+
+      {session.progress === 100 && (
+        <div style={{
+          marginTop: '0.5rem',
+          padding: '10px 16px',
+          borderRadius: '12px',
+          background: 'rgba(16,185,129,0.1)',
+          border: '1px solid rgba(16,185,129,0.3)',
+          color: 'var(--mentor-primary)',
+          fontSize: '0.875rem',
+          fontWeight: '600',
+          textAlign: 'center',
+        }}>
+          🎉 All milestones complete!
+        </div>
+      )}
     </div>
   );
 };
