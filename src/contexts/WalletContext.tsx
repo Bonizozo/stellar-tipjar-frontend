@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useCallback, useMemo, ReactNode } from "react";
+import React, { createContext, useContext, useEffect, useMemo, ReactNode } from "react";
 
 import {
   useWalletStore,
@@ -58,17 +58,31 @@ function formatAddress(address: string | null): string {
 // mount to revalidate any persisted session.
 
 export function WalletProvider({ children }: { children: ReactNode }) {
-  const storeStatus = useWalletStore((s) => s.status);
-  const publicKey = useWalletStore((s) => s.publicKey);
-  const network = useWalletStore((s) => s.network);
-  const balance = useWalletStore((s) => s.balance);
-  const error = useWalletStore((s) => s.error);
-
-  const initialize = useWalletStore((s) => s.initialize);
-  const storeConnect = useWalletStore((s) => s.connect);
-  const storeDisconnect = useWalletStore((s) => s.disconnect);
-  const refreshBalance = useWalletStore((s) => s.refreshBalance);
-  const signStellarTransaction = useWalletStore((s) => s.signStellarTransaction);
+  // Select all state and functions from Zustand store in one selector
+  // This prevents multiple subscriptions and ensures atomic updates
+  const {
+    status: storeStatus,
+    publicKey,
+    network,
+    balance,
+    error,
+    initialize,
+    connect: storeConnect,
+    disconnect: storeDisconnect,
+    refreshBalance,
+    signStellarTransaction,
+  } = useWalletStore((s) => ({
+    status: s.status,
+    publicKey: s.publicKey,
+    network: s.network,
+    balance: s.balance,
+    error: s.error,
+    initialize: s.initialize,
+    connect: s.connect,
+    disconnect: s.disconnect,
+    refreshBalance: s.refreshBalance,
+    signStellarTransaction: s.signStellarTransaction,
+  }));
 
   // Initialize on mount — revalidates persisted sessions
   useEffect(() => {
@@ -82,20 +96,13 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
   }, [refreshBalance, storeStatus]);
 
-  const connect = useCallback(async () => {
-    await storeConnect();
-  }, [storeConnect]);
-
-  const disconnect = useCallback(async () => {
-    await storeDisconnect();
-  }, [storeDisconnect]);
-
   const status = toContextStatus(storeStatus);
   const isInstalled = storeStatus !== "unavailable";
   const isConnecting = storeStatus === "connecting";
 
   // Memoize the context value to prevent unnecessary re-renders
   // This is critical given wallet state updates frequently (balance polling, connection status)
+  // Note: Zustand functions (connect, disconnect, etc.) are already stable references
   const contextValue = useMemo(
     () => ({
       isConnected: storeStatus === "connected" && !!publicKey,
@@ -109,8 +116,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       isConnecting,
       isLoading: isConnecting,
       error: error?.message ?? null,
-      connect,
-      disconnect,
+      connect: storeConnect,
+      disconnect: storeDisconnect,
       refreshBalance,
       signStellarTransaction,
     }),
@@ -123,8 +130,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       status,
       isConnecting,
       error,
-      connect,
-      disconnect,
+      storeConnect,
+      storeDisconnect,
       refreshBalance,
       signStellarTransaction,
     ]

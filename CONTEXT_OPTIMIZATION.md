@@ -15,10 +15,14 @@ React context providers whose value object is recreated on every render (using i
 ## Changes Made
 
 ### 1. WalletContext (`src/contexts/WalletContext.tsx`)
-- **Issue**: Inline object literal in provider value with frequently updating wallet state
-- **Fix**: Wrapped context value in `useMemo` with proper dependencies
+- **Issue**: Multiple individual Zustand selectors + inline object literal in provider value
+- **Problem**: Using multiple `useWalletStore((s) => s.field)` calls creates multiple subscriptions, and any field change triggers context re-render for ALL consumers, defeating Zustand's optimization
+- **Fix**: 
+  - Combined all Zustand selections into a single selector for atomic updates
+  - Wrapped context value in `useMemo` with proper dependencies
+  - Removed unnecessary `useCallback` wrappers (Zustand functions are already stable)
 - **Impact**: Critical - prevents widespread re-renders across wallet-dependent components
-- **Dependencies tracked**: All wallet state values and callbacks
+- **Key insight**: Zustand selectors are already optimized, but wrapping them in context requires careful handling
 
 ### 2. CurrencyContext (`src/contexts/CurrencyContext.tsx`)
 - **Issue**: Inline object literal `{ selectedCurrency, setCurrency }`
@@ -45,6 +49,42 @@ React context providers whose value object is recreated on every render (using i
 - **Impact**: Critical - prevents re-renders from real-time notifications and connection status updates
 
 ## Technical Details
+
+### Special Case: Zustand + Context Pattern
+
+**WalletContext** uses Zustand store underneath. Important considerations:
+
+1. **Zustand selectors are already optimized** - they only trigger re-renders when selected values change
+2. **Multiple selectors = multiple subscriptions** - Using `useWalletStore((s) => s.field)` multiple times creates separate subscriptions
+3. **Context wrapper problem** - Bundling Zustand values into context defeats the selector optimization
+4. **Solution**: Use a single Zustand selector that returns all needed values atomically, then memoize the context value
+
+**Before (Anti-pattern with Zustand):**
+```tsx
+// ❌ Multiple subscriptions - any change triggers context update
+const status = useWalletStore((s) => s.status);
+const balance = useWalletStore((s) => s.balance);
+// ... more individual selectors
+
+<Context.Provider value={{ status, balance, ... }}>
+```
+
+**After (Optimized with Zustand):**
+```tsx
+// ✅ Single subscription - atomic updates
+const { status, balance, connect, disconnect } = useWalletStore((s) => ({
+  status: s.status,
+  balance: s.balance,
+  connect: s.connect,
+  disconnect: s.disconnect,
+}));
+
+const contextValue = useMemo(() => ({ 
+  status, balance, connect, disconnect 
+}), [status, balance, connect, disconnect]);
+
+<Context.Provider value={contextValue}>
+```
 
 ### Before (Anti-pattern)
 ```tsx
