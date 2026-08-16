@@ -85,7 +85,7 @@ export function TeamInvite({
         />
         <Button
           type="submit"
-          disabled={!email.trim() || isSubmitting || isLoading}
+          disabled={isSubmitting || isLoading}
           className="flex items-center justify-center gap-2 whitespace-nowrap sm:w-auto"
         >
           <PaperAirplaneIcon className="h-4 w-4" />

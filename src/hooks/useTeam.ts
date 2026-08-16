@@ -214,8 +214,7 @@ export function useTeam(teamName: string) {
   const removeMember = useCallback(
     (memberId: string) => {
       setProfiles((prev) => {
-        const current = prev[teamName];
-        if (!current) return prev;
+        const current = prev[teamName] ?? team;
         return {
           ...prev,
           [teamName]: {
@@ -232,8 +231,7 @@ export function useTeam(teamName: string) {
   const updateMember = useCallback(
     (memberId: string, updates: Partial<TeamMember>) => {
       setProfiles((prev) => {
-        const current = prev[teamName];
-        if (!current) return prev;
+        const current = prev[teamName] ?? team;
         const newMembers = current.members.map((m) =>
           m.id === memberId ? { ...m, ...updates } : m,
         );
@@ -299,8 +297,7 @@ export function useTeam(teamName: string) {
   const cancelInvitation = useCallback(
     (invitationId: string) => {
       setProfiles((prev) => {
-        const current = prev[teamName];
-        if (!current) return prev;
+        const current = prev[teamName] ?? team;
         return {
           ...prev,
           [teamName]: {

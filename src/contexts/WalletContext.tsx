@@ -58,31 +58,17 @@ function formatAddress(address: string | null): string {
 // mount to revalidate any persisted session.
 
 export function WalletProvider({ children }: { children: ReactNode }) {
-  // Select all state and functions from Zustand store in one selector
-  // This prevents multiple subscriptions and ensures atomic updates
-  const {
-    status: storeStatus,
-    publicKey,
-    network,
-    balance,
-    error,
-    initialize,
-    connect: storeConnect,
-    disconnect: storeDisconnect,
-    refreshBalance,
-    signStellarTransaction,
-  } = useWalletStore((s) => ({
-    status: s.status,
-    publicKey: s.publicKey,
-    network: s.network,
-    balance: s.balance,
-    error: s.error,
-    initialize: s.initialize,
-    connect: s.connect,
-    disconnect: s.disconnect,
-    refreshBalance: s.refreshBalance,
-    signStellarTransaction: s.signStellarTransaction,
-  }));
+  const storeStatus = useWalletStore((s) => s.status);
+  const publicKey = useWalletStore((s) => s.publicKey);
+  const network = useWalletStore((s) => s.network);
+  const balance = useWalletStore((s) => s.balance);
+  const error = useWalletStore((s) => s.error);
+
+  const initialize = useWalletStore((s) => s.initialize);
+  const storeConnect = useWalletStore((s) => s.connect);
+  const storeDisconnect = useWalletStore((s) => s.disconnect);
+  const refreshBalance = useWalletStore((s) => s.refreshBalance);
+  const signStellarTransaction = useWalletStore((s) => s.signStellarTransaction);
 
   // Initialize on mount — revalidates persisted sessions
   useEffect(() => {

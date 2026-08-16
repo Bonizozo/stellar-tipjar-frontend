@@ -6,6 +6,7 @@ import React, {
   useEffect,
   useState,
   useCallback,
+  useMemo,
   ReactNode,
 } from "react";
 
@@ -90,7 +91,7 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
 
   // Memoize context value to prevent unnecessary re-renders
   // This is important as WebSocket status and notifications update frequently
-  const contextValue = React.useMemo(
+  const contextValue = useMemo(
     () => ({
       notifications,
       unreadCount,
