@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect, useMemo, ReactNode } from "react";
 import type { GamificationState, XPEvent } from "@/types/gamification";
 import {
   getUserGamificationState,
@@ -92,42 +92,50 @@ export function GamificationProvider({ children, username = "demo-user" }: Gamif
   }, []);
 
   if (!state) {
+    // Memoize loading state value to prevent re-renders
+    const loadingValue = useMemo(
+      () => ({
+        isLoading,
+        totalXP: 0,
+        currentLevel: { level: 1, title: "Newcomer", minXP: 0, maxXP: 100, color: "text-gray-500", bgColor: "bg-gray-100", icon: "🌱" },
+        nextLevel: null,
+        levelProgress: 0,
+        xpIntoLevel: 0,
+        xpNeeded: 100,
+        badges: [],
+        achievements: [],
+        rewards: [],
+        stats: { tipCount: 0, totalTipped: 0, uniqueRecipients: 0, currentStreak: 0 },
+        xpHistory: [],
+        refresh,
+        claimReward,
+        addXP,
+      }),
+      [isLoading, refresh, claimReward, addXP]
+    );
+
     return (
-      <GamificationContext.Provider
-        value={{
-          isLoading,
-          totalXP: 0,
-          currentLevel: { level: 1, title: "Newcomer", minXP: 0, maxXP: 100, color: "text-gray-500", bgColor: "bg-gray-100", icon: "🌱" },
-          nextLevel: null,
-          levelProgress: 0,
-          xpIntoLevel: 0,
-          xpNeeded: 100,
-          badges: [],
-          achievements: [],
-          rewards: [],
-          stats: { tipCount: 0, totalTipped: 0, uniqueRecipients: 0, currentStreak: 0 },
-          xpHistory: [],
-          refresh,
-          claimReward,
-          addXP,
-        }}
-      >
+      <GamificationContext.Provider value={loadingValue}>
         {children}
       </GamificationContext.Provider>
     );
   }
 
+  // Memoize the full context value to prevent unnecessary re-renders
+  const contextValue = useMemo(
+    () => ({
+      ...state,
+      isLoading,
+      xpHistory,
+      refresh,
+      claimReward,
+      addXP,
+    }),
+    [state, isLoading, xpHistory, refresh, claimReward, addXP]
+  );
+
   return (
-    <GamificationContext.Provider
-      value={{
-        ...state,
-        isLoading,
-        xpHistory,
-        refresh,
-        claimReward,
-        addXP,
-      }}
-    >
+    <GamificationContext.Provider value={contextValue}>
       {children}
     </GamificationContext.Provider>
   );

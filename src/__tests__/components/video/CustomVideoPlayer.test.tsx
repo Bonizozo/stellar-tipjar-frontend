@@ -24,14 +24,15 @@ const mockQualities: VideoQuality[] = [
 
 describe('CustomVideoPlayer', () => {
   it('renders video element with correct src', () => {
-    render(
+    const { container } = render(
       <CustomVideoPlayer
         src="test-video.mp4"
         creatorUsername="testuser"
       />
     );
 
-    const video = screen.getByRole('application') as HTMLVideoElement;
+    const video = container.querySelector('video') as HTMLVideoElement;
+    expect(video).toBeInTheDocument();
     expect(video.tagName).toBe('VIDEO');
   });
 

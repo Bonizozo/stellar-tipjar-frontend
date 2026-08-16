@@ -61,15 +61,15 @@ describe('CardHeader Component', () => {
   })
 
   it('applies custom className', () => {
-    render(
+    const { container } = render(
       <CardHeader 
         title="Card Title" 
         className="custom-header-class"
       />
     )
 
-    const header = screen.getByText('Card Title').closest('div')
-    expect(header).toHaveClass('custom-header-class')
+    const header = container.querySelector('.custom-header-class')
+    expect(header).toBeInTheDocument()
   })
 
   it('handles long titles with truncation', () => {

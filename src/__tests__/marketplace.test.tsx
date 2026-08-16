@@ -172,7 +172,7 @@ describe("Marketplace Components", () => {
         { wrapper }
       );
 
-      const downloadButton = screen.getByText(/download/i);
+      const downloadButton = screen.getByRole("button", { name: /download/i });
       fireEvent.click(downloadButton);
 
       await waitFor(() => {
