@@ -67,8 +67,15 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
+  // Memoize context value to prevent unnecessary re-renders
+  // Callbacks are already stable via useCallback
+  const contextValue = React.useMemo(
+    () => ({ toasts, add, remove }),
+    [toasts, add, remove]
+  );
+
   return (
-    <ToastContext.Provider value={{ toasts, add, remove }}>
+    <ToastContext.Provider value={contextValue}>
       {children}
     </ToastContext.Provider>
   );
