@@ -12,6 +12,11 @@ vi.mock('framer-motion', () => ({
   AnimatePresence: ({ children }: any) => <>{children}</>,
 }));
 
+// Mock next-intl
+vi.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => key,
+}));
+
 const mockChapters: Chapter[] = [
   { id: '1', title: 'Intro', startTime: 0, endTime: 30 },
   { id: '2', title: 'Main', startTime: 30, endTime: 60 },

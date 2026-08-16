@@ -9,6 +9,11 @@ Object.assign(navigator, {
   },
 });
 
+// Mock next-intl
+vi.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => key,
+}));
+
 describe('TagBadge', () => {
   it('renders tag with default props', () => {
     render(<TagBadge tag="web3" />);
@@ -17,13 +22,13 @@ describe('TagBadge', () => {
 
   it('renders with different sizes', () => {
     const { rerender } = render(<TagBadge tag="nft" size="sm" />);
-    expect(screen.getByText('#nft')).toHaveClass('px-2', 'py-1', 'text-xs');
+    expect(screen.getByText('#nft')).toHaveClass('px-2 py-1 text-xs');
 
     rerender(<TagBadge tag="nft" size="md" />);
-    expect(screen.getByText('#nft')).toHaveClass('px-3', 'py-1.5', 'text-sm');
+    expect(screen.getByText('#nft')).toHaveClass('px-3 py-1.5 text-sm');
 
     rerender(<TagBadge tag="nft" size="lg" />);
-    expect(screen.getByText('#nft')).toHaveClass('px-4', 'py-2', 'text-base');
+    expect(screen.getByText('#nft')).toHaveClass('px-4 py-2 text-base');
   });
 
   it('handles click when clickable', () => {
@@ -52,14 +57,14 @@ describe('TagBadge', () => {
     fireEvent.mouseDown(element);
     
     // Should show checkmark icon after copy
-    await screen.findByRole('img', { hidden: true });
+    await screen.findByRole('img', { name: 'Copied' });
   });
 
   it('has proper accessibility attributes', () => {
     render(<TagBadge tag="defi" clickable />);
     
     const button = screen.getByRole('button');
-    expect(button).toHaveAttribute('aria-label', expect.stringContaining('defi'));
+    expect(button).toHaveAttribute('aria-label', 'Tag: defi, clickable');
     expect(button).toHaveAttribute('title', 'Copy tag: #defi');
   });
 
