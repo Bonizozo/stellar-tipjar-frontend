@@ -111,41 +111,43 @@ export const AutoPlay: Story = {
   },
 };
 
-export const Interactive: Story = {
-  render: () => {
-    const [tips, setTips] = useState<TimestampTip[]>(demoTips);
+function InteractiveVideoPlayer() {
+  const [tips, setTips] = useState<TimestampTip[]>(demoTips);
 
-    const handleTipSubmit = async (
-      amount: string,
-      message: string,
-      timestamp: number
-    ) => {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      
-      const newTip: TimestampTip = {
-        id: Date.now().toString(),
-        timestamp,
-        amount,
-        message,
-        username: 'you',
-        createdAt: new Date().toISOString(),
-      };
-
-      setTips([...tips, newTip]);
+  const handleTipSubmit = async (
+    amount: string,
+    message: string,
+    timestamp: number
+  ) => {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    
+    const newTip: TimestampTip = {
+      id: Date.now().toString(),
+      timestamp,
+      amount,
+      message,
+      username: 'you',
+      createdAt: new Date().toISOString(),
     };
 
-    return (
-      <div className="p-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
-        <CustomVideoPlayer
-          src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-          poster="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"
-          chapters={demoChapters}
-          qualities={demoQualities}
-          timestampTips={tips}
-          creatorUsername="demo_creator"
-          onTipSubmit={handleTipSubmit}
-        />
-      </div>
-    );
-  },
+    setTips([...tips, newTip]);
+  };
+
+  return (
+    <div className="p-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
+      <CustomVideoPlayer
+        src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+        poster="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"
+        chapters={demoChapters}
+        qualities={demoQualities}
+        timestampTips={tips}
+        creatorUsername="demo_creator"
+        onTipSubmit={handleTipSubmit}
+      />
+    </div>
+  );
+}
+
+export const Interactive: Story = {
+  render: () => <InteractiveVideoPlayer />,
 };
