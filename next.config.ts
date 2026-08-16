@@ -9,7 +9,7 @@ const withBundleAnalyzer = createBundleAnalyzer({
 });
 
 // i18n is handled via next-intl with locale routing
-// Supported locales: en, es, fr, zh, ar, he — preference persisted in localStorage
+// Supported locales: en, es, fr, zh, ar — preference persisted in localStorage
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   typedRoutes: true,
