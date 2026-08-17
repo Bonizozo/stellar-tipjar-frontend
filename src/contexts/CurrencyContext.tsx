@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { createNamespacedStorage } from '@/lib/storage';
 
 const storage = createNamespacedStorage('currency');
@@ -20,13 +20,19 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     if (saved) setSelectedCurrency(saved);
   }, []);
 
-  const setCurrency = (currency: string) => {
+  const setCurrency = useCallback((currency: string) => {
     setSelectedCurrency(currency);
     storage.setString('currency', currency);
-  };
+  }, []);
+
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(
+    () => ({ selectedCurrency, setCurrency }),
+    [selectedCurrency, setCurrency]
+  );
 
   return (
-    <CurrencyContext.Provider value={{ selectedCurrency, setCurrency }}>
+    <CurrencyContext.Provider value={contextValue}>
       {children}
     </CurrencyContext.Provider>
   );

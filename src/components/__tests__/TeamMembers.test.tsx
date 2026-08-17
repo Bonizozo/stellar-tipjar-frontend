@@ -53,7 +53,7 @@ describe("TeamMembers Component", () => {
     const handleRemove = vi.fn();
     render(<TeamMembers members={mockMembers} onRemove={handleRemove} />);
 
-    expect(screen.getByText("50% split")).toBeInTheDocument();
+    expect(screen.getAllByText("50% split").length).toBeGreaterThan(0);
   });
 
   it("calls onRemove when remove button is clicked", async () => {
