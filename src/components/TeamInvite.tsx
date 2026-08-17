@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { flushSync } from "react-dom";
 import { Button } from "@/components/Button";
 import { Badge } from "@/components/Badge";
 import { motion } from "framer-motion";
@@ -29,12 +30,12 @@ export function TeamInvite({
     // Validate email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email.trim()) {
-      setMessage({ type: "error", text: "Please enter an email address." });
+      flushSync(() => setMessage({ type: "error", text: "Please enter an email address." }));
       return;
     }
 
     if (!emailRegex.test(email.trim())) {
-      setMessage({ type: "error", text: "Please enter a valid email address." });
+      flushSync(() => setMessage({ type: "error", text: "Please enter a valid email address." }));
       return;
     }
 
@@ -70,7 +71,7 @@ export function TeamInvite({
       </div>
 
       {/* Invitation form */}
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:flex-row sm:gap-2">
+      <form noValidate onSubmit={handleSubmit} className="flex flex-col gap-3 sm:flex-row sm:gap-2">
         <input
           type="email"
           value={email}
