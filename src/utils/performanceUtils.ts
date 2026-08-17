@@ -1,3 +1,4 @@
+import { IS_DEV } from "@/config/env";
 import { PERFORMANCE_BUDGETS, type MetricName } from "@/lib/webVitals";
 
 export type MetricRating = "good" | "needs-improvement" | "poor";
@@ -33,7 +34,7 @@ export async function measureAsync<T>(
     return await fn();
   } finally {
     const duration = performance.now() - start;
-    if (process.env.NODE_ENV === "development") {
+    if (IS_DEV) {
       console.debug(`[Perf] ${name}: ${duration.toFixed(2)}ms`);
     }
     // Mark for DevTools Performance panel
