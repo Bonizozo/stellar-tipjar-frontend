@@ -154,7 +154,7 @@ describe("Notification Service", () => {
       };
 
       await expect(
-        notificationService.updateNotificationSettings(invalidSettings as any)
+        notificationService.updateNotificationSettings(invalidSettings as unknown as NotificationSettings)
       ).rejects.toThrow();
     });
 
@@ -178,7 +178,7 @@ describe("Notification Service", () => {
       };
 
       await expect(
-        notificationService.updateNotificationSettings(invalidSettings as any)
+        notificationService.updateNotificationSettings(invalidSettings as unknown as NotificationSettings)
       ).rejects.toThrow();
     });
   });
