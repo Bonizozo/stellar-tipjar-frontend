@@ -50,6 +50,7 @@ interface RequestOptions {
    */
   critical?: boolean;
   throttleMs?: number;
+  retries?: number;
 }
 
 const sleep = (delayMs: number) => new Promise<void>((resolve) => setTimeout(resolve, delayMs));
@@ -168,6 +169,7 @@ export function getApiRateLimitState() {
 async function request<T>(path: string, init?: RequestInit, options?: RequestOptions): Promise<T> {
   const critical = options?.critical ?? true;
   const throttleMs = options?.throttleMs ?? DEFAULT_THROTTLE_MS;
+  const retries = options?.retries ?? DEFAULT_RETRIES;
 
   if (!rateLimiter.canMakeRequest()) {
     const retryAfterMs = rateLimiter.getRetryAfterMs();
@@ -186,7 +188,7 @@ async function request<T>(path: string, init?: RequestInit, options?: RequestOpt
 
         return executeFetch<T>(path, init, throttleMs);
       },
-      { maxRetries: 4, baseDelayMs: 250 },
+      { maxRetries: retries, baseDelayMs: 250 },
     );
 
     notifyStatusChange();
