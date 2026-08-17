@@ -41,4 +41,12 @@ describe('API Service', () => {
     // Test that headers are properly set
     expect(mockFetch).toBeDefined()
   })
+
+  it('should return rate limit status with default queue configuration', async () => {
+    const { getApiRateLimitStatus } = await import('../api')
+    const status = getApiRateLimitStatus()
+    expect(status).toBeDefined()
+    expect(typeof status.isLimited).toBe('boolean')
+    expect(typeof status.queuedRequests).toBe('number')
+  })
 })
