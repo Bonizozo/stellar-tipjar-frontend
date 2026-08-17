@@ -4,13 +4,30 @@
  * In prod: structured log + hook for external services (e.g. Sentry).
  */
 
+import { appConfig } from "@/config/env";
+
 export interface ErrorInfo {
   componentStack?: string;
   digest?: string;
 }
 
+/**
+ * Initialize error logger with validated configuration.
+ * Logs a warning if Sentry DSN is not configured (optional behavior).
+ */
+function initializeErrorLogger(): void {
+  if (!appConfig.sentryDsn) {
+    console.warn(
+      "[errorLogger] NEXT_PUBLIC_SENTRY_DSN not configured — error reporting disabled"
+    );
+  }
+}
+
+// Initialize on module load
+initializeErrorLogger();
+
 export function logError(error: Error, info?: ErrorInfo): void {
-  if (process.env.NODE_ENV === "development") {
+  if (appConfig.nodeEnv === "development") {
     console.group("[ErrorBoundary]");
     console.error("Error:", error);
     if (info?.componentStack) {
@@ -33,6 +50,8 @@ export function logError(error: Error, info?: ErrorInfo): void {
     })
   );
 
-  // TODO: forward to error reporting service
-  // Sentry.captureException(error, { extra: info });
+  // TODO: forward to error reporting service using validated DSN
+  // if (appConfig.sentryDsn) {
+  //   Sentry.captureException(error, { extra: info });
+  // }
 }
