@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { flushSync } from "react-dom";
 import { createNamespacedStorage } from "@/lib/storage";
 import { z } from "zod";
 
@@ -185,7 +186,7 @@ export function useTeam(teamName: string) {
       role?: TeamRole;
       walletAddress?: string;
     }) => {
-      setProfiles((prev) => {
+      flushSync(() => setProfiles((prev) => {
         const current = prev[teamName] ?? team;
         const newMember: TeamMember = {
           id: `member_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
@@ -206,14 +207,14 @@ export function useTeam(teamName: string) {
             updatedAt: fmt(),
           },
         };
-      });
+      }));
     },
     [teamName, team],
   );
 
   const removeMember = useCallback(
     (memberId: string) => {
-      setProfiles((prev) => {
+      flushSync(() => setProfiles((prev) => {
         const current = prev[teamName] ?? team;
         return {
           ...prev,
@@ -223,14 +224,14 @@ export function useTeam(teamName: string) {
             updatedAt: fmt(),
           },
         };
-      });
+      }));
     },
     [teamName],
   );
 
   const updateMember = useCallback(
     (memberId: string, updates: Partial<TeamMember>) => {
-      setProfiles((prev) => {
+      flushSync(() => setProfiles((prev) => {
         const current = prev[teamName] ?? team;
         const newMembers = current.members.map((m) =>
           m.id === memberId ? { ...m, ...updates } : m,
@@ -239,7 +240,7 @@ export function useTeam(teamName: string) {
           ...prev,
           [teamName]: { ...current, members: newMembers, updatedAt: fmt() },
         };
-      });
+      }));
     },
     [teamName],
   );
@@ -267,7 +268,7 @@ export function useTeam(teamName: string) {
 
   const inviteMember = useCallback(
     (email: string) => {
-      setProfiles((prev) => {
+      flushSync(() => setProfiles((prev) => {
         const current = prev[teamName] ?? team;
         const newInvitation: TeamInvitation = {
           id: `invite_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
@@ -289,14 +290,14 @@ export function useTeam(teamName: string) {
             updatedAt: fmt(),
           },
         };
-      });
+      }));
     },
     [teamName, team],
   );
 
   const cancelInvitation = useCallback(
     (invitationId: string) => {
-      setProfiles((prev) => {
+      flushSync(() => setProfiles((prev) => {
         const current = prev[teamName] ?? team;
         return {
           ...prev,
@@ -308,7 +309,7 @@ export function useTeam(teamName: string) {
             updatedAt: fmt(),
           },
         };
-      });
+      }));
     },
     [teamName],
   );

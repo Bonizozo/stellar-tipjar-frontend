@@ -100,7 +100,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       provider: "freighter" as const,
       status,
       isConnecting,
-      isLoading: isConnecting,
+      isLoading: false,
       error: error?.message ?? null,
       connect: storeConnect,
       disconnect: storeDisconnect,

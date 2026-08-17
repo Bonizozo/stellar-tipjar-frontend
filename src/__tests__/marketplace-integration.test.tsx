@@ -1,17 +1,17 @@
 import { describe, it, expect } from "vitest";
 
 describe("Marketplace Integration", () => {
-  it("should have all required types exported", () => {
+  it("should have all required types exported", async () => {
     // Test that types can be imported
-    const types = require("@/types/marketplace");
+    const types = await import("@/types/marketplace");
     
     expect(types).toBeDefined();
     expect(typeof types).toBe("object");
   });
 
-  it("should have marketplace hooks available", () => {
-    const { useMarketplace } = require("@/hooks/useMarketplace");
-    const { useCreatorMarketplace } = require("@/hooks/useCreatorMarketplace");
+  it("should have marketplace hooks available", async () => {
+    const { useMarketplace } = await import("@/hooks/useMarketplace");
+    const { useCreatorMarketplace } = await import("@/hooks/useCreatorMarketplace");
     
     expect(useMarketplace).toBeDefined();
     expect(typeof useMarketplace).toBe("function");
@@ -19,7 +19,7 @@ describe("Marketplace Integration", () => {
     expect(typeof useCreatorMarketplace).toBe("function");
   });
 
-  it("should have all marketplace components available", () => {
+  it("should have all marketplace components available", async () => {
     const components = [
       "@/components/marketplace/CreatorStoreCard",
       "@/components/marketplace/MarketplaceFilters",
@@ -33,10 +33,10 @@ describe("Marketplace Integration", () => {
       "@/components/marketplace/DigitalDelivery",
     ];
 
-    components.forEach((componentPath) => {
-      const component = require(componentPath);
+    for (const componentPath of components) {
+      const component = await import(componentPath);
       expect(component).toBeDefined();
-    });
+    }
   });
 
   it("should validate product categories", () => {
