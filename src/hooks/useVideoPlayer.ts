@@ -60,10 +60,10 @@ export function useVideoPlayer(options: UseVideoPlayerOptions = {}) {
   }, [seek]);
 
   const setVolume = useCallback((volume: number) => {
-    const video = videoRef.current;
-    if (!video) return;
     const clampedVolume = Math.max(0, Math.min(1, volume));
-    video.volume = clampedVolume;
+    if (videoRef.current) {
+      videoRef.current.volume = clampedVolume;
+    }
     setState(prev => ({ ...prev, volume: clampedVolume, muted: clampedVolume === 0 }));
   }, []);
 

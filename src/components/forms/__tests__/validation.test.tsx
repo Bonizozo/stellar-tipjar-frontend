@@ -42,7 +42,7 @@ describe('tipFormSchema', () => {
 describe('creatorFormSchema', () => {
   const valid = {
     username: 'alice',
-    wallet_address: 'GBXGQJWVDBG2TXW2XJLBV3UQ6L3AEWZKG4YBVPHWTZ4V5C74N6XFF6B6',
+    wallet_address: 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWNA',
     displayName: 'Alice',
     bio: '',
     email: '',
@@ -137,7 +137,7 @@ describe('CreatorForm', () => {
     await user.type(screen.getByLabelText(/username/i), 'alice')
     await user.type(
       screen.getByLabelText(/stellar wallet address/i),
-      'GBXGQJWVDBG2TXW2XJLBV3UQ6L3AEWZKG4YBVPHWTZ4V5C74N6XFF6B6'
+      'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWNA'
     )
     await user.click(screen.getByRole('button', { name: /register as creator/i }))
     await waitFor(() => expect(noop).toHaveBeenCalledTimes(1))
@@ -149,9 +149,10 @@ describe('CreatorForm', () => {
     await user.type(screen.getByLabelText(/username/i), 'alice')
     await user.type(
       screen.getByLabelText(/stellar wallet address/i),
-      'GBXGQJWVDBG2TXW2XJLBV3UQ6L3AEWZKG4YBVPHWTZ4V5C74N6XFF6B6'
+      'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWNA'
     )
-    await user.click(screen.getByRole('button', { name: /register as creator/i }))
-    expect(await screen.findByRole('button', { name: /submitting/i })).toBeDisabled()
+    const submitPromise = user.click(screen.getByRole('button', { name: /register as creator/i }))
+    await waitFor(() => expect(screen.getByRole('button', { name: /submitting/i })).toBeDisabled())
+    await submitPromise
   })
 })
