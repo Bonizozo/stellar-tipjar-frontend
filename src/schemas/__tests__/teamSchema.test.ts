@@ -10,7 +10,6 @@ import {
   revenueSplitValidationSchema,
   teamNameCheckSchema,
 } from "@/schemas/teamSchema";
-import { z } from "zod";
 
 describe("Team Schema Validations", () => {
   describe("teamNameSchema", () => {
@@ -59,6 +58,14 @@ describe("Team Schema Validations", () => {
         teamMemberSchema.parse({
           name: "Alice",
           email: "not-an-email",
+          split: 50,
+        })
+      ).toThrow();
+
+      expect(() =>
+        teamMemberSchema.parse({
+          name: "Alice",
+          email: "alice@domain",
           split: 50,
         })
       ).toThrow();
@@ -215,6 +222,12 @@ describe("Team Schema Validations", () => {
       expect(() =>
         inviteMemberSchema.parse({
           email: "invalid",
+        })
+      ).toThrow();
+
+      expect(() =>
+        inviteMemberSchema.parse({
+          email: "user@domain",
         })
       ).toThrow();
     });
