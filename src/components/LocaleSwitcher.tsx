@@ -4,6 +4,7 @@ import { useI18n } from '@/i18n/provider';
 import { locales, localeNames, type Locale } from '@/i18n/config';
 import { Globe } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import type { Route } from 'next';
 import { useTransition } from 'react';
 
 export function getLocalizedPath(
@@ -41,7 +42,7 @@ export const LocaleSwitcher = () => {
     startTransition(() => {
       const search = searchParams.toString();
       const hash = window.location.hash;
-      router.replace(getLocalizedPath(pathname, newLocale, search, hash), { scroll: false });
+      router.replace(getLocalizedPath(pathname, newLocale, search, hash) as Route, { scroll: false });
     });
   };
 
