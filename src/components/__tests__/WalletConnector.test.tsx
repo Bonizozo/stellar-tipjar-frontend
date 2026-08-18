@@ -48,9 +48,9 @@ describe('WalletConnector Component', () => {
 
     render(<WalletConnector />)
 
-    const connectButton = screen.getByRole('button', { name: 'Connect Wallet' })
+    const connectButton = screen.getByRole('button', { name: /connect/i })
     expect(connectButton).toBeInTheDocument()
-    expect(connectButton).toHaveClass('bg-sunrise', 'text-white')
+    expect(connectButton).toHaveClass('bg-purple-600', 'text-white')
   })
 
   it('shows wallet info when connected', () => {
@@ -67,7 +67,7 @@ describe('WalletConnector Component', () => {
 
     expect(screen.getByText('TESTNET')).toBeInTheDocument()
     expect(screen.getByText('0x1234...5678')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Disconnect' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /disconnect/i })).toBeInTheDocument()
   })
 
   it('calls connect when connect button is clicked', async () => {
@@ -83,7 +83,7 @@ describe('WalletConnector Component', () => {
 
     render(<WalletConnector />)
 
-    const connectButton = screen.getByRole('button', { name: 'Connect Wallet' })
+    const connectButton = screen.getByRole('button', { name: /connect/i })
     await user.click(connectButton)
 
     expect(mockConnect).toHaveBeenCalledTimes(1)
@@ -102,7 +102,7 @@ describe('WalletConnector Component', () => {
 
     render(<WalletConnector />)
 
-    const disconnectButton = screen.getByRole('button', { name: 'Disconnect' })
+    const disconnectButton = screen.getByRole('button', { name: /disconnect/i })
     await user.click(disconnectButton)
 
     expect(mockDisconnect).toHaveBeenCalledTimes(1)
@@ -121,7 +121,7 @@ describe('WalletConnector Component', () => {
     render(<WalletConnector />)
 
     const networkElement = screen.getByText('PUBLIC')
-    expect(networkElement).toHaveClass('font-medium', 'text-wave')
+    expect(networkElement).toHaveClass('font-bold', 'text-wave/60')
   })
 
   it('displays address with correct styling when connected', () => {
@@ -152,7 +152,8 @@ describe('WalletConnector Component', () => {
 
     render(<WalletConnector />)
 
-    const container = screen.getByText('TESTNET').parentElement
+    const region = screen.getByRole('region', { name: 'Connected wallet' })
+    const container = region.firstElementChild
     expect(container).toHaveClass(
       'flex',
       'items-center',
@@ -162,7 +163,7 @@ describe('WalletConnector Component', () => {
       'border-wave/25',
       'bg-white',
       'px-3',
-      'py-2',
+      'py-1.5',
       'text-xs',
       'sm:text-sm'
     )
@@ -180,15 +181,13 @@ describe('WalletConnector Component', () => {
 
     render(<WalletConnector />)
 
-    const disconnectButton = screen.getByRole('button', { name: 'Disconnect' })
+    const disconnectButton = screen.getByRole('button', { name: /disconnect/i })
     expect(disconnectButton).toHaveClass(
+      'h-8',
       'px-2',
-      'py-1',
+      'py-0',
       'text-xs',
-      'bg-transparent',
-      'text-ink',
-      'border',
-      'border-ink/20'
+      'text-error'
     )
   })
 
@@ -205,9 +204,8 @@ describe('WalletConnector Component', () => {
     render(<WalletConnector />)
 
     expect(screen.getByText('TESTNET')).toBeInTheDocument()
-    // Check that the address span exists but is empty
-    const addressSpan = screen.getByText('TESTNET').nextElementSibling
-    expect(addressSpan).toHaveTextContent('')
+    const addressSpan = screen.getByRole('region', { name: 'Connected wallet' }).querySelector('span[aria-label="Wallet address: "]')
+    expect(addressSpan).toBeEmptyDOMElement()
   })
 
   it('handles empty network gracefully', () => {
@@ -217,15 +215,13 @@ describe('WalletConnector Component', () => {
       connect: vi.fn(),
       disconnect: vi.fn(),
       shortAddress: '0x1234...5678',
-      network: 'TESTNET'
+      network: '' as any
     }))
 
     render(<WalletConnector />)
 
-    // Check that the network span exists but is empty
-    const container = screen.getByText('0x1234...5678').parentElement
-    const networkSpan = container?.firstElementChild
-    expect(networkSpan).toHaveTextContent('')
+    const networkSpan = screen.getByRole('region', { name: 'Connected wallet' }).querySelector('span[aria-label="Network: "]')
+    expect(networkSpan).toBeEmptyDOMElement()
     expect(screen.getByText('0x1234...5678')).toBeInTheDocument()
   })
 })

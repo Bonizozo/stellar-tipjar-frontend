@@ -32,7 +32,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
           </svg>
         </div>
-        <label className="absolute left-4 -top-2.5 bg-white px-1 text-sm text-gray-600 transition-all pointer-events-none">
+        <label htmlFor={props.id} className="absolute left-4 -top-2.5 bg-white px-1 text-sm text-gray-600 transition-all pointer-events-none">
           {label}
         </label>
       </FormField>
