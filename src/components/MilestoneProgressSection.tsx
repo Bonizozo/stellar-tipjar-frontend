@@ -59,6 +59,7 @@ export function MilestoneProgressSection({ totalTips }: MilestoneProgressSection
               className="h-full rounded-full bg-gradient-to-r from-primary-500 to-accent-cyan transition-all duration-700"
               style={{ width: `${progressPct}%` }}
               role="progressbar"
+              aria-label="Progress to next milestone"
               aria-valuenow={totalTips}
               aria-valuemin={prev?.threshold ?? 0}
               aria-valuemax={next.threshold}

@@ -70,7 +70,7 @@ export function TeamInvite({
       </div>
 
       {/* Invitation form */}
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:flex-row sm:gap-2">
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-3 sm:flex-row sm:gap-2">
         <input
           type="email"
           value={email}

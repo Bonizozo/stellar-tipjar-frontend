@@ -24,6 +24,7 @@ export function HeatmapLegend({ theme, cellSize }: HeatmapLegendProps) {
             borderRadius: Math.max(2, cellSize * 0.18),
           }}
           title={LABELS[level]}
+          role="img"
           aria-label={`Level ${level}: ${LABELS[level]}`}
         />
       ))}
