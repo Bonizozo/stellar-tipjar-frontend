@@ -1,179 +1,183 @@
-import { render, screen } from '@testing-library/react'
-import { Navbar } from '../Navbar'
-import { WalletConnector } from '../WalletConnector'
-import { CurrencyProvider } from '@/contexts/CurrencyContext'
-import { WalletProvider } from '@/contexts/WalletContext'
+import { fireEvent, render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// Mock next/navigation
-vi.mock('next/navigation', () => ({
-  usePathname: () => '/',
+import { Navbar } from "../Navbar";
+import { WalletConnector } from "../WalletConnector";
+
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/",
   useRouter: () => ({ push: vi.fn() }),
 }));
 
-// Mock next-intl
-vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string) => {
-    const map: Record<string, string> = {
-      brandName: 'Stellar Tip Jar',
-    };
-    return map[key] || key;
-  },
+vi.mock("next-intl", () => ({
+  useTranslations: () => (key: string) =>
+    ({ brandName: "Stellar Tip Jar" })[key] ?? key,
 }));
 
-// Mock WalletConnector component
-vi.mock('../WalletConnector', () => ({
-  WalletConnector: vi.fn(() => <div data-testid="wallet-connector">Wallet Connector</div>)
-}))
+vi.mock("../WalletConnector", () => ({
+  WalletConnector: vi.fn(() => (
+    <div data-testid="wallet-connector">Wallet Connector</div>
+  )),
+}));
 
-const mockWalletConnector = vi.mocked(WalletConnector)
+vi.mock("@/components/NotificationBadge", () => ({
+  NotificationBadge: () => <button>Notifications</button>,
+}));
+vi.mock("@/components/NotificationCenter", () => ({
+  NotificationCenter: () => <div data-testid="notification-center" />,
+}));
+vi.mock("@/components/ThemeToggle", () => ({
+  ThemeToggle: () => <button>Theme</button>,
+}));
+vi.mock("@/components/LanguageSwitcher", () => ({
+  LanguageSwitcher: () => <button>Language</button>,
+}));
+vi.mock("@/components/CurrencySwitcher", () => ({
+  CurrencySwitcher: () => <button>Currency</button>,
+}));
+vi.mock("@/components/SearchBar", () => ({
+  SearchBar: ({ placeholder }: { placeholder: string }) => (
+    <input aria-label={placeholder} />
+  ),
+}));
+vi.mock("@/components/MegaMenu", () => ({
+  NavItem: ({ label, href }: { label: string; href?: string }) => (
+    <a href={href ?? "/explore"}>{label}</a>
+  ),
+  MegaMenuLink: () => null,
+}));
+vi.mock("@/components/MobileMenu", () => ({
+  MobileMenu: ({ isOpen }: { isOpen: boolean }) => (
+    <div data-testid="mobile-menu" data-open={String(isOpen)} />
+  ),
+}));
+vi.mock("@/components/BottomDock", () => ({
+  BottomDock: () => <div data-testid="bottom-dock" />,
+}));
 
-const renderNavbar = (ui: React.ReactElement = <Navbar />) =>
-  render(
-    <CurrencyProvider>
-      <WalletProvider>{ui}</WalletProvider>
-    </CurrencyProvider>
-  )
+const mockWalletConnector = vi.mocked(WalletConnector);
 
-describe('Navbar Component', () => {
+describe("Navbar Component", () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-  })
+    vi.clearAllMocks();
+    mockWalletConnector.mockImplementation(() => (
+      <div data-testid="wallet-connector">Wallet Connector</div>
+    ));
+  });
 
-  it('renders brand link with correct text', () => {
-    renderNavbar()
+  it("renders the brand link", () => {
+    render(<Navbar />);
 
-    const brandLink = screen.getByRole('link', { name: 'Stellar Tip Jar' })
-    expect(brandLink).toBeInTheDocument()
-    expect(brandLink).toHaveAttribute('href', '/')
-  })
+    const brandLink = screen.getByRole("link", {
+      name: "Stellar Tip Jar — home",
+    });
+    expect(brandLink).toHaveTextContent("Stellar Tip Jar");
+    expect(brandLink).toHaveAttribute("href", "/");
+  });
 
-  it('renders all navigation links', () => {
-    renderNavbar()
+  it("renders all desktop navigation links", () => {
+    render(<Navbar />);
 
-    expect(screen.getByRole('link', { name: 'Home' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Explore Creators' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Send Tips' })).toBeInTheDocument()
-  })
+    expect(screen.getByRole("link", { name: "Explore" })).toHaveAttribute(
+      "href",
+      "/explore",
+    );
+    expect(screen.getByRole("link", { name: "Tips" })).toHaveAttribute(
+      "href",
+      "/tips",
+    );
+    expect(screen.getByRole("link", { name: "Widgets" })).toHaveAttribute(
+      "href",
+      "/widgets",
+    );
+    expect(screen.getByRole("link", { name: "Help" })).toHaveAttribute(
+      "href",
+      "/help",
+    );
+  });
 
-  it('navigation links have correct href attributes', () => {
-    renderNavbar()
+  it("renders the wallet connector and utility controls", () => {
+    render(<Navbar />);
 
-    expect(screen.getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/')
-    expect(screen.getByRole('link', { name: 'Explore Creators' })).toHaveAttribute('href', '/explore')
-    expect(screen.getByRole('link', { name: 'Send Tips' })).toHaveAttribute('href', '/tips')
-  })
+    expect(screen.getByTestId("wallet-connector")).toBeInTheDocument();
+    expect(mockWalletConnector).toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: "Theme" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Language" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Notifications" })).toBeInTheDocument();
+  });
 
-  it('renders WalletConnector component', () => {
-    renderNavbar()
+  it("uses semantic header and navigation landmarks", () => {
+    render(<Navbar />);
 
-    expect(screen.getByTestId('wallet-connector')).toBeInTheDocument()
-    expect(mockWalletConnector).toHaveBeenCalled()
-  })
+    expect(screen.getByRole("banner")).toBeInTheDocument();
+    expect(
+      screen.getByRole("navigation", { name: "Main navigation" }),
+    ).toBeInTheDocument();
+  });
 
-  it('has correct semantic structure', () => {
-    renderNavbar()
+  it("applies the default sticky header styling", () => {
+    render(<Navbar />);
 
-    const header = screen.getByRole('banner')
-    expect(header).toBeInTheDocument()
+    expect(screen.getByRole("banner")).toHaveClass(
+      "sticky",
+      "top-0",
+      "z-20",
+      "border-transparent",
+      "backdrop-blur-md",
+    );
+  });
 
-    const nav = screen.getByRole('navigation')
-    expect(nav).toBeInTheDocument()
-  })
+  it("applies responsive navigation layout classes", () => {
+    render(<Navbar />);
 
-  it('applies correct styling classes to header', () => {
-    renderNavbar()
-
-    const header = screen.getByRole('banner')
-    expect(header).toHaveClass(
-      'sticky',
-      'top-0',
-      'z-20',
-      'border-b',
-      'border-ink/10',
-      'bg-[color:var(--surface)]/80',
-      'backdrop-blur-md'
-    )
-  })
-
-  it('applies correct styling classes to navigation container', () => {
-    renderNavbar()
-
-    const nav = screen.getByRole('navigation')
+    const nav = screen.getByRole("navigation", { name: "Main navigation" });
     expect(nav).toHaveClass(
-      'mx-auto',
-      'flex',
-      'w-full',
-      'max-w-6xl',
-      'items-center',
-      'justify-between',
-      'px-4',
-      'py-4',
-      'sm:px-6',
-      'lg:px-8'
-    )
-  })
+      "mx-auto",
+      "flex",
+      "h-16",
+      "w-full",
+      "max-w-7xl",
+      "px-4",
+      "sm:px-6",
+      "lg:px-8",
+    );
+    expect(screen.getByRole("list")).toHaveClass("hidden", "md:flex");
+  });
 
-  it('brand link has correct styling', () => {
-    renderNavbar()
+  it("renders the desktop search input", () => {
+    render(<Navbar />);
 
-    const brandLink = screen.getByRole('link', { name: 'Stellar Tip Jar' })
-    expect(brandLink).toHaveClass(
-      'text-lg',
-      'font-bold',
-      'tracking-tight',
-      'text-ink',
-      'sm:text-xl'
-    )
-  })
+    expect(
+      screen.getByRole("textbox", { name: "Search creators..." }),
+    ).toBeInTheDocument();
+  });
 
-  it('navigation links container has correct styling', () => {
-    renderNavbar()
+  it("opens the mobile menu from the hamburger button", () => {
+    render(<Navbar />);
 
-    const navLinksContainer = screen.getByRole('link', { name: 'Home' }).parentElement
-    expect(navLinksContainer).toHaveClass(
-      'hidden',
-      'items-center',
-      'gap-6',
-      'text-sm',
-      'font-medium',
-      'text-ink/80',
-      'md:flex'
-    )
-  })
+    const menuButton = screen.getByRole("button", { name: "Open mobile menu" });
+    expect(menuButton).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getByTestId("mobile-menu")).toHaveAttribute("data-open", "false");
 
-  it('navigation links have correct styling', () => {
-    renderNavbar()
+    fireEvent.click(menuButton);
 
-    const homeLink = screen.getByRole('link', { name: 'Home' })
-    expect(homeLink).toHaveClass(
-      'transition-colors',
-      'hover:text-wave'
-    )
-  })
+    expect(menuButton).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByTestId("mobile-menu")).toHaveAttribute("data-open", "true");
+  });
 
-  it('renders responsive design classes', () => {
-    renderNavbar()
+  it("adds the elevated style after the page scrolls", () => {
+    render(<Navbar />);
 
-    const nav = screen.getByRole('navigation')
-    expect(nav).toHaveClass('px-4', 'sm:px-6', 'lg:px-8')
+    Object.defineProperty(window, "scrollY", { configurable: true, value: 12 });
+    fireEvent.scroll(window);
 
-    const brandLink = screen.getByRole('link', { name: 'Stellar Tip Jar' })
-    expect(brandLink).toHaveClass('text-lg', 'sm:text-xl')
+    expect(screen.getByRole("banner")).toHaveClass("border-gray-200/80", "shadow-sm");
+  });
 
-    const navLinksContainer = screen.getByRole('link', { name: 'Home' }).parentElement
-    expect(navLinksContainer).toHaveClass('hidden', 'md:flex')
-  })
+  it("handles an empty wallet connector", () => {
+    mockWalletConnector.mockImplementation(() => <div>Empty</div>);
 
-  it('has correct accessibility attributes', () => {
-    renderNavbar()
-
-    expect(screen.getByRole('banner')).toBeInTheDocument()
-    expect(screen.getByRole('navigation')).toBeInTheDocument()
-  })
-
-  it('handles missing WalletConnector gracefully', () => {
-    mockWalletConnector.mockImplementation(() => <div>Empty</div>)
-
-    expect(() => render(<Navbar />)).not.toThrow()
-  })
-})
+    expect(() => render(<Navbar />)).not.toThrow();
+    expect(screen.getByText("Empty")).toBeInTheDocument();
+  });
+});

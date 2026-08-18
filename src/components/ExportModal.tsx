@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Tip } from "@/hooks/queries/useTips";
 import { exportToCSV } from "@/utils/exportCSV";
 import { exportToExcel } from "@/utils/exportExcel";
@@ -52,6 +52,14 @@ export function ExportModal({ tips, onClose }: Props) {
   const [preset, setPreset] = useState<Preset>("all");
   const [customFrom, setCustomFrom] = useState("");
   const [customTo, setCustomTo] = useState("");
+
+  useEffect(() => {
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [onClose]);
 
   const { from, to } = preset === "custom" ? { from: customFrom, to: customTo } : presetDates(preset);
   const filtered = preset === "all" ? tips : filterByRange(tips, from, to);

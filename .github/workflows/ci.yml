@@ -115,9 +115,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run E2E tests
-        run: npm run test:e2e
-        env:
-          PLAYWRIGHT_BROWSERS_PATH: ~/.cache/ms-playwright
+        run: npm run test:e2e -- --project=chromium
 
       - name: Upload Playwright HTML report on failure
         if: failure()

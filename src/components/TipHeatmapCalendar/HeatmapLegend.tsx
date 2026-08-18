@@ -12,7 +12,7 @@ const LABELS = ["None", "Low", "Medium", "High", "Peak"];
 
 export function HeatmapLegend({ theme, cellSize }: HeatmapLegendProps) {
   return (
-    <div className="flex items-center gap-2" aria-label="Activity level legend">
+    <div role="img" className="flex items-center gap-2" aria-label="Activity level legend from less to more">
       <span className="text-xs text-ink/40">Less</span>
       {LEVELS.map((level) => (
         <div
@@ -24,7 +24,7 @@ export function HeatmapLegend({ theme, cellSize }: HeatmapLegendProps) {
             borderRadius: Math.max(2, cellSize * 0.18),
           }}
           title={LABELS[level]}
-          aria-label={`Level ${level}: ${LABELS[level]}`}
+          aria-hidden="true"
         />
       ))}
       <span className="text-xs text-ink/40">More</span>

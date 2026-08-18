@@ -186,6 +186,7 @@ export function SupporterHeatmap({
                     setHovered({ date: cell.date, value: cell.value })
                   }
                   onMouseLeave={() => setHovered(null)}
+                  role="img"
                   aria-label={`${cell.date}: ${cell.value} XLM`}
                 />
               ))}

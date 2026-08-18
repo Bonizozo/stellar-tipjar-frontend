@@ -13,6 +13,7 @@ export function ChartSkeleton({ height = 320, bars = 7 }: ChartSkeletonProps) {
     <div
       className="w-full animate-pulse rounded-xl bg-ink/5 p-4"
       style={{ height }}
+      role="status"
       aria-busy="true"
       aria-label="Loading chart"
     >

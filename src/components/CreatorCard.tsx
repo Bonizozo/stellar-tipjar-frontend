@@ -19,7 +19,8 @@ export function CreatorCard({ creator, trackInteraction }: CreatorCardProps) {
   const prefersReduced = useReducedMotion();
 
   return (
-    <motion.div
+    <motion.article
+      data-testid="creator-card"
       variants={staggerItemVariants}
       whileHover={prefersReduced ? undefined : { y: -8, transition: { duration: 0.3 } }}
       whileTap={prefersReduced ? undefined : { scale: 0.97 }}
@@ -103,6 +104,6 @@ export function CreatorCard({ creator, trackInteraction }: CreatorCardProps) {
         {/* Hover Action Overlay (Subtle) */}
         <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-wave via-accent to-accent-alt scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
       </Link>
-    </motion.div>
+    </motion.article>
   );
 }

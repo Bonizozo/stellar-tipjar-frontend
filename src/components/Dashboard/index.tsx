@@ -193,16 +193,18 @@ export function Dashboard({ username = "me" }: DashboardProps) {
             ))}
           </div>
 
-          <label className="text-sm text-ink/70">From</label>
+          <label htmlFor="analytics-date-from" className="text-sm text-ink/70">From</label>
           <input
+            id="analytics-date-from"
             type="date"
             value={customStart}
             max={customEnd || undefined}
             onChange={(e) => setCustomStart(e.target.value)}
             className="rounded-lg border border-ink/15 bg-transparent px-3 py-2 text-sm"
           />
-          <label className="text-sm text-ink/70">To</label>
+          <label htmlFor="analytics-date-to" className="text-sm text-ink/70">To</label>
           <input
+            id="analytics-date-to"
             type="date"
             value={customEnd}
             min={customStart || undefined}

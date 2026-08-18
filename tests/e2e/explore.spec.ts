@@ -58,7 +58,7 @@ test.describe('Explore Page', () => {
     await expect(page.getByText('Search: test')).toBeVisible();
     
     // Clear all filters
-    const clearButton = page.getByText('Clear all');
+    const clearButton = page.getByRole('button', { name: 'Clear all', exact: true });
     if (await clearButton.isVisible()) {
       await clearButton.click();
       
@@ -79,7 +79,7 @@ test.describe('Explore Page', () => {
 
   test('can sort creators', async ({ page }) => {
     // Click sort dropdown
-    const sortButton = page.getByText('Sort by').locator('..');
+    const sortButton = page.getByRole('button', { name: /sort by/i });
     await sortButton.click();
     
     // Select a different sort option
@@ -101,10 +101,9 @@ test.describe('Explore Page', () => {
       page.getByText('Loading...')
     );
     
-    // Loading text might be brief, so use a short timeout
-    if (await loadingText.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await expect(loadingText).toBeVisible();
-    }
+    await expect(
+      loadingText.or(page.getByText(/found \d+ creators/i)),
+    ).toBeVisible({ timeout: 10000 });
   });
 
   test('shows results count', async ({ page }) => {
