@@ -1,6 +1,24 @@
 import { render, screen } from '@testing-library/react'
 import { Navbar } from '../Navbar'
 import { WalletConnector } from '../WalletConnector'
+import { CurrencyProvider } from '@/contexts/CurrencyContext'
+import { WalletProvider } from '@/contexts/WalletContext'
+
+// Mock next/navigation
+vi.mock('next/navigation', () => ({
+  usePathname: () => '/',
+  useRouter: () => ({ push: vi.fn() }),
+}));
+
+// Mock next-intl
+vi.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => {
+    const map: Record<string, string> = {
+      brandName: 'Stellar Tip Jar',
+    };
+    return map[key] || key;
+  },
+}));
 
 // Mock WalletConnector component
 vi.mock('../WalletConnector', () => ({
@@ -9,13 +27,20 @@ vi.mock('../WalletConnector', () => ({
 
 const mockWalletConnector = vi.mocked(WalletConnector)
 
+const renderNavbar = (ui: React.ReactElement = <Navbar />) =>
+  render(
+    <CurrencyProvider>
+      <WalletProvider>{ui}</WalletProvider>
+    </CurrencyProvider>
+  )
+
 describe('Navbar Component', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
   it('renders brand link with correct text', () => {
-    render(<Navbar />)
+    renderNavbar()
 
     const brandLink = screen.getByRole('link', { name: 'Stellar Tip Jar' })
     expect(brandLink).toBeInTheDocument()
@@ -23,7 +48,7 @@ describe('Navbar Component', () => {
   })
 
   it('renders all navigation links', () => {
-    render(<Navbar />)
+    renderNavbar()
 
     expect(screen.getByRole('link', { name: 'Home' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Explore Creators' })).toBeInTheDocument()
@@ -31,7 +56,7 @@ describe('Navbar Component', () => {
   })
 
   it('navigation links have correct href attributes', () => {
-    render(<Navbar />)
+    renderNavbar()
 
     expect(screen.getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/')
     expect(screen.getByRole('link', { name: 'Explore Creators' })).toHaveAttribute('href', '/explore')
@@ -39,14 +64,14 @@ describe('Navbar Component', () => {
   })
 
   it('renders WalletConnector component', () => {
-    render(<Navbar />)
+    renderNavbar()
 
     expect(screen.getByTestId('wallet-connector')).toBeInTheDocument()
     expect(mockWalletConnector).toHaveBeenCalled()
   })
 
   it('has correct semantic structure', () => {
-    render(<Navbar />)
+    renderNavbar()
 
     const header = screen.getByRole('banner')
     expect(header).toBeInTheDocument()
@@ -56,7 +81,7 @@ describe('Navbar Component', () => {
   })
 
   it('applies correct styling classes to header', () => {
-    render(<Navbar />)
+    renderNavbar()
 
     const header = screen.getByRole('banner')
     expect(header).toHaveClass(
@@ -71,7 +96,7 @@ describe('Navbar Component', () => {
   })
 
   it('applies correct styling classes to navigation container', () => {
-    render(<Navbar />)
+    renderNavbar()
 
     const nav = screen.getByRole('navigation')
     expect(nav).toHaveClass(
@@ -89,7 +114,7 @@ describe('Navbar Component', () => {
   })
 
   it('brand link has correct styling', () => {
-    render(<Navbar />)
+    renderNavbar()
 
     const brandLink = screen.getByRole('link', { name: 'Stellar Tip Jar' })
     expect(brandLink).toHaveClass(
@@ -102,7 +127,7 @@ describe('Navbar Component', () => {
   })
 
   it('navigation links container has correct styling', () => {
-    render(<Navbar />)
+    renderNavbar()
 
     const navLinksContainer = screen.getByRole('link', { name: 'Home' }).parentElement
     expect(navLinksContainer).toHaveClass(
@@ -117,7 +142,7 @@ describe('Navbar Component', () => {
   })
 
   it('navigation links have correct styling', () => {
-    render(<Navbar />)
+    renderNavbar()
 
     const homeLink = screen.getByRole('link', { name: 'Home' })
     expect(homeLink).toHaveClass(
@@ -127,7 +152,7 @@ describe('Navbar Component', () => {
   })
 
   it('renders responsive design classes', () => {
-    render(<Navbar />)
+    renderNavbar()
 
     const nav = screen.getByRole('navigation')
     expect(nav).toHaveClass('px-4', 'sm:px-6', 'lg:px-8')
@@ -140,7 +165,7 @@ describe('Navbar Component', () => {
   })
 
   it('has correct accessibility attributes', () => {
-    render(<Navbar />)
+    renderNavbar()
 
     expect(screen.getByRole('banner')).toBeInTheDocument()
     expect(screen.getByRole('navigation')).toBeInTheDocument()

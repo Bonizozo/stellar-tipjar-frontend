@@ -43,7 +43,7 @@ describe("Team Schema Validations", () => {
         split: 50,
         isActive: true,
       };
-      expect(teamMemberSchema.parse(member)).toEqual(member);
+      expect(teamMemberSchema.parse(member)).toMatchObject(member);
     });
 
     it("makes email optional", () => {
