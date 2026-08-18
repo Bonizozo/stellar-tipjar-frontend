@@ -27,7 +27,7 @@ describe('WalletConnector Component', () => {
   it('displays loading state while connecting', () => {
     useWalletStore.setState({ status: 'connecting' })
     renderWithProvider(<WalletConnector />)
-    expect(screen.getByText(/connecting/i)).toBeInTheDocument()
+    expect(screen.getByText(/checking wallet/i)).toBeInTheDocument()
   })
 
   it('handles connection errors gracefully', () => {
@@ -37,7 +37,7 @@ describe('WalletConnector Component', () => {
   })
 
   it('has proper accessibility attributes', () => {
-    render(<WalletConnector />)
+    renderWithProvider(<WalletConnector />)
     const button = screen.getByRole('button', { name: /connect/i })
     
     expect(button).toHaveAttribute('aria-label')
