@@ -37,7 +37,7 @@ describe('WalletConnector Component', () => {
   })
 
   it('has proper accessibility attributes', () => {
-    render(<WalletConnector />)
+    renderWithProvider(<WalletConnector />)
     const button = screen.getByRole('button', { name: /connect/i })
     
     expect(button).toHaveAttribute('aria-label')

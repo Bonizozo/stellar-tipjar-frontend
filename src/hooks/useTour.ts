@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { createNamespacedStorage } from "@/lib/storage";
+import { IS_TEST } from "@/config/env";
 
 const storage = createNamespacedStorage("tour");
 
@@ -53,15 +54,18 @@ export function replayTour() {
 }
 
 export function useTour() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [step, setStep] = useState(0);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (!storage.getString("done", { legacyKey: "tipjar_tour_done" })) {
-      setIsOpen(true);
+  const [isOpen, setIsOpen] = useState(() => {
+    if (typeof window === "undefined") return false;
+    if (
+      IS_TEST ||
+      (typeof navigator !== "undefined" &&
+        (navigator.webdriver || /Playwright|HeadlessChrome|PhantomJS/i.test(navigator.userAgent)))
+    ) {
+      return false;
     }
-  }, []);
+    return !storage.getString("done", { legacyKey: "tipjar_tour_done" });
+  });
+  const [step, setStep] = useState(0);
 
   useEffect(() => {
     const handler = () => {

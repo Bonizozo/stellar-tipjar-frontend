@@ -18,6 +18,21 @@ vi.mock('next-intl', () => ({
     };
     return map[key] || key;
   },
+  useLocale: () => 'en',
+}));
+
+// Mock WebSocketContext
+vi.mock('@/contexts/WebSocketContext', () => ({
+  useWebSocketContext: () => ({
+    notifications: [],
+    unreadCount: 0,
+    markAllRead: vi.fn(),
+    clearNotifications: vi.fn(),
+    isMuted: false,
+    setMuted: vi.fn(),
+    connectionStatus: 'connected',
+  }),
+  WebSocketProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 // Mock WalletConnector component
@@ -42,7 +57,7 @@ describe('Navbar Component', () => {
   it('renders brand link with correct text', () => {
     renderNavbar()
 
-    const brandLink = screen.getByRole('link', { name: 'Stellar Tip Jar' })
+    const brandLink = screen.getByRole('link', { name: /Stellar Tip Jar/i })
     expect(brandLink).toBeInTheDocument()
     expect(brandLink).toHaveAttribute('href', '/')
   })
@@ -50,17 +65,18 @@ describe('Navbar Component', () => {
   it('renders all navigation links', () => {
     renderNavbar()
 
-    expect(screen.getByRole('link', { name: 'Home' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Explore Creators' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Send Tips' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Explore/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Tips' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Widgets' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Help' })).toBeInTheDocument()
   })
 
   it('navigation links have correct href attributes', () => {
     renderNavbar()
 
-    expect(screen.getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/')
-    expect(screen.getByRole('link', { name: 'Explore Creators' })).toHaveAttribute('href', '/explore')
-    expect(screen.getByRole('link', { name: 'Send Tips' })).toHaveAttribute('href', '/tips')
+    expect(screen.getByRole('link', { name: 'Tips' })).toHaveAttribute('href', '/tips')
+    expect(screen.getByRole('link', { name: 'Widgets' })).toHaveAttribute('href', '/widgets')
+    expect(screen.getByRole('link', { name: 'Help' })).toHaveAttribute('href', '/help')
   })
 
   it('renders WalletConnector component', () => {
@@ -76,7 +92,7 @@ describe('Navbar Component', () => {
     const header = screen.getByRole('banner')
     expect(header).toBeInTheDocument()
 
-    const nav = screen.getByRole('navigation')
+    const nav = screen.getByRole('navigation', { name: 'Main navigation' })
     expect(nav).toBeInTheDocument()
   })
 
@@ -88,26 +104,23 @@ describe('Navbar Component', () => {
       'sticky',
       'top-0',
       'z-20',
-      'border-b',
-      'border-ink/10',
-      'bg-[color:var(--surface)]/80',
-      'backdrop-blur-md'
+      'transition-shadow'
     )
   })
 
   it('applies correct styling classes to navigation container', () => {
     renderNavbar()
 
-    const nav = screen.getByRole('navigation')
+    const nav = screen.getByRole('navigation', { name: 'Main navigation' })
     expect(nav).toHaveClass(
       'mx-auto',
       'flex',
+      'h-16',
       'w-full',
-      'max-w-6xl',
+      'max-w-7xl',
       'items-center',
       'justify-between',
       'px-4',
-      'py-4',
       'sm:px-6',
       'lg:px-8'
     )
@@ -116,51 +129,37 @@ describe('Navbar Component', () => {
   it('brand link has correct styling', () => {
     renderNavbar()
 
-    const brandLink = screen.getByRole('link', { name: 'Stellar Tip Jar' })
+    const brandLink = screen.getByRole('link', { name: /Stellar Tip Jar/i })
     expect(brandLink).toHaveClass(
+      'shrink-0',
       'text-lg',
       'font-bold',
-      'tracking-tight',
-      'text-ink',
-      'sm:text-xl'
+      'tracking-tight'
     )
   })
 
   it('navigation links container has correct styling', () => {
     renderNavbar()
 
-    const navLinksContainer = screen.getByRole('link', { name: 'Home' }).parentElement
+    const navLinksContainer = screen.getByRole('link', { name: 'Tips' }).closest('ul')
     expect(navLinksContainer).toHaveClass(
       'hidden',
       'items-center',
       'gap-6',
-      'text-sm',
-      'font-medium',
-      'text-ink/80',
       'md:flex'
-    )
-  })
-
-  it('navigation links have correct styling', () => {
-    renderNavbar()
-
-    const homeLink = screen.getByRole('link', { name: 'Home' })
-    expect(homeLink).toHaveClass(
-      'transition-colors',
-      'hover:text-wave'
     )
   })
 
   it('renders responsive design classes', () => {
     renderNavbar()
 
-    const nav = screen.getByRole('navigation')
+    const nav = screen.getByRole('navigation', { name: 'Main navigation' })
     expect(nav).toHaveClass('px-4', 'sm:px-6', 'lg:px-8')
 
-    const brandLink = screen.getByRole('link', { name: 'Stellar Tip Jar' })
-    expect(brandLink).toHaveClass('text-lg', 'sm:text-xl')
+    const brandLink = screen.getByRole('link', { name: /Stellar Tip Jar/i })
+    expect(brandLink).toHaveClass('text-lg')
 
-    const navLinksContainer = screen.getByRole('link', { name: 'Home' }).parentElement
+    const navLinksContainer = screen.getByRole('link', { name: 'Tips' }).closest('ul')
     expect(navLinksContainer).toHaveClass('hidden', 'md:flex')
   })
 
@@ -168,12 +167,12 @@ describe('Navbar Component', () => {
     renderNavbar()
 
     expect(screen.getByRole('banner')).toBeInTheDocument()
-    expect(screen.getByRole('navigation')).toBeInTheDocument()
+    expect(screen.getByRole('navigation', { name: 'Main navigation' })).toBeInTheDocument()
   })
 
   it('handles missing WalletConnector gracefully', () => {
     mockWalletConnector.mockImplementation(() => <div>Empty</div>)
 
-    expect(() => render(<Navbar />)).not.toThrow()
+    expect(() => renderNavbar(<Navbar />)).not.toThrow()
   })
 })

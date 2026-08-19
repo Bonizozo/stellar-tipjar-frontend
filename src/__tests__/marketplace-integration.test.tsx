@@ -1,17 +1,16 @@
 import { describe, it, expect } from "vitest";
 
 describe("Marketplace Integration", () => {
-  it("should have all required types exported", () => {
-    // Test that types can be imported
-    const types = require("@/types/marketplace");
+  it("should have all required types exported", async () => {
+    const types = await import("@/types/marketplace");
     
     expect(types).toBeDefined();
     expect(typeof types).toBe("object");
   });
 
-  it("should have marketplace hooks available", () => {
-    const { useMarketplace } = require("@/hooks/useMarketplace");
-    const { useCreatorMarketplace } = require("@/hooks/useCreatorMarketplace");
+  it("should have marketplace hooks available", async () => {
+    const { useMarketplace } = await import("@/hooks/useMarketplace");
+    const { useCreatorMarketplace } = await import("@/hooks/useCreatorMarketplace");
     
     expect(useMarketplace).toBeDefined();
     expect(typeof useMarketplace).toBe("function");
@@ -19,22 +18,21 @@ describe("Marketplace Integration", () => {
     expect(typeof useCreatorMarketplace).toBe("function");
   });
 
-  it("should have all marketplace components available", () => {
-    const components = [
-      "@/components/marketplace/CreatorStoreCard",
-      "@/components/marketplace/MarketplaceFilters",
-      "@/components/marketplace/ProductListingForm",
-      "@/components/marketplace/CheckoutFlow",
-      "@/components/marketplace/ShippingAddressForm",
-      "@/components/marketplace/PaymentMethod",
-      "@/components/marketplace/OrderSummary",
-      "@/components/marketplace/OrderManagement",
-      "@/components/marketplace/OrderDetailsModal",
-      "@/components/marketplace/DigitalDelivery",
-    ];
+  it("should have all marketplace components available", async () => {
+    const components = await Promise.all([
+      import("@/components/marketplace/CreatorStoreCard"),
+      import("@/components/marketplace/MarketplaceFilters"),
+      import("@/components/marketplace/ProductListingForm"),
+      import("@/components/marketplace/CheckoutFlow"),
+      import("@/components/marketplace/ShippingAddressForm"),
+      import("@/components/marketplace/PaymentMethod"),
+      import("@/components/marketplace/OrderSummary"),
+      import("@/components/marketplace/OrderManagement"),
+      import("@/components/marketplace/OrderDetailsModal"),
+      import("@/components/marketplace/DigitalDelivery"),
+    ]);
 
-    components.forEach((componentPath) => {
-      const component = require(componentPath);
+    components.forEach((component) => {
       expect(component).toBeDefined();
     });
   });
