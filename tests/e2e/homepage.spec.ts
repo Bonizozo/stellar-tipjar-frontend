@@ -11,8 +11,8 @@ test.describe('Homepage', () => {
   })
 
   test('has working navigation links', async ({ page }) => {
-    await expect(page.getByRole('link', { name: /explore creators/i })).toBeVisible()
-    await expect(page.getByRole('link', { name: /send a tip/i })).toBeVisible()
+    await expect(page.getByRole('link', { name: /explore creators/i }).first()).toBeVisible()
+    await expect(page.getByRole('link', { name: /send a tip/i }).first()).toBeVisible()
   })
 
   test('navigates to explore page', async ({ page }) => {

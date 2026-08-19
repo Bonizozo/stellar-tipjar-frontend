@@ -35,5 +35,8 @@ pnpm-debug.log*
 /public/workbox-*.js.map
 /public/worker-*.js.map
 
-#logs
+# test coverage & reports
+/coverage
+/test-results
+/playwright-report
 
