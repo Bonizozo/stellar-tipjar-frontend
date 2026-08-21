@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
+import { Button } from "@/components/Button";
 import { useTour, TOUR_STEPS } from "@/hooks/useTour";
 
 interface TooltipPos {
@@ -137,12 +138,13 @@ export function ProductTour() {
           >
             Skip tour
           </button>
-          <button
+          <Button
             onClick={next}
-            className="rounded-lg bg-wave px-3 py-1.5 text-xs font-medium text-white hover:bg-wave/90 transition-colors"
+            size="xs"
+            className="rounded-lg font-medium"
           >
             {step + 1 < total ? "Next →" : "Done ✓"}
-          </button>
+          </Button>
         </div>
       </div>
     </>,
