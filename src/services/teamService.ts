@@ -261,9 +261,8 @@ export class TeamService {
       }
 
       const result = await response.json();
-      return (Array.isArray(result) ? result : result.teams || []).map((team: any) =>
-        teamProfileSchema.parse(team)
-      );
+      const teams: unknown[] = Array.isArray(result) ? result : result.teams || [];
+      return teams.map((team: unknown) => teamProfileSchema.parse(team));
     } catch (error) {
       console.error("Error listing user teams:", error);
       return [];
