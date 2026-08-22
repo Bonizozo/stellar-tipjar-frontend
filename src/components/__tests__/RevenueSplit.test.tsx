@@ -62,8 +62,8 @@ describe("RevenueSplit Component", () => {
       <RevenueSplit members={mockMembers} onUpdateSplit={handleUpdateSplit} totalSplit={80} />
     );
 
-    expect(screen.getByText(/incomplete/i)).toBeInTheDocument();
-    expect(screen.getByText(/20% remaining to allocate/i)).toBeInTheDocument();
+    expect(screen.getByText(/Incomplete/i)).toBeInTheDocument();
+    expect(screen.getByText(/20% remaining to allocate/)).toBeInTheDocument();
   });
 
   it("shows overflow warning when split exceeds 100%", () => {
@@ -72,8 +72,8 @@ describe("RevenueSplit Component", () => {
       <RevenueSplit members={mockMembers} onUpdateSplit={handleUpdateSplit} totalSplit={120} />
     );
 
-    expect(screen.getByText(/Splits exceed 100%/i)).toBeInTheDocument();
-    expect(screen.getByText(/Reduce splits to reach 100%/i)).toBeInTheDocument();
+    expect(screen.getByText(/Splits exceed 100%/)).toBeInTheDocument();
+    expect(screen.getByText(/Reduce splits to reach 100%/)).toBeInTheDocument();
   });
 
   it("calls onUpdateSplit when range input changes", async () => {
@@ -125,7 +125,9 @@ describe("RevenueSplit Component", () => {
       <RevenueSplit members={mockMembers} onUpdateSplit={handleUpdateSplit} totalSplit={100} />
     );
 
+    // The total split is displayed in the total indicator section
     expect(screen.getByText("100%")).toBeInTheDocument();
+    expect(screen.getByText("Total Split")).toBeInTheDocument();
   });
 
   it("disables controls when isLoading is true", () => {
@@ -153,15 +155,15 @@ describe("RevenueSplit Component", () => {
       <RevenueSplit members={mockMembers} onUpdateSplit={handleUpdateSplit} totalSplit={80} />
     );
 
-    let button = screen.getByRole("button", { name: /Configure Split to 100%/i });
-    expect(button).toBeDisabled();
+    const unbalancedButton = screen.getByRole("button", { name: /Configure Split to 100%/ });
+    expect(unbalancedButton).toBeDisabled();
 
     // Balanced
     rerender(
       <RevenueSplit members={mockMembers} onUpdateSplit={handleUpdateSplit} totalSplit={100} />
     );
 
-    button = screen.getByRole("button", { name: /✓ Revenue Split Configured/i });
-    expect(button).not.toBeDisabled();
+    const balancedButton = screen.getByRole("button", { name: /✓ Revenue Split Configured/ });
+    expect(balancedButton).not.toBeDisabled();
   });
 });
