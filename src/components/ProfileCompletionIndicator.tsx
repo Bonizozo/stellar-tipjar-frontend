@@ -62,6 +62,8 @@ export function ProfileCompletionIndicator() {
           </div>
           <motion.button
             onClick={() => setIsExpanded(!isExpanded)}
+            aria-label={isExpanded ? "Collapse profile completion details" : "Expand profile completion details"}
+            aria-expanded={isExpanded}
             className="rounded-lg p-2 hover:bg-ink/5 dark:hover:bg-canvas/5"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}

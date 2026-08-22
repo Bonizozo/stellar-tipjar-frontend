@@ -7,6 +7,7 @@
 
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
+import { useShallow } from "zustand/react/shallow";
 import { createZustandStorage } from "@/lib/storage";
 
 export interface ProfileField {
@@ -160,10 +161,10 @@ export const useCompletionPercentage = () =>
   useProfileCompletionStore((s) => s.getCompletionPercentage());
 
 export const useVisibleProfileFields = () =>
-  useProfileCompletionStore((s) => s.getVisibleFields());
+  useProfileCompletionStore(useShallow((s) => s.getVisibleFields()));
 
 export const useIncompleteFields = () =>
-  useProfileCompletionStore((s) => s.getIncompleteFields());
+  useProfileCompletionStore(useShallow((s) => s.getIncompleteFields()));
 
 export const useProfileFields = () =>
   useProfileCompletionStore((s) => s.fields);

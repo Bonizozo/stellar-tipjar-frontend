@@ -1,33 +1,43 @@
-import { describe, it, expect } from "vitest";
-import * as marketplaceTypes from "@/types/marketplace";
-import { useMarketplace } from "@/hooks/useMarketplace";
+import { describe, expect, expectTypeOf, it } from "vitest";
+
+import { CheckoutFlow } from "@/components/marketplace/CheckoutFlow";
+import { CreatorStoreCard } from "@/components/marketplace/CreatorStoreCard";
+import { DigitalDelivery } from "@/components/marketplace/DigitalDelivery";
+import { MarketplaceFilters } from "@/components/marketplace/MarketplaceFilters";
+import { OrderDetailsModal } from "@/components/marketplace/OrderDetailsModal";
+import { OrderManagement } from "@/components/marketplace/OrderManagement";
+import { OrderSummary } from "@/components/marketplace/OrderSummary";
+import { PaymentMethod } from "@/components/marketplace/PaymentMethod";
+import { ProductListingForm } from "@/components/marketplace/ProductListingForm";
+import { ShippingAddressForm } from "@/components/marketplace/ShippingAddressForm";
 import { useCreatorMarketplace } from "@/hooks/useCreatorMarketplace";
-import * as CreatorStoreCard from "@/components/marketplace/CreatorStoreCard";
-import * as MarketplaceFilters from "@/components/marketplace/MarketplaceFilters";
-import * as ProductListingForm from "@/components/marketplace/ProductListingForm";
-import * as CheckoutFlow from "@/components/marketplace/CheckoutFlow";
-import * as ShippingAddressForm from "@/components/marketplace/ShippingAddressForm";
-import * as PaymentMethod from "@/components/marketplace/PaymentMethod";
-import * as OrderSummary from "@/components/marketplace/OrderSummary";
-import * as OrderManagement from "@/components/marketplace/OrderManagement";
-import * as OrderDetailsModal from "@/components/marketplace/OrderDetailsModal";
-import * as DigitalDelivery from "@/components/marketplace/DigitalDelivery";
+import { useMarketplace } from "@/hooks/useMarketplace";
+import * as marketplaceTypes from "@/types/marketplace";
+import type {
+  DeliveryMethod,
+  OrderStatus,
+  ProductCategory,
+  ProductType,
+} from "@/types/marketplace";
 
 describe("Marketplace Integration", () => {
-  it("should have all required types exported", () => {
-    // Test that types can be imported
-    expect(marketplaceTypes).toBeDefined();
-    expect(typeof marketplaceTypes).toBe("object");
+  it("exports the marketplace type module", () => {
+    expect(marketplaceTypes).toBeTypeOf("object");
   });
 
-  it("should have marketplace hooks available", () => {
-    expect(useMarketplace).toBeDefined();
-    expect(typeof useMarketplace).toBe("function");
-    expect(useCreatorMarketplace).toBeDefined();
-    expect(typeof useCreatorMarketplace).toBe("function");
+  it("exports the marketplace domain types", () => {
+    expectTypeOf<ProductType>().toEqualTypeOf<"physical" | "digital" | "service">();
+    expectTypeOf<OrderStatus>().toMatchTypeOf<string>();
+    expectTypeOf<ProductCategory>().toMatchTypeOf<string>();
+    expectTypeOf<DeliveryMethod>().toMatchTypeOf<string>();
   });
 
-  it("should have all marketplace components available", () => {
+  it("exports the marketplace hooks", () => {
+    expect(useMarketplace).toBeTypeOf("function");
+    expect(useCreatorMarketplace).toBeTypeOf("function");
+  });
+
+  it("exports all marketplace components", () => {
     const components = [
       CreatorStoreCard,
       MarketplaceFilters,
@@ -41,56 +51,43 @@ describe("Marketplace Integration", () => {
       DigitalDelivery,
     ];
 
-    components.forEach((component) => {
-      expect(component).toBeDefined();
-    });
+    components.forEach((component) => expect(component).toBeTypeOf("function"));
   });
 
-  it("should validate product categories", () => {
-    const categories = [
-      "apparel",
-      "posters",
-      "bundles",
-      "accessories",
-      "digital",
-      "courses",
-      "ebooks",
-      "music",
-      "videos",
-      "consulting",
-      "coaching",
-    ];
-
-    categories.forEach((category) => {
-      expect(typeof category).toBe("string");
-      expect(category.length).toBeGreaterThan(0);
-    });
+  it.each([
+    "apparel",
+    "posters",
+    "bundles",
+    "accessories",
+    "digital",
+    "courses",
+    "ebooks",
+    "music",
+    "videos",
+    "consulting",
+    "coaching",
+  ] satisfies ProductCategory[])("accepts the %s product category", (category) => {
+    expect(category).toBeTypeOf("string");
   });
 
-  it("should validate order status workflow", () => {
-    const statuses = ["pending", "processing", "shipped", "delivered", "cancelled", "refunded"];
-
-    statuses.forEach((status) => {
-      expect(typeof status).toBe("string");
-      expect(status.length).toBeGreaterThan(0);
-    });
+  it.each([
+    "pending",
+    "processing",
+    "shipped",
+    "delivered",
+    "cancelled",
+    "refunded",
+  ] satisfies OrderStatus[])("accepts the %s order status", (status) => {
+    expect(status).toBeTypeOf("string");
   });
 
-  it("should validate product types", () => {
-    const types = ["physical", "digital", "service"];
+  it.each(["physical", "digital", "service"] satisfies ProductType[])(
+    "accepts the %s product type",
+    (type) => expect(type).toBeTypeOf("string"),
+  );
 
-    types.forEach((type) => {
-      expect(typeof type).toBe("string");
-      expect(type.length).toBeGreaterThan(0);
-    });
-  });
-
-  it("should validate delivery methods", () => {
-    const methods = ["shipping", "digital", "email"];
-
-    methods.forEach((method) => {
-      expect(typeof method).toBe("string");
-      expect(method.length).toBeGreaterThan(0);
-    });
-  });
+  it.each(["shipping", "digital", "email"] satisfies DeliveryMethod[])(
+    "accepts the %s delivery method",
+    (method) => expect(method).toBeTypeOf("string"),
+  );
 });

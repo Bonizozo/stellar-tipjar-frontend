@@ -140,7 +140,7 @@ function EmailPreferences() {
               <p className="text-sm font-medium text-ink">{label}</p>
               <p className="text-xs text-ink/50">{helper}</p>
             </div>
-            <Toggle id={`email-${key}`} label="" checked={prefs[key]} onChange={(e) => toggle(key)(e.target.checked)} />
+            <Toggle id={`email-${key}`} label="" aria-label={label} checked={prefs[key]} onChange={(e) => toggle(key)(e.target.checked)} />
           </div>
         ))}
       </div>
@@ -192,7 +192,7 @@ function PrivacySettings() {
               <p className="text-sm font-medium text-ink">{label}</p>
               <p className="text-xs text-ink/50">{helper}</p>
             </div>
-            <Toggle id={`privacy-${key}`} label="" checked={prefs[key]} onChange={(e) => toggle(key)(e.target.checked)} />
+            <Toggle id={`privacy-${key}`} label="" aria-label={label} checked={prefs[key]} onChange={(e) => toggle(key)(e.target.checked)} />
           </div>
         ))}
       </div>
@@ -230,6 +230,7 @@ function SecuritySettings() {
         <Toggle
           id="2fa"
           label=""
+          aria-label="Two-factor authentication"
           checked={twoFAEnabled}
           onChange={(e) => handle2FA(e.target.checked)}
           disabled={toggling}

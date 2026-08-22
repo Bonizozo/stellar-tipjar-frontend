@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
+import { Button } from "@/components/Button";
 import { useTour, TOUR_STEPS } from "@/hooks/useTour";
 
 interface TooltipPos {
@@ -105,7 +106,7 @@ export function ProductTour() {
         role="dialog"
         aria-modal="true"
         aria-label={`Tour step ${step + 1} of ${total}: ${currentStep.title}`}
-        className="fixed z-[9999] w-70 max-w-[calc(100vw-16px)] rounded-xl bg-white dark:bg-zinc-800 shadow-2xl border border-zinc-100 dark:border-zinc-700 p-4"
+        className="fixed z-[9999] w-70 max-w-[calc(100vw-16px)] rounded-xl border border-[var(--muted)] bg-[var(--surface)] p-4 shadow-2xl"
         style={{ top: pos.top, left: pos.left, width: 280 }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -123,22 +124,27 @@ export function ProductTour() {
           ))}
         </div>
 
-        <h3 className="text-sm font-semibold text-ink mb-1">{currentStep.title}</h3>
-        <p className="text-xs text-ink/60 mb-4 leading-relaxed">{currentStep.content}</p>
+        <h3 className="mb-1 text-sm font-semibold text-[var(--text-on-surface)]">
+          {currentStep.title}
+        </h3>
+        <p className="mb-4 text-xs leading-relaxed text-[var(--text-on-surface)]">
+          {currentStep.content}
+        </p>
 
         <div className="flex items-center justify-between gap-2">
           <button
             onClick={skip}
-            className="text-xs text-ink/40 hover:text-ink/70 transition-colors"
+            className="text-xs text-[var(--text-on-surface)] transition-opacity hover:opacity-80"
           >
             Skip tour
           </button>
-          <button
+          <Button
             onClick={next}
-            className="rounded-lg bg-wave px-3 py-1.5 text-xs font-medium text-white hover:bg-wave/90 transition-colors"
+            size="xs"
+            className="rounded-lg font-medium"
           >
             {step + 1 < total ? "Next →" : "Done ✓"}
-          </button>
+          </Button>
         </div>
       </div>
     </>,

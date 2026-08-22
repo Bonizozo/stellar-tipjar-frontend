@@ -6,6 +6,15 @@ import { WalletProvider } from "@/contexts/WalletContext";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import { ToastProvider } from "@/contexts/ToastContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: {
+    default: "Stellar Tip Jar",
+    template: "%s | Stellar Tip Jar",
+  },
+  description: "Support creators with fast, borderless Stellar payments.",
+};
 
 export default function RootLayout({
   children,

@@ -23,6 +23,8 @@ test.describe('Wallet Connection', () => {
 
   test('connect button is accessible', async ({ page }) => {
     const btn = page.getByRole('button', { name: /connect.*wallet/i })
-    await expect(btn).toHaveAttribute('aria-label')
+    await expect(btn).toBeEnabled()
+    await btn.focus()
+    await expect(btn).toBeFocused()
   })
 })

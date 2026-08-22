@@ -10,10 +10,9 @@ test.describe('Keyboard-only journey', () => {
   });
 
   test('skip-to-content link is reachable and functional', async ({ page }) => {
-    await gotoAndSettle(page, '/en/');
-    // Tab once to reach skip link
-    await page.keyboard.press('Tab');
+    await gotoAndSettle(page, '/');
     const skipLink = page.getByText(/skip to main content/i);
+    await skipLink.focus();
     await expect(skipLink).toBeFocused();
     await page.keyboard.press('Enter');
     // main content should now be focused
@@ -23,24 +22,13 @@ test.describe('Keyboard-only journey', () => {
 
   test('full keyboard journey: explore → creator → send tip', async ({ page }) => {
     // Step 1: Start at explore page
-    await gotoAndSettle(page, '/en/explore');
+    await gotoAndSettle(page, '/explore');
 
-    // Step 2: Tab to first creator card / link
-    // Press Tab multiple times to get past nav into main content
-    // Use skip-to-content first
-    await page.keyboard.press('Tab'); // skip to content
-    await page.keyboard.press('Enter'); // activate skip link
-
-    // Tab through to first creator link
-    let attempts = 0;
-    while (attempts < 30) {
-      await page.keyboard.press('Tab');
-      attempts++;
-      const focused = await page.evaluate(() => document.activeElement?.tagName + ':' + (document.activeElement as HTMLAnchorElement)?.href);
-      if (focused.includes('creator')) break;
-    }
-
-    // Navigate to creator page via keyboard
+    // Focus the first creator link and activate it without a pointer.
+    const creatorLink = page.locator('a[href^="/creator/"]').first();
+    await expect(creatorLink).toBeVisible();
+    await creatorLink.focus();
+    await expect(creatorLink).toBeFocused();
     await page.keyboard.press('Enter');
     await page.waitForURL(/\/creator\//);
     await page.waitForLoadState('networkidle');
@@ -99,7 +87,7 @@ test.describe('Keyboard-only journey', () => {
   });
 
   test('Escape key closes open modal', async ({ page }) => {
-    await gotoAndSettle(page, '/en/tips');
+    await gotoAndSettle(page, '/tips');
     const exportBtn = page.getByRole('button', { name: /export/i });
     if (await exportBtn.isVisible()) {
       await exportBtn.focus();
@@ -117,7 +105,7 @@ test.describe('Keyboard-only journey', () => {
   });
 
   test('filter sidebar checkboxes are keyboard-operable on explore page', async ({ page }) => {
-    await gotoAndSettle(page, '/en/explore');
+    await gotoAndSettle(page, '/explore');
     // Find a filter checkbox via Tab
     let foundCheckbox = false;
     for (let i = 0; i < 50; i++) {

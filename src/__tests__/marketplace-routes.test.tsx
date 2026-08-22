@@ -1,45 +1,42 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
+
+import {
+  GET as getOrder,
+  PATCH as patchOrder,
+} from "@/app/api/marketplace/orders/[orderId]/route";
+import {
+  GET as getOrders,
+  POST as createOrder,
+} from "@/app/api/marketplace/orders/route";
+import {
+  GET as getProducts,
+  POST as createProduct,
+} from "@/app/api/marketplace/products/route";
+import CreatorMarketplaceDashboard from "@/app/dashboard/marketplace/page";
+import CreateStorePage from "@/app/marketplace/create/page";
 import MarketplacePage from "@/app/marketplace/page";
-import CreatePage from "@/app/marketplace/create/page";
-import DashboardPage from "@/app/dashboard/marketplace/page";
-import * as productsRoute from "@/app/api/marketplace/products/route";
-import * as ordersRoute from "@/app/api/marketplace/orders/route";
-import * as orderDetailRoute from "@/app/api/marketplace/orders/[orderId]/route";
 
 describe("Marketplace Routes", () => {
-  it("should have marketplace page component", () => {
-    expect(MarketplacePage).toBeDefined();
-    expect(typeof MarketplacePage).toBe("function");
+  it.each([
+    ["marketplace", MarketplacePage],
+    ["create product", CreateStorePage],
+    ["creator dashboard", CreatorMarketplaceDashboard],
+  ])("exports the %s page", (_name, page) => {
+    expect(page).toBeTypeOf("function");
   });
 
-  it("should have create product page component", () => {
-    expect(CreatePage).toBeDefined();
-    expect(typeof CreatePage).toBe("function");
+  it("exports the products API handlers", () => {
+    expect(getProducts).toBeTypeOf("function");
+    expect(createProduct).toBeTypeOf("function");
   });
 
-  it("should have creator dashboard page component", () => {
-    expect(DashboardPage).toBeDefined();
-    expect(typeof DashboardPage).toBe("function");
+  it("exports the orders API handlers", () => {
+    expect(getOrders).toBeTypeOf("function");
+    expect(createOrder).toBeTypeOf("function");
   });
 
-  it("should have products API route", () => {
-    expect(productsRoute.GET).toBeDefined();
-    expect(productsRoute.POST).toBeDefined();
-    expect(typeof productsRoute.GET).toBe("function");
-    expect(typeof productsRoute.POST).toBe("function");
-  });
-
-  it("should have orders API route", () => {
-    expect(ordersRoute.GET).toBeDefined();
-    expect(ordersRoute.POST).toBeDefined();
-    expect(typeof ordersRoute.GET).toBe("function");
-    expect(typeof ordersRoute.POST).toBe("function");
-  });
-
-  it("should have order detail API route", () => {
-    expect(orderDetailRoute.GET).toBeDefined();
-    expect(orderDetailRoute.PATCH).toBeDefined();
-    expect(typeof orderDetailRoute.GET).toBe("function");
-    expect(typeof orderDetailRoute.PATCH).toBe("function");
+  it("exports the order-detail API handlers", () => {
+    expect(getOrder).toBeTypeOf("function");
+    expect(patchOrder).toBeTypeOf("function");
   });
 });
