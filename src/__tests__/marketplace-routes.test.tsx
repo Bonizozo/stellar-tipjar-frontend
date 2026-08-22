@@ -1,8 +1,17 @@
 import { describe, expect, it } from "vitest";
 
-import { GET as getOrder, PATCH as patchOrder } from "@/app/api/marketplace/orders/[orderId]/route";
-import { GET as getOrders, POST as createOrder } from "@/app/api/marketplace/orders/route";
-import { GET as getProducts, POST as createProduct } from "@/app/api/marketplace/products/route";
+import {
+  GET as getOrder,
+  PATCH as patchOrder,
+} from "@/app/api/marketplace/orders/[orderId]/route";
+import {
+  GET as getOrders,
+  POST as createOrder,
+} from "@/app/api/marketplace/orders/route";
+import {
+  GET as getProducts,
+  POST as createProduct,
+} from "@/app/api/marketplace/products/route";
 import CreatorMarketplaceDashboard from "@/app/dashboard/marketplace/page";
 import CreateStorePage from "@/app/marketplace/create/page";
 import MarketplacePage from "@/app/marketplace/page";

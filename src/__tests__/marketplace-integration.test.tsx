@@ -12,6 +12,7 @@ import { ProductListingForm } from "@/components/marketplace/ProductListingForm"
 import { ShippingAddressForm } from "@/components/marketplace/ShippingAddressForm";
 import { useCreatorMarketplace } from "@/hooks/useCreatorMarketplace";
 import { useMarketplace } from "@/hooks/useMarketplace";
+import * as marketplaceTypes from "@/types/marketplace";
 import type {
   DeliveryMethod,
   OrderStatus,
@@ -20,6 +21,10 @@ import type {
 } from "@/types/marketplace";
 
 describe("Marketplace Integration", () => {
+  it("exports the marketplace type module", () => {
+    expect(marketplaceTypes).toBeTypeOf("object");
+  });
+
   it("exports the marketplace domain types", () => {
     expectTypeOf<ProductType>().toEqualTypeOf<"physical" | "digital" | "service">();
     expectTypeOf<OrderStatus>().toMatchTypeOf<string>();
