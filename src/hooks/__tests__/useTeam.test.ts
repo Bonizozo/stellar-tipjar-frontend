@@ -57,8 +57,8 @@ describe("useTeam Hook", () => {
 
     act(() => {
       result.current.addMember({ name: "Bob", email: "bob@example.com", split: 50 });
-      memberId = result.current.team.members[0].id;
     });
+    memberId = result.current.team.members[0].id;
 
     expect(result.current.team.members).toHaveLength(1);
 
@@ -76,8 +76,8 @@ describe("useTeam Hook", () => {
 
     act(() => {
       result.current.addMember({ name: "Charlie", email: "charlie@example.com", split: 50 });
-      memberId = result.current.team.members[0].id;
     });
+    memberId = result.current.team.members[0].id;
 
     act(() => {
       result.current.updateSplit(memberId!, 75);
@@ -93,8 +93,8 @@ describe("useTeam Hook", () => {
 
     act(() => {
       result.current.addMember({ name: "Dave", email: "dave@example.com", split: 50 });
-      memberId = result.current.team.members[0].id;
     });
+    memberId = result.current.team.members[0].id;
 
     act(() => {
       result.current.updateSplit(memberId!, 150);
@@ -154,8 +154,8 @@ describe("useTeam Hook", () => {
 
     act(() => {
       result.current.inviteMember("kate@example.com");
-      invitationId = result.current.team.invitations[0].id;
     });
+    invitationId = result.current.team.invitations[0].id;
 
     expect(result.current.pendingInvitations).toHaveLength(1);
 
@@ -186,8 +186,8 @@ describe("useTeam Hook", () => {
     act(() => {
       result.current.addMember({ name: "Olivia", split: 50 });
       result.current.addMember({ name: "Paul", split: 50 });
-      memberId = result.current.team.members[0].id;
     });
+    memberId = result.current.team.members[0].id;
 
     expect(result.current.stats.activeMemberCount).toBe(2);
 
@@ -261,6 +261,8 @@ describe("useTeam Hook", () => {
 
     act(() => {
       result.current.addMember({ name: "Sam", split: 50 });
+    });
+    act(() => {
       result.current.removeSplit(result.current.team.members[0].id);
     });
 
