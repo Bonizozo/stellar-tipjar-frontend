@@ -139,6 +139,9 @@ export const useVoiceCommands = (config: VoiceCommandConfig = {}) => {
         key: 'v',
         ctrl: true,
       });
+      if (isListeningRef.current) {
+        stopListening();
+      }
     };
   }, [startListening, stopListening, config.enabled]);
 
