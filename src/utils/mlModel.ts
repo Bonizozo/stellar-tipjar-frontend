@@ -2,11 +2,14 @@
  * mlModel.ts
  *
  * Privacy-first, client-side collaborative filtering model.
- * All preference data stays in localStorage — nothing is sent to a server.
+ * All preference data stays in namespaced storage — nothing is sent to a server.
  *
  * Algorithm: lightweight TF-IDF-style category affinity scoring combined
  * with interaction-weighted creator scoring.
  */
+
+import { createNamespacedStorage } from "@/lib/storage";
+import { z } from "zod";
 
 export interface InteractionEvent {
   type: "view" | "tip" | "search" | "click";
@@ -24,7 +27,8 @@ export interface AffinityProfile {
   lastUpdated: number;
 }
 
-const STORAGE_KEY = "stj_affinity_profile";
+const mlStorage = createNamespacedStorage("ml");
+
 const DECAY_HALF_LIFE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 /** Exponential time-decay weight so recent interactions matter more */
@@ -40,31 +44,33 @@ const EVENT_WEIGHTS: Record<InteractionEvent["type"], number> = {
   tip: 5,
 };
 
+const affinityProfileSchema = z.object({
+  categoryScores: z.record(z.string(), z.number()),
+  creatorInteractions: z.record(z.string(), z.number()),
+  lastUpdated: z.number(),
+});
+
 export function loadAffinityProfile(): AffinityProfile {
-  if (typeof window === "undefined") {
-    return { categoryScores: {}, creatorInteractions: {}, lastUpdated: 0 };
-  }
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw) as AffinityProfile;
-  } catch {
-    // corrupted storage — start fresh
-  }
-  return { categoryScores: {}, creatorInteractions: {}, lastUpdated: 0 };
+  const defaultProfile: AffinityProfile = {
+    categoryScores: {},
+    creatorInteractions: {},
+    lastUpdated: 0,
+  };
+
+  return (
+    mlStorage.get<AffinityProfile>("affinity", {
+      schema: affinityProfileSchema,
+      legacyKey: "stj_affinity_profile",
+    }) ?? defaultProfile
+  );
 }
 
 export function saveAffinityProfile(profile: AffinityProfile): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
-  } catch {
-    // storage quota exceeded — silently skip
-  }
+  mlStorage.set("affinity", profile);
 }
 
 export function clearAffinityProfile(): void {
-  if (typeof window === "undefined") return;
-  localStorage.removeItem(STORAGE_KEY);
+  mlStorage.remove("affinity");
 }
 
 /** Record a new interaction and update the stored affinity profile */
@@ -123,6 +129,122 @@ export function scoreCreators(
       if (catScore > 0.3) reason = `Matches your interest in ${c.category}`;
       else if (interactionScore > 0.2) reason = "You've interacted with them before";
       else if (popularityScore > 0.15) reason = "Trending creator";
+
+      return { ...c, score, reason };
+    })
+    .sort((a, b) => b.score - a.score);
+}
+
+// ─── Collaborative Filtering Extension (Issue #316) ──────────────────────────
+
+export type FeedbackType = "like" | "dislike" | "not_interested";
+
+export interface FeedbackEntry {
+  creatorUsername: string;
+  feedback: FeedbackType;
+  timestamp: number;
+}
+
+export function loadFeedback(): FeedbackEntry[] {
+  return mlStorage.get<FeedbackEntry[]>("feedback", {
+    schema: z.array(
+      z.object({
+        creatorUsername: z.string(),
+        feedback: z.enum(["like", "dislike", "not_interested"]),
+        timestamp: z.number(),
+      }),
+    ),
+    legacyKey: "stj_cf_feedback",
+  }) ?? [];
+}
+
+export function recordFeedback(entry: FeedbackEntry): void {
+  const existing = loadFeedback().filter(
+    (f) => f.creatorUsername !== entry.creatorUsername,
+  );
+  mlStorage.set("feedback", [...existing, entry]);
+}
+
+export function clearFeedback(): void {
+  mlStorage.remove("feedback");
+}
+
+/**
+ * Cosine similarity between two category-score vectors.
+ * Used to find creators whose audience profile is similar to the user's affinity.
+ */
+export function cosineSimilarity(
+  a: Record<string, number>,
+  b: Record<string, number>,
+): number {
+  const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
+  let dot = 0;
+  let magA = 0;
+  let magB = 0;
+  for (const k of keys) {
+    const va = a[k] ?? 0;
+    const vb = b[k] ?? 0;
+    dot += va * vb;
+    magA += va * va;
+    magB += vb * vb;
+  }
+  if (magA === 0 || magB === 0) return 0;
+  return dot / (Math.sqrt(magA) * Math.sqrt(magB));
+}
+
+/**
+ * Extended scoring that incorporates collaborative filtering similarity scores
+ * and applies feedback penalties/boosts.
+ */
+export function scoreCreatorsWithCF(
+  candidates: {
+    username: string;
+    displayName: string;
+    category: string;
+    followers: number;
+    /** Optional per-creator category affinity vector (from server/mock data) */
+    categoryVector?: Record<string, number>;
+  }[],
+  profile: AffinityProfile,
+): ScoredCreator[] {
+  const feedback = loadFeedback();
+  const feedbackMap = new Map(feedback.map((f) => [f.creatorUsername, f.feedback]));
+
+  const maxFollowers = Math.max(...candidates.map((c) => c.followers), 1);
+  const maxCat = Math.max(...Object.values(profile.categoryScores), 1);
+  const maxInteraction = Math.max(...Object.values(profile.creatorInteractions), 1);
+
+  // Normalise user profile vector
+  const normProfile: Record<string, number> = {};
+  for (const [k, v] of Object.entries(profile.categoryScores)) {
+    normProfile[k] = v / maxCat;
+  }
+
+  return candidates
+    .filter((c) => feedbackMap.get(c.username) !== "not_interested")
+    .map((c) => {
+      const catScore = ((profile.categoryScores[c.category] ?? 0) / maxCat) * 0.4;
+      const interactionScore =
+        ((profile.creatorInteractions[c.username] ?? 0) / maxInteraction) * 0.25;
+      const popularityScore = (c.followers / maxFollowers) * 0.15;
+
+      // Collaborative filtering: cosine similarity between user affinity and creator vector
+      const cfScore = c.categoryVector
+        ? cosineSimilarity(normProfile, c.categoryVector) * 0.2
+        : 0;
+
+      // Feedback adjustment
+      const fb = feedbackMap.get(c.username);
+      const feedbackBoost = fb === "like" ? 0.15 : fb === "dislike" ? -0.3 : 0;
+
+      const score = catScore + interactionScore + popularityScore + cfScore + feedbackBoost;
+
+      let reason = "Popular in the community";
+      if (cfScore > 0.1) reason = "Similar to creators you enjoy";
+      else if (catScore > 0.25) reason = `Matches your interest in ${c.category}`;
+      else if (interactionScore > 0.15) reason = "You've interacted with them before";
+      else if (popularityScore > 0.12) reason = "Trending creator";
+      if (fb === "like") reason += " · You liked this creator";
 
       return { ...c, score, reason };
     })

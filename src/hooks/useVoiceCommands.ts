@@ -1,157 +1,144 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
-import { speechRecognition, SpeechRecognitionResult } from '@/utils/speechRecognition';
-import { keyboardShortcutsManager } from '@/utils/keyboardShortcuts';
+'use client';
 
-export interface VoiceCommandConfig {
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import type { Route } from 'next';
+
+export interface UseVoiceCommandsOptions {
+  lang?: string;
+  onTip?: (amount?: number) => void;
   enabled?: boolean;
-  language?: string;
-  commands?: Map<string, () => void>;
 }
 
-export interface VoiceCommandState {
+export interface UseVoiceCommandsResult {
   isListening: boolean;
   isSpeaking: boolean;
   transcript: string;
   confidence: number;
   error: string | null;
+  startListening: () => void;
+  stopListening: () => void;
+  speak: (text: string) => void;
+  isSupported: boolean;
 }
 
-export const useVoiceCommands = (config: VoiceCommandConfig = {}) => {
-  const [state, setState] = useState<VoiceCommandState>({
-    isListening: false,
-    isSpeaking: false,
-    transcript: '',
-    confidence: 0,
-    error: null,
-  });
+export function useVoiceCommands({
+  lang,
+  onTip,
+  enabled = true,
+}: UseVoiceCommandsOptions = {}): UseVoiceCommandsResult {
+  const router = useRouter();
+  const resolvedLang =
+    lang ?? (typeof navigator !== 'undefined' ? navigator.language : 'en-US');
 
-  const commandsRef = useRef<Map<string, () => void>>(config.commands || new Map());
-  const isListeningRef = useRef(false);
+  const SpeechRecognitionCtor =
+    typeof window !== 'undefined'
+      ? (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition
+      : null;
 
-  const handleVoiceResult = useCallback((result: SpeechRecognitionResult) => {
-    setState((prev) => ({
-      ...prev,
-      transcript: result.transcript,
-      confidence: result.confidence,
-      error: null,
-    }));
+  const isSupported = Boolean(SpeechRecognitionCtor);
 
-    if (result.isFinal) {
-      // Check if the transcript matches any registered commands
-      commandsRef.current.forEach((callback, command) => {
-        if (
-          result.transcript.includes(command.toLowerCase()) ||
-          result.transcript.startsWith(command.toLowerCase())
-        ) {
-          callback();
+  const [isListening, setIsListening] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [transcript, setTranscript] = useState("");
+  const [confidence, setConfidence] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+
+  const recognitionRef = useRef<any>(null);
+
+  const speak = useCallback((text: string) => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = resolvedLang;
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+    window.speechSynthesis.speak(utterance);
+  }, [resolvedLang]);
+
+  const handleResult = useCallback(
+    (event: any) => {
+      const resultsLen = event.results.length;
+      const lastResult = event.results[resultsLen - 1];
+      const text: string = lastResult[0].transcript.toLowerCase().trim();
+      const conf: number = lastResult[0].confidence;
+      setTranscript(text);
+      setConfidence(conf);
+      setError(null);
+
+      if (text.includes('go home') || text.includes('navigate home')) {
+        speak('Navigating home');
+        router.push('/' as Route);
+      } else if (text.startsWith('tip') || text.includes('send tip')) {
+        const match = text.match(/tip\s+(\d+(?:\.\d+)?)/);
+        const amount = match ? parseFloat(match[1]) : undefined;
+        const feedback = amount != null ? `Sending tip of ${amount}` : 'Sending tip';
+        speak(feedback);
+        if (onTip) {
+          onTip(amount);
+        } else {
+          router.push('/tips' as Route);
         }
-      });
-    }
-  }, []);
+      } else if (text.startsWith('go to ')) {
+        const page = text.replace('go to ', '').trim();
+        speak(`Navigating to ${page}`);
+        router.push(`/${page}` as Route);
+      } else if (text.includes('stop listening')) {
+        speak('Stopping');
+        recognitionRef.current?.stop();
+      } else {
+        speak('Command not recognized');
+      }
+    },
+    [router, onTip, speak],
+  );
 
-  const handleVoiceError = useCallback((error: string) => {
-    setState((prev) => ({
-      ...prev,
-      error,
-      isListening: false,
-    }));
-    isListeningRef.current = false;
+  const stopListening = useCallback(() => {
+    recognitionRef.current?.abort();
+    setIsListening(false);
   }, []);
 
   const startListening = useCallback(() => {
-    if (!speechRecognition.isSupported()) {
-      setState((prev) => ({
-        ...prev,
-        error: 'Voice commands not supported in your browser',
-      }));
-      return;
-    }
+    if (!enabled || !isSupported || !SpeechRecognitionCtor) return;
 
-    isListeningRef.current = true;
-    setState((prev) => ({
-      ...prev,
-      isListening: true,
-      error: null,
-      transcript: '',
-    }));
+    setError(null);
+    const recognition = new SpeechRecognitionCtor();
+    recognition.lang = resolvedLang;
+    recognition.continuous = false;
+    recognition.interimResults = false;
 
-    speechRecognition.startListening(
-      handleVoiceResult,
-      handleVoiceError,
-      {
-        language: config.language || 'en-US',
-        continuous: true,
-        interimResults: true,
-      }
-    );
-  }, [config.language, handleVoiceResult, handleVoiceError]);
+    recognition.onresult = handleResult;
+    recognition.onend = () => setIsListening(false);
+    recognition.onerror = (event: any) => {
+      setIsListening(false);
+      setError(event.error || 'Speech recognition error');
+    };
 
-  const stopListening = useCallback(() => {
-    isListeningRef.current = false;
-    speechRecognition.stopListening();
-    setState((prev) => ({
-      ...prev,
-      isListening: false,
-    }));
-  }, []);
+    recognitionRef.current = recognition;
+    recognition.start();
+    setIsListening(true);
+  }, [enabled, isSupported, SpeechRecognitionCtor, resolvedLang, handleResult]);
 
-  const speak = useCallback((text: string, onComplete?: () => void) => {
-    setState((prev) => ({
-      ...prev,
-      isSpeaking: true,
-    }));
-
-    speechRecognition.speak(text, () => {
-      setState((prev) => ({
-        ...prev,
-        isSpeaking: false,
-      }));
-      onComplete?.();
-    });
-  }, []);
-
-  const registerCommand = useCallback((command: string, callback: () => void) => {
-    commandsRef.current.set(command.toLowerCase(), callback);
-  }, []);
-
-  const unregisterCommand = useCallback((command: string) => {
-    commandsRef.current.delete(command.toLowerCase());
-  }, []);
-
-  // Set up keyboard shortcut for voice toggle
+  // Cleanup on unmount
   useEffect(() => {
-    if (config.enabled !== false) {
-      keyboardShortcutsManager.register({
-        key: 'v',
-        ctrl: true,
-        callback: () => {
-          if (isListeningRef.current) {
-            stopListening();
-          } else {
-            startListening();
-          }
-        },
-      });
-    }
-
     return () => {
-      keyboardShortcutsManager.unregister({
-        key: 'v',
-        ctrl: true,
-      });
-      if (isListeningRef.current) {
-        stopListening();
+      recognitionRef.current?.abort();
+      if (typeof window !== 'undefined' && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
       }
     };
-  }, [startListening, stopListening, config.enabled]);
+  }, []);
 
   return {
-    ...state,
+    isListening,
+    isSpeaking,
+    transcript,
+    confidence,
+    error,
     startListening,
     stopListening,
     speak,
-    registerCommand,
-    unregisterCommand,
-    isSupported: speechRecognition.isSupported(),
+    isSupported,
   };
-};
+}

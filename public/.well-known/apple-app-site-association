@@ -1,0 +1,20 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "TEAM_ID.com.stellartipjar.app",
+        "paths": [
+          "/creator/*",
+          "/tip/*",
+          "/tips",
+          "/explore",
+          "/widgets"
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": ["TEAM_ID.com.stellartipjar.app"]
+  }
+}

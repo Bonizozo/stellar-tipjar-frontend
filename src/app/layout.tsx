@@ -1,89 +1,26 @@
-import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
-
-import { InstallPrompt } from "@/components/InstallPrompt";
-import { Navbar } from "@/components/Navbar";
-import { PerformanceMonitor } from "@/components/PerformanceMonitor";
+// Root layout — minimal shell only.
+// Full document markup is handled by src/app/[locale]/layout.tsx via next-intl
+// locale routing; non-locale utility routes still need client providers.
 import { ReactQueryProvider } from "@/components/ReactQueryProvider";
-import { SkipToContent } from "@/components/SkipToContent";
-import { PageTransition } from "@/components/animations/PageTransition";
 import { WalletProvider } from "@/contexts/WalletContext";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
-import { WebSocketProvider } from "@/contexts/WebSocketContext";
 import { ToastProvider } from "@/contexts/ToastContext";
-import { ToastContainer } from "@/components/Toast";
-import { Footer } from "@/components/Footer";
-import { UpdatePrompt } from "@/components/UpdatePrompt";
-import { PWAInitializer } from "@/components/PWAInitializer";
-import "@/styles/globals.css";
-
-const inter = Inter({ subsets: ["latin"] });
-
-export const metadata: Metadata = {
-  title: "Stellar Tip Jar",
-  description: "Tip your favorite creators with Stellar assets.",
-  manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "Stellar Tip Jar",
-  },
-  formatDetection: {
-    telephone: false,
-  },
-  icons: {
-    icon: "/icons/icon-192x192.png",
-    apple: "/icons/icon-192x192.png",
-  },
-};
-
-export const viewport: Viewport = {
-  themeColor: "#8b5cf6",
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 1,
-};
+import { ThemeProvider } from "@/contexts/ThemeContext";
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
-        <SkipToContent />
-        <PerformanceMonitor />
-        <ThemeProvider>
-        <I18nProvider>
-        <CurrencyProvider>
+    <ThemeProvider>
+      <CurrencyProvider>
         <WalletProvider>
           <ReactQueryProvider>
-            <WebSocketProvider>
-              <ToastProvider>
-              <div className="min-h-screen flex flex-col">
-                <Navbar />
-                <main
-                  id="main-content"
-                  tabIndex={-1}
-                  className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8 focus:outline-none flex-1"
-                >
-                  <PageTransition>{children}</PageTransition>
-                </main>
-                <Footer />
-              </div>
-              <InstallPrompt />
-              <UpdatePrompt />
-              <PWAInitializer />
-              <ToastContainer />
-              </ToastProvider>
-            </WebSocketProvider>
+            <ToastProvider>{children}</ToastProvider>
           </ReactQueryProvider>
         </WalletProvider>
-        </CurrencyProvider>
-        </I18nProvider>
-        </ThemeProvider>
-      </body>
-    </html>
+      </CurrencyProvider>
+    </ThemeProvider>
   );
 }

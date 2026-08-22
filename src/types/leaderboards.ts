@@ -1,16 +1,24 @@
-export type Period = '24h' | '7d' | '30d' | 'all';
+export type TimeRange = "daily" | "weekly" | "monthly";
+export type Period = TimeRange; // Alias for compatibility
 
 export interface LeaderboardEntry {
   rank: number;
+  id: string;
   name: string;
-  metric: number;
-  change24h: number;
-  avatarUrl?: string;
+  avatar?: string;
+  totalAmount: string;
+  tipCount: number;
+  trend?: "up" | "down" | "stable";
+}
+
+export interface Leaderboard {
+  type: "creators" | "tippers" | "trending";
+  timeRange: TimeRange;
+  entries: LeaderboardEntry[];
+  updatedAt: Date;
 }
 
 export interface LeaderboardsResponse {
-  tippers: LeaderboardEntry[];
-  creators: LeaderboardEntry[];
-  biggest: LeaderboardEntry[];
+  leaderboards: Leaderboard[];
+  timestamp: Date;
 }
-

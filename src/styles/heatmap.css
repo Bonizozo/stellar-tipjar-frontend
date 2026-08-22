@@ -1,0 +1,148 @@
+:root {
+  --heat-bg: #0F172A;
+  --heat-card-bg: rgba(30, 41, 59, 0.5);
+  --heat-text: #F8FAFC;
+  --heat-text-muted: #94A3B8;
+  --heat-lvl-0: #1E293B;
+  --heat-lvl-1: #064E3B;
+  --heat-lvl-2: #065F46;
+  --heat-lvl-3: #059669;
+  --heat-lvl-4: #10B981;
+  --heat-primary: #38BDF8;
+}
+
+.heatmap-container {
+  background: var(--heat-bg);
+  color: var(--heat-text);
+  padding: 3rem;
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+}
+
+.heatmap-card {
+  background: var(--heat-card-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 24px;
+  padding: 2.5rem;
+  overflow-x: auto;
+}
+
+.heatmap-grid {
+  display: grid;
+  grid-template-rows: repeat(7, 12px);
+  grid-auto-flow: column;
+  grid-gap: 4px;
+  margin-top: 1rem;
+}
+
+.heat-cell {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.heat-cell:hover {
+  transform: scale(1.3);
+  z-index: 10;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.heat-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-8px);
+  background: #000;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 100;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.heat-cell:hover .heat-tooltip {
+  opacity: 1;
+}
+
+.heatmap-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.view-toggle {
+  display: flex;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 4px;
+  border-radius: 12px;
+}
+
+.toggle-btn {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  color: var(--heat-text-muted);
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.toggle-btn.active {
+  background: var(--heat-primary);
+  color: #000;
+}
+
+.heatmap-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.5rem;
+  font-size: 0.8rem;
+  color: var(--heat-text-muted);
+}
+
+.heat-legend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.legend-box {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+/* Color customization classes */
+.theme-blue {
+  --heat-lvl-1: #1E3A8A;
+  --heat-lvl-2: #1D4ED8;
+  --heat-lvl-3: #3B82F6;
+  --heat-lvl-4: #60A5FA;
+}
+
+.theme-purple {
+  --heat-lvl-1: #4C1D95;
+  --heat-lvl-2: #6D28D9;
+  --heat-lvl-3: #8B5CF6;
+  --heat-lvl-4: #A78BFA;
+}
+
+.theme-orange {
+  --heat-lvl-1: #7C2D12;
+  --heat-lvl-2: #9A3412;
+  --heat-lvl-3: #EA580C;
+  --heat-lvl-4: #FB923C;
+}

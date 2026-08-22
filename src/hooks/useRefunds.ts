@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { createNamespacedStorage } from "@/lib/storage";
+import { z } from "zod";
 
 export type RefundStatus = "pending" | "approved" | "denied" | "processed";
 
@@ -17,17 +19,21 @@ export interface RefundRequest {
   processedAt?: string;
 }
 
-const STORAGE_KEY = "stellar_tipjar_refunds";
+const storage = createNamespacedStorage("refunds");
 const GRACE_PERIOD_DAYS = 14;
 
-const parseRequests = (value: string | null): RefundRequest[] => {
-  if (!value) return [];
-  try {
-    return JSON.parse(value) as RefundRequest[];
-  } catch {
-    return [];
-  }
-};
+const refundRequestSchema = z.object({
+  id: z.string(),
+  tipId: z.string(),
+  amount: z.number(),
+  memo: z.string().optional(),
+  requestedAt: z.string(),
+  tipDate: z.string(),
+  status: z.enum(["pending", "approved", "denied", "processed"]),
+  creatorNote: z.string().optional(),
+  decisionAt: z.string().optional(),
+  processedAt: z.string().optional(),
+});
 
 const formatIso = (date = new Date()) => new Date(date).toISOString();
 
@@ -35,12 +41,15 @@ export function useRefunds() {
   const [refunds, setRefunds] = useState<RefundRequest[]>([]);
 
   useEffect(() => {
-    const stored = typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null;
-    setRefunds(parseRequests(stored));
+    const stored = storage.get<RefundRequest[]>("requests", {
+      schema: z.array(refundRequestSchema),
+      legacyKey: "stellar_tipjar_refunds",
+    });
+    setRefunds(stored ?? []);
   }, []);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(refunds));
+    storage.set("requests", refunds);
   }, [refunds]);
 
   const isInGracePeriod = useCallback((tipDate: string) => {

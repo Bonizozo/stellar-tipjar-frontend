@@ -9,8 +9,7 @@ import {
   type TeamStatistics,
 } from "@/schemas/teamSchema";
 import { TeamProfile, TeamMember } from "@/hooks/useTeam";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+import { API_BASE_URL } from "@/config/env";
 
 /**
  * Team service for communicating with the backend API
@@ -262,9 +261,8 @@ export class TeamService {
       }
 
       const result = await response.json();
-      return (Array.isArray(result) ? result : result.teams || []).map((team: any) =>
-        teamProfileSchema.parse(team)
-      );
+      const teams: unknown[] = Array.isArray(result) ? result : result.teams || [];
+      return teams.map((team: unknown) => teamProfileSchema.parse(team));
     } catch (error) {
       console.error("Error listing user teams:", error);
       return [];

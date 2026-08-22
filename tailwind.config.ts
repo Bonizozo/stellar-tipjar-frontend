@@ -95,6 +95,21 @@ const config: Config = {
           xl: "5rem",
         },
       },
+      animation: {
+        'spin-slow': 'spin 8s linear infinite',
+        'shimmer': 'shimmer 2.5s infinite linear',
+        'float': 'float 3s ease-in-out infinite',
+      },
+      keyframes: {
+        shimmer: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(100%)' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-10px)' },
+        }
+      }
     },
   },
   plugins: [],

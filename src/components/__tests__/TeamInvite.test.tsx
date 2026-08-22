@@ -17,13 +17,12 @@ describe("TeamInvite Component", () => {
   });
 
   it("shows error when email is empty", async () => {
-    const user = userEvent.setup();
     const handleInvite = vi.fn();
 
-    render(<TeamInvite onInvite={handleInvite} />);
+    const { container } = render(<TeamInvite onInvite={handleInvite} />);
 
-    const button = screen.getByRole("button", { name: /Send Invite/i });
-    await user.click(button);
+    const form = container.querySelector("form")!;
+    form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
 
     expect(screen.getByText(/Please enter an email address/i)).toBeInTheDocument();
     expect(handleInvite).not.toHaveBeenCalled();

@@ -1,16 +1,18 @@
-import { Horizon, Networks } from "@stellar/stellar-sdk";
+import { Horizon } from "@stellar/stellar-sdk";
 
-export const STELLAR_NETWORK = (process.env.NEXT_PUBLIC_STELLAR_NETWORK ?? "TESTNET").toUpperCase();
-export const STELLAR_HORIZON_URL = process.env.NEXT_PUBLIC_STELLAR_HORIZON_URL ?? 
-  (STELLAR_NETWORK === "PUBLIC" 
-    ? "https://horizon.stellar.org" 
-    : "https://horizon-testnet.stellar.org");
+import {
+  type StellarNetwork,
+  DEFAULT_NETWORK,
+  NETWORKS,
+} from "@/lib/wallet";
+
+export const STELLAR_NETWORK = DEFAULT_NETWORK;
+export const STELLAR_HORIZON_URL = NETWORKS[STELLAR_NETWORK].horizonUrl;
 
 export const stellarServer = new Horizon.Server(STELLAR_HORIZON_URL);
 
-export const getNetworkPassphrase = () => {
-  return STELLAR_NETWORK === "PUBLIC" ? Networks.PUBLIC : Networks.TESTNET;
-};
+export const getNetworkPassphrase = () =>
+  NETWORKS[STELLAR_NETWORK].passphrase;
 
 export const formatAddress = (address: string) => {
   if (!address) return "";

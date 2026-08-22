@@ -65,7 +65,7 @@ export function ExportModal({ tips, onClose }: Props) {
 
   const stamp = new Date().toISOString().split("T")[0];
 
-  const handleExport = () => {
+  const handleExport = async () => {
     if (filtered.length === 0) return;
 
     if (format === "csv") {
@@ -84,11 +84,11 @@ export function ExportModal({ tips, onClose }: Props) {
         `tips-${stamp}.csv`
       );
     } else if (format === "excel") {
-      exportToExcel(filtered, `tips-${stamp}.xlsx`);
+      await exportToExcel(filtered, `tips-${stamp}.xlsx`);
     } else if (format === "pdf") {
-      exportTipsPDF(filtered, `tips-${stamp}.pdf`);
+      await exportTipsPDF(filtered, `tips-${stamp}.pdf`);
     } else if (format === "tax-pdf") {
-      exportTaxReportPDF(filtered, taxYear, `tax-report-${taxYear}.pdf`);
+      await exportTaxReportPDF(filtered, taxYear, `tax-report-${taxYear}.pdf`);
     } else if (format === "tax-csv") {
       const s = buildTaxSummary(filtered, taxYear);
       const monthCols = [{ key: "month", label: "Month" }, { key: "count", label: "Tips" }, { key: "amountXLM", label: "Amount (XLM)" }];

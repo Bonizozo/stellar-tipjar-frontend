@@ -1,14 +1,13 @@
 "use client";
 
-import { FilterDropdown, type FilterOption } from '../FilterDropdown';
-
-type Period = '24h' | '7d' | '30d' | 'all';
+import { FilterDropdown, type FilterOption } from "../FilterDropdown";
+import type { Period } from "@/services/api";
 
 const periods: FilterOption[] = [
-  { value: '24h', label: '24 Hours' },
-  { value: '7d', label: '7 Days' },
-  { value: '30d', label: '30 Days' },
-  { value: 'all', label: 'All Time' },
+  { value: "24h", label: "24 Hours" },
+  { value: "7d", label: "7 Days" },
+  { value: "30d", label: "30 Days" },
+  { value: "all", label: "All Time" },
 ];
 
 interface TimeFilterProps {
@@ -27,4 +26,3 @@ export function TimeFilter({ value, onChange }: TimeFilterProps) {
     />
   );
 }
-

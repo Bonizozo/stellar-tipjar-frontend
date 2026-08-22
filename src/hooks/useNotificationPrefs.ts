@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { createNamespacedStorage } from "@/lib/storage";
+import { z } from "zod";
 
 // Notification channels
 export type NotificationChannel = "email" | "push" | "inApp";
@@ -40,7 +42,31 @@ export interface NotificationSettings {
   updatedAt: string;
 }
 
-const STORAGE_KEY = "stellar_tipjar_notification_settings";
+const storage = createNamespacedStorage("notifications");
+
+const channelPrefsSchema = z.object({
+  email: z.boolean(),
+  push: z.boolean(),
+  inApp: z.boolean(),
+});
+
+const settingsSchema = z.object({
+  categories: z.object({
+    tips: channelPrefsSchema,
+    comments: channelPrefsSchema,
+    followers: channelPrefsSchema,
+    messages: channelPrefsSchema,
+    updates: channelPrefsSchema,
+    promotions: channelPrefsSchema,
+  }),
+  frequency: z.object({
+    email: z.enum(["instant", "daily", "weekly", "never"]),
+    push: z.enum(["instant", "daily", "weekly", "never"]),
+    inApp: z.enum(["instant", "daily", "weekly", "never"]),
+  }),
+  unsubscribeToken: z.string().optional(),
+  updatedAt: z.string(),
+});
 
 const defaultChannelPrefs: ChannelPreferences = {
   email: true,
@@ -70,15 +96,16 @@ export function useNotificationPrefs() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Load from localStorage on mount
+  // Load from storage on mount
   useEffect(() => {
-    if (typeof window === "undefined") return;
     try {
       setIsLoading(true);
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw = storage.get<NotificationSettings>("hookSettings", {
+        schema: settingsSchema,
+        legacyKey: "stellar_tipjar_notification_settings",
+      });
       if (raw) {
-        const parsed = JSON.parse(raw) as NotificationSettings;
-        setSettings({ ...defaultSettings, ...parsed });
+        setSettings({ ...defaultSettings, ...raw });
       }
       setError(null);
     } catch (err) {
@@ -89,14 +116,10 @@ export function useNotificationPrefs() {
     }
   }, []);
 
-  // Persist to localStorage when settings change
+  // Persist to storage when settings change
   useEffect(() => {
-    if (typeof window === "undefined" || isLoading) return;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-    } catch (err) {
-      console.error("Failed to save notification preferences:", err);
-    }
+    if (isLoading) return;
+    storage.set("hookSettings", settings);
   }, [settings, isLoading]);
 
   // Update a specific channel preference for a category

@@ -2,7 +2,6 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
-import { Inter } from "next/font/google";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { InstallPrompt } from "@/components/InstallPrompt";
@@ -18,17 +17,18 @@ import { WebSocketProvider } from "@/contexts/WebSocketContext";
 import { ToastProvider } from "@/contexts/ToastContext";
 import { ToastContainer } from "@/components/Toast";
 import { Footer } from "@/components/Footer";
+import { ProductTour } from "@/components/ProductTour";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import "@/styles/globals.css";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export default async function LocaleLayout({
   children,
-  params: { locale }
+  params
 }: {
   children: React.ReactNode;
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
+  const { locale } = await params;
   // Ensure that the incoming `locale` is valid
   if (!routing.locales.includes(locale as any)) {
     notFound();
@@ -40,16 +40,36 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body className={inter.className}>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('stj:theme:theme') || localStorage.getItem('stellar-tipjar-theme') || localStorage.getItem('theme');
+                  if (!theme) {
+                    theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                  }
+                  if (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
+      <body>
         <SkipToContent />
         <PerformanceMonitor />
+        <ThemeProvider>
         <CurrencyProvider>
         <WalletProvider>
           <ReactQueryProvider>
-            <WebSocketProvider>
-              <ToastProvider>
+            <ToastProvider>
+              <WebSocketProvider>
                 <NextIntlClientProvider messages={messages}>
-                  <div className="min-h-screen flex flex-col">
+                  <div className="min-h-screen flex flex-col pb-16 md:pb-0">
                     <Navbar />
                     <main
                       id="main-content"
@@ -63,11 +83,13 @@ export default async function LocaleLayout({
                 </NextIntlClientProvider>
               <InstallPrompt />
               <ToastContainer />
-              </ToastProvider>
-            </WebSocketProvider>
+              <ProductTour />
+              </WebSocketProvider>
+            </ToastProvider>
           </ReactQueryProvider>
         </WalletProvider>
         </CurrencyProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

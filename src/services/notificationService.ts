@@ -3,6 +3,9 @@ import {
   type NotificationSettings,
   generateUnsubscribeToken,
 } from "@/schemas/notificationSchema";
+import { createNamespacedStorage } from "@/lib/storage";
+
+const storage = createNamespacedStorage("notifications");
 
 /**
  * Comprehensive service for managing user notification preferences
@@ -21,12 +24,12 @@ export const notificationService = {
       // const data = await response.json();
       // return notificationSettingsSchema.parse(data);
 
-      // For now, return from localStorage or defaults
-      const stored = localStorage.getItem("notificationSettings");
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        return notificationSettingsSchema.parse(parsed);
-      }
+      // For now, return from storage or defaults
+      const stored = storage.get("settings", {
+        schema: notificationSettingsSchema,
+        legacyKey: "notificationSettings",
+      });
+      if (stored) return stored;
 
       // Return default settings if none stored
       return notificationSettingsSchema.parse({
@@ -48,7 +51,7 @@ export const notificationService = {
       });
     } catch (error) {
       console.error("Failed to fetch notification settings:", error);
-      // Return default settings on any error (including corrupted localStorage)
+      // Return default settings on any error (including corrupted storage)
       return notificationSettingsSchema.parse({
         categories: {
           tips: { email: true, push: true, inApp: true },
@@ -89,8 +92,8 @@ export const notificationService = {
       // });
       // return await response.json();
 
-      // For now, save to localStorage
-      localStorage.setItem("notificationSettings", JSON.stringify(validated));
+      // For now, save to storage
+      storage.set("settings", validated);
 
       return validated;
     } catch (error) {

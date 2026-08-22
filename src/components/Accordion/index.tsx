@@ -71,3 +71,7 @@ export const Accordion: React.FC<AccordionProps> = ({
     </AccordionContext.Provider>
   );
 };
+
+export { AccordionItem } from "./AccordionItem";
+export { AccordionTrigger } from "./AccordionTrigger";
+export { AccordionContent } from "./AccordionContent";

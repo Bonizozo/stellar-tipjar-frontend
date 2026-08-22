@@ -33,6 +33,39 @@ export const buttonTapVariants = {
   tap: { scale: 0.96 },
 };
 
+/** Stagger container — children animate in sequence */
+export const staggerContainerVariants: Variants = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.07, delayChildren: 0.05 },
+  },
+};
+
+/** Child item for stagger lists */
+export const staggerItemVariants: Variants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } },
+};
+
+/** Bounce entrance */
+export const bounceVariants: Variants = {
+  hidden: { opacity: 0, scale: 0.8 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: { type: "spring", stiffness: 400, damping: 20 },
+  },
+  exit: { opacity: 0, scale: 0.8, transition: { duration: 0.15 } },
+};
+
+/** Skeleton shimmer keyframes (use with motion.div) */
+export const skeletonVariants: Variants = {
+  shimmer: {
+    backgroundPosition: ["200% 0", "-200% 0"],
+    transition: { duration: 1.5, repeat: Infinity, ease: "linear" },
+  },
+};
+
 /** Returns instant/no-op variants when reduced motion is preferred */
 export function reducedVariants<T extends Variants>(variants: T): T {
   return Object.fromEntries(

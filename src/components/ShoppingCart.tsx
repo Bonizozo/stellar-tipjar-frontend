@@ -8,6 +8,7 @@ import { CartItem } from '@/hooks/useStore';
 interface ShoppingCartProps {
   items: CartItem[];
   total: number;
+  totalXLM?: number;
   onUpdateQuantity: (productId: string, quantity: number) => void;
   onRemoveItem: (productId: string) => void;
   onCheckout: () => void;
@@ -18,6 +19,7 @@ interface ShoppingCartProps {
 export const ShoppingCart: React.FC<ShoppingCartProps> = ({
   items,
   total,
+  totalXLM,
   onUpdateQuantity,
   onRemoveItem,
   onCheckout,
@@ -176,7 +178,12 @@ export const ShoppingCart: React.FC<ShoppingCartProps> = ({
 
             <div className="border-t border-gray-200 dark:border-gray-600 pt-3 flex justify-between text-lg font-bold text-gray-900 dark:text-white">
               <span>Total:</span>
-              <span>${calculatedTotal.toFixed(2)}</span>
+              <div className="text-right">
+                <div>${calculatedTotal.toFixed(2)}</div>
+                {totalXLM !== undefined && (
+                  <div className="text-sm font-medium text-wave">{totalXLM} XLM</div>
+                )}
+              </div>
             </div>
           </div>
         )}

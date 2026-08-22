@@ -1,5 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { notificationService } from "@/services/notificationService";
+import type { NotificationSettings } from "@/schemas/notificationSchema";
+
+const SETTINGS_KEY = "stj:notifications:settings";
+
+function wrapEnv(data: unknown): string {
+  return JSON.stringify({ __v: 1, d: data });
+}
 
 describe("Notification Service", () => {
   beforeEach(() => {
@@ -31,7 +38,7 @@ describe("Notification Service", () => {
         updatedAt: new Date().toISOString(),
       };
 
-      localStorage.setItem("notificationSettings", JSON.stringify(testSettings));
+      localStorage.setItem(SETTINGS_KEY, wrapEnv(testSettings));
 
       const result = await notificationService.getNotificationSettings();
       expect(result).toEqual(testSettings);
@@ -74,7 +81,7 @@ describe("Notification Service", () => {
     });
 
     it("should handle corrupted localStorage gracefully", async () => {
-      localStorage.setItem("notificationSettings", "invalid json");
+      localStorage.setItem(SETTINGS_KEY, "invalid json");
 
       const result = await notificationService.getNotificationSettings();
 
@@ -85,7 +92,7 @@ describe("Notification Service", () => {
 
   describe("updateNotificationSettings", () => {
     it("should save settings to localStorage", async () => {
-      const settings = {
+      const settings: NotificationSettings = {
         categories: {
           tips: { email: false, push: false, inApp: false },
           comments: { email: true, push: true, inApp: true },
@@ -105,17 +112,18 @@ describe("Notification Service", () => {
 
       await notificationService.updateNotificationSettings(settings);
 
-      const stored = localStorage.getItem("notificationSettings");
+      const stored = localStorage.getItem(SETTINGS_KEY);
       expect(stored).toBeDefined();
 
       if (stored) {
         const parsed = JSON.parse(stored);
-        expect(parsed.categories.tips.email).toBe(false);
+        expect(parsed.__v).toBe(1);
+        expect(parsed.d.categories.tips.email).toBe(false);
       }
     });
 
     it("should return the updated settings", async () => {
-      const settings = {
+      const settings: NotificationSettings = {
         categories: {
           tips: { email: false, push: false, inApp: false },
           comments: { email: true, push: true, inApp: true },
@@ -253,12 +261,13 @@ describe("Notification Service", () => {
     it("should persist changes to localStorage", async () => {
       await notificationService.applyUnsubscribe("test-token", "tips", "email");
 
-      const stored = localStorage.getItem("notificationSettings");
+      const stored = localStorage.getItem(SETTINGS_KEY);
       expect(stored).toBeDefined();
 
       if (stored) {
         const parsed = JSON.parse(stored);
-        expect(parsed.categories.tips.email).toBe(false);
+        expect(parsed.__v).toBe(1);
+        expect(parsed.d.categories.tips.email).toBe(false);
       }
     });
   });
@@ -404,12 +413,13 @@ describe("Notification Service", () => {
     it("should persist to localStorage", async () => {
       await notificationService.resetToDefaults();
 
-      const stored = localStorage.getItem("notificationSettings");
+      const stored = localStorage.getItem(SETTINGS_KEY);
       expect(stored).toBeDefined();
 
       if (stored) {
         const parsed = JSON.parse(stored);
-        expect(parsed.categories.tips.email).toBe(true);
+        expect(parsed.__v).toBe(1);
+        expect(parsed.d.categories.tips.email).toBe(true);
       }
     });
   });
@@ -437,13 +447,13 @@ describe("Notification Service", () => {
         notificationService.getNotificationSettings(),
         notificationService.getCategories(),
         notificationService.getNotificationHistory(),
-      ];
+      ] as const;
 
-      const results = await Promise.all(promises);
+      const [settingsResult, categoriesResult, historyResult] = await Promise.all(promises);
 
-      expect(results[0].categories).toBeDefined();
-      expect(results[1]).toHaveLength(6);
-      expect(Array.isArray(results[2])).toBe(true);
+      expect(settingsResult.categories).toBeDefined();
+      expect(categoriesResult).toHaveLength(6);
+      expect(Array.isArray(historyResult)).toBe(true);
     });
   });
 });

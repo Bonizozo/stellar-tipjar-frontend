@@ -1,49 +1,30 @@
-"use client";
+import React, { InputHTMLAttributes, forwardRef } from 'react';
 
-import { FormField } from "@/components/forms/FormField";
-
-type Props = {
-  id: string;
+export interface ToggleProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
   label: string;
-  checked: boolean;
-  onChange: (checked: boolean) => void;
-  helperText?: string;
-  errorText?: string;
-  validationState?: "default" | "error" | "success" | "warning";
-  disabled?: boolean;
-};
-
-export function Toggle({
-  id,
-  label,
-  checked,
-  onChange,
-  helperText,
-  errorText,
-  validationState = "default",
-  disabled = false,
-}: Props) {
-  return (
-    <FormField
-      id={id}
-      label={label}
-      helperText={helperText}
-      errorText={errorText}
-      validationState={validationState}
-      disabled={disabled}
-    >
-      <button
-        type="button"
-        role="switch"
-        aria-checked={checked}
-        onClick={() => !disabled && onChange(!checked)}
-        disabled={disabled}
-        className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 ${checked ? "bg-purple-600" : "bg-slate-300 dark:bg-slate-500"} ${disabled ? "cursor-not-allowed opacity-50" : ""}`}
-      >
-        <span
-          className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-all ${checked ? "translate-x-5" : "translate-x-1"}`}
-        />
-      </button>
-    </FormField>
-  );
+  error?: string;
 }
+
+export const Toggle = forwardRef<HTMLInputElement, ToggleProps>(
+  ({ label, error, className = '', ...props }, ref) => {
+    return (
+      <div className={`flex flex-col ${className}`}>
+        <label className="flex items-center justify-between cursor-pointer">
+          <span className="text-gray-700 font-medium select-none">{label}</span>
+          <div className="relative">
+            <input
+              type="checkbox"
+              role="switch"
+              ref={ref}
+              className="sr-only peer"
+              {...props}
+            />
+            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-500/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-500 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed transition-colors"></div>
+          </div>
+        </label>
+        {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+      </div>
+    );
+  }
+);
+Toggle.displayName = 'Toggle';

@@ -31,6 +31,9 @@ export function Footer() {
             <Link href="/settings" className="block hover:text-white">
               Settings
             </Link>
+            <Link href="/help" className="block hover:text-white">
+              Help &amp; FAQ
+            </Link>
           </FooterColumn>
 
           <FooterColumn title="Social">

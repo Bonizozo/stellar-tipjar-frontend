@@ -11,9 +11,13 @@ import {
   TrashIcon,
   ChevronRightIcon,
   EnvelopeIcon,
+  SwatchIcon,
+  QuestionMarkCircleIcon,
 } from "@heroicons/react/24/outline";
 import { Toggle } from "@/components/forms/Toggle";
 import { Button } from "@/components/Button";
+import { SoundPreferences } from "@/components/SoundPreferences";
+import { replayTour } from "@/hooks/useTour";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -79,7 +83,7 @@ function NavLink({ href, icon: Icon, label, description }: {
 }) {
   return (
     <Link
-      href={href}
+      href={href as any}
       className="flex items-center justify-between rounded-xl p-3 hover:bg-ink/5 transition-colors group"
     >
       <div className="flex items-center gap-3">
@@ -136,7 +140,7 @@ function EmailPreferences() {
               <p className="text-sm font-medium text-ink">{label}</p>
               <p className="text-xs text-ink/50">{helper}</p>
             </div>
-            <Toggle id={`email-${key}`} label="" checked={prefs[key]} onChange={toggle(key)} />
+            <Toggle id={`email-${key}`} label="" checked={prefs[key]} onChange={(e) => toggle(key)(e.target.checked)} />
           </div>
         ))}
       </div>
@@ -188,7 +192,7 @@ function PrivacySettings() {
               <p className="text-sm font-medium text-ink">{label}</p>
               <p className="text-xs text-ink/50">{helper}</p>
             </div>
-            <Toggle id={`privacy-${key}`} label="" checked={prefs[key]} onChange={toggle(key)} />
+            <Toggle id={`privacy-${key}`} label="" checked={prefs[key]} onChange={(e) => toggle(key)(e.target.checked)} />
           </div>
         ))}
       </div>
@@ -227,7 +231,7 @@ function SecuritySettings() {
           id="2fa"
           label=""
           checked={twoFAEnabled}
-          onChange={handle2FA}
+          onChange={(e) => handle2FA(e.target.checked)}
           disabled={toggling}
         />
       </div>
@@ -301,15 +305,15 @@ const fadeUp = (delay: number) => ({
 
 export default function SettingsPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-ink/5 to-transparent">
+    <div data-tour="settings" className="min-h-screen bg-gradient-to-b from-ink/5 to-transparent">
       <div className="max-w-3xl mx-auto px-4 py-8 sm:px-6">
         {/* Header */}
         <motion.div {...fadeUp(0)} className="mb-8">
-          <h1 className="text-3xl font-bold text-ink">Settings</h1>
+          <h1 id="settings-heading" className="text-3xl font-bold text-ink">Settings</h1>
           <p className="text-ink/60 mt-1 text-sm">Manage your account and preferences</p>
         </motion.div>
 
-        <div className="space-y-6">
+        <section aria-labelledby="settings-heading" className="space-y-6">
           {/* Quick nav */}
           <motion.div {...fadeUp(0.05)}>
             <SectionCard>
@@ -333,6 +337,11 @@ export default function SettingsPage() {
             <EmailPreferences />
           </motion.div>
 
+          {/* Sound preferences (#325) */}
+          <motion.div {...fadeUp(0.12)}>
+            <SoundPreferences />
+          </motion.div>
+
           {/* Privacy */}
           <motion.div {...fadeUp(0.15)}>
             <PrivacySettings />
@@ -343,11 +352,24 @@ export default function SettingsPage() {
             <SecuritySettings />
           </motion.div>
 
+          {/* Help */}
+          <motion.div {...fadeUp(0.22)}>
+            <SectionCard>
+              <SectionTitle icon={QuestionMarkCircleIcon} title="Help" />
+              <p className="text-sm text-ink/60 mb-4">
+                Take a guided walkthrough of the key features in Stellar Tip Jar.
+              </p>
+              <Button size="sm" variant="outline" onClick={replayTour}>
+                Replay product tour
+              </Button>
+            </SectionCard>
+          </motion.div>
+
           {/* Danger zone */}
           <motion.div {...fadeUp(0.25)}>
             <DangerZone />
           </motion.div>
-        </div>
+        </section>
       </div>
     </div>
   );

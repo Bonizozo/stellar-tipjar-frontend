@@ -3,6 +3,9 @@
 import { useRouter, usePathname } from "next/navigation";
 import { useLocale } from "next-intl";
 import { useTransition } from "react";
+import { createNamespacedStorage } from "@/lib/storage";
+
+const storage = createNamespacedStorage("i18n");
 
 const languages = [
   { code: "en", name: "English", flag: "🇬🇧" },
@@ -19,12 +22,17 @@ export function LanguageSwitcher() {
   const [isPending, startTransition] = useTransition();
 
   const switchLanguage = (newLocale: string) => {
+    storage.setString("locale", newLocale);
+
     startTransition(() => {
-      // Remove current locale from pathname
+      // Strip existing locale prefix and prepend new one
       const segments = pathname.split("/");
-      segments.splice(1, 1); // Remove locale segment
-      const newPath = `/${newLocale}${segments.join("/")}`;
-      router.replace(newPath);
+      const knownLocales = languages.map((l) => l.code);
+      if (knownLocales.includes(segments[1])) {
+        segments.splice(1, 1);
+      }
+      const newPath = newLocale === "en" ? segments.join("/") || "/" : `/${newLocale}${segments.join("/")}`;
+      router.replace(newPath as any);
     });
   };
 

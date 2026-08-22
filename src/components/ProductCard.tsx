@@ -80,6 +80,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           <p className="text-2xl font-bold text-gray-900 dark:text-white">
             ${product.price.toFixed(2)}
           </p>
+          {'priceXLM' in product && (
+            <p className="text-sm text-wave font-medium mt-0.5">
+              {(product as any).priceXLM} XLM
+            </p>
+          )}
         </div>
 
         {/* Details Toggle */}

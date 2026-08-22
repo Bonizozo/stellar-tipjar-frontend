@@ -1,25 +1,39 @@
 {
   "common": {
-    "welcome": "Bienvenido a Stellar Tip Jar",
-    "tagline": "Apoya a tus creadores favoritos con activos Stellar.",
-    "loading": "Cargando...",
-    "error": "Algo salió mal.",
-    "save": "Guardar",
-    "cancel": "Cancelar",
-    "confirm": "Confirmar",
-    "close": "Cerrar",
-    "search": "Buscar",
-    "submit": "Enviar"
-  },
-  "nav": {
-    "brandName": "Stellar Tip Jar",
     "home": "Inicio",
-    "exploreCreators": "Explorar Creadores",
-    "sendTips": "Enviar Propinas",
-    "widgets": "Widgets"
+    "explore": "Explorar",
+    "profile": "Perfil",
+    "settings": "Configuración",
+    "logout": "Cerrar sesión",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito"
   },
-  "languageSwitcher": {
-    "label": "Idioma",
-    "selectLanguage": "Seleccionar idioma"
+  "tips": {
+    "sendTip": "Enviar Propina",
+    "receiveTip": "Recibir Propina",
+    "amount": "Cantidad",
+    "message": "Mensaje",
+    "confirm": "Confirmar Propina"
+  },
+  "portfolio": {
+    "gallery": "Galería de Portafolio",
+    "addItem": "Agregar Elemento",
+    "editItem": "Editar Elemento",
+    "deleteItem": "Eliminar Elemento",
+    "reorder": "Reordenar Elementos"
+  },
+  "receipt": {
+    "download": "Descargar Recibo",
+    "email": "Enviar Recibo por Correo",
+    "transactionId": "ID de Transacción"
+  },
+  "leaderboard": {
+    "topCreators": "Creadores Principales",
+    "topTippers": "Principales Propinadores",
+    "trending": "Tendencia",
+    "daily": "Diario",
+    "weekly": "Semanal",
+    "monthly": "Mensual"
   }
 }

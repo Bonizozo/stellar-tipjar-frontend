@@ -20,16 +20,21 @@ export function TagCloud({ tags, maxVisible = 12, onTagClick, className = "" }: 
       <h3 className="text-sm font-semibold uppercase tracking-wide text-wave/80">Popular Tags</h3>
       <div className="flex flex-wrap gap-2">
         {displayTags.map(({ tag, count }) => (
-          <TagBadge
+          <div
             key={tag}
-            tag={tag}
-            size="sm"
-            clickable={!!onTagClick}
-            onClick={onTagClick}
-            className={`font-normal text-xs shadow-sm [&:hover]:scale-[1.02] transition-all`}
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border border-wave/30 bg-wave/10 text-wave font-normal text-xs shadow-sm hover:scale-[1.02] transition-all cursor-pointer hover:border-wave hover:bg-wave/20"
+            onClick={() => onTagClick?.(tag)}
+            role={onTagClick ? "button" : undefined}
+            tabIndex={onTagClick ? 0 : undefined}
+            onKeyDown={(e) => {
+              if (onTagClick && (e.key === "Enter" || e.key === " ")) {
+                e.preventDefault();
+                onTagClick(tag);
+              }
+            }}
           >
-            {tag} ({count})
-          </TagBadge>
+            #{tag} ({count})
+          </div>
         ))}
       </div>
       {tags.length > maxVisible && (

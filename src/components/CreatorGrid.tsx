@@ -4,6 +4,9 @@ import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CreatorCard } from "@/components/CreatorCard";
 import { Creator } from "@/utils/creatorData";
+import { SkeletonLoader } from "@/components/animations/SkeletonLoader";
+import { staggerContainerVariants, reducedVariants } from "@/utils/animations";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 interface CreatorGridProps {
   creators: Creator[];
@@ -16,25 +19,16 @@ export function CreatorGrid({
   isLoading,
   trackInteraction,
 }: CreatorGridProps) {
+  const prefersReduced = useReducedMotion();
+  const container = prefersReduced
+    ? reducedVariants(staggerContainerVariants)
+    : staggerContainerVariants;
+
   if (isLoading && creators.length === 0) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
         {[...Array(6)].map((_, i) => (
-          <div
-            key={i}
-            className="h-[420px] rounded-3xl bg-ink/5 animate-pulse border border-ink/5"
-          >
-            <div className="h-24 bg-ink/5 rounded-t-3xl" />
-            <div className="flex flex-col items-center px-6 -mt-12">
-              <div className="h-24 w-24 rounded-full bg-ink/10 border-4 border-[color:var(--surface)] mb-4" />
-              <div className="h-4 w-32 bg-ink/10 rounded mb-2" />
-              <div className="h-6 w-48 bg-ink/10 rounded mb-1" />
-              <div className="h-4 w-24 bg-ink/10 rounded mb-8" />
-              <div className="h-4 w-full bg-ink/10 rounded mb-2" />
-              <div className="h-4 w-2/3 bg-ink/10 rounded mb-8" />
-              <div className="w-full h-12 bg-ink/5 rounded-2xl" />
-            </div>
-          </div>
+          <SkeletonLoader key={i} variant="card" />
         ))}
       </div>
     );
@@ -87,7 +81,12 @@ export function CreatorGrid({
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+    <motion.div
+      className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8"
+      variants={container}
+      initial="hidden"
+      animate="visible"
+    >
       <AnimatePresence mode="popLayout">
         {creators.map((creator) => (
           <CreatorCard
@@ -97,6 +96,6 @@ export function CreatorGrid({
           />
         ))}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 }

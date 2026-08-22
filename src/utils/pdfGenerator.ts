@@ -1,12 +1,13 @@
-import { jsPDF } from "jspdf";
 import QRCode from "qrcode";
 import type { Tip } from "@/hooks/queries/useTips";
 import { buildTaxSummary } from "./taxReport";
+import { loadJsPDF } from "@/lib/pdf/loadJsPdf";
 
 const STELLAR_EXPLORER_URL = "https://stellar.expert/explorer/public/tx";
 
 export async function generateReceiptPDF(tip: Tip): Promise<void> {
-  const doc = new jsPDF();
+  const JsPDF = await loadJsPDF();
+  const doc = new JsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
 
   doc.setFontSize(20);
@@ -94,8 +95,9 @@ export async function generateReceiptPDF(tip: Tip): Promise<void> {
   doc.save(`tip-receipt-${tip.id}-${timestamp}.pdf`);
 }
 
-export function exportTipsPDF(tips: Tip[], filename: string): void {
-  const doc = new jsPDF();
+export async function exportTipsPDF(tips: Tip[], filename: string): Promise<void> {
+  const JsPDF = await loadJsPDF();
+  const doc = new JsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 20;
@@ -143,9 +145,10 @@ export function exportTipsPDF(tips: Tip[], filename: string): void {
   doc.save(filename);
 }
 
-export function exportTaxReportPDF(tips: Tip[], year: number, filename: string): void {
+export async function exportTaxReportPDF(tips: Tip[], year: number, filename: string): Promise<void> {
   const summary = buildTaxSummary(tips, year);
-  const doc = new jsPDF();
+  const JsPDF = await loadJsPDF();
+  const doc = new JsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 20;
   let y = 30;

@@ -45,7 +45,7 @@ export class WebSocketClient {
         };
         
         this.ws.onerror = (error) => {
-          console.error('WebSocket error:', error);
+          // Suppress verbose error — connection failure is handled via onclose/reconnect
           reject(error);
         };
         

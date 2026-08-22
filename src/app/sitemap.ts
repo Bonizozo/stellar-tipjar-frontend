@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
+import { SITE_BASE_URL } from "@/config/env";
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://stellar-tipjar.app";
+const BASE_URL = SITE_BASE_URL;
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [

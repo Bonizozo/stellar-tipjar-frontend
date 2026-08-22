@@ -6,8 +6,10 @@ import { useVerification } from '@/hooks/useVerification';
 import { Button } from '@/components/Button';
 import Link from 'next/link';
 import { generateAvatarUrl } from '@/utils/imageUtils';
+import { AvatarImage } from '@/components/OptimizedImage';
 import { useCreatorProfile } from '@/hooks/queries/useCreatorProfile';
-import { useWallet } from '@/contexts/WalletContext';
+import { useWallet } from '@/hooks/useWallet';
+import { WalletConnector } from '@/components/WalletConnector';
 
 export default function VerifyPage() {
   const { status, isLoading, isVerified } = useVerification();
@@ -49,7 +51,7 @@ export default function VerifyPage() {
             Verification requests require a connected Stellar wallet.
           </p>
         </div>
-        <WalletConnectButton /> {/* Assume exists */}
+        <WalletConnector />
       </div>
     );
   }
@@ -68,11 +70,7 @@ export default function VerifyPage() {
       {profile && (
         <div className="rounded-2xl border border-ink/10 bg-surface p-8">
           <div className="flex items-center gap-4 mb-6">
-            <img 
-              src={generateAvatarUrl(profile.username)} 
-              alt="" 
-              className="h-16 w-16 rounded-full ring-4 ring-ink/20"
-            />
+            <AvatarImage src={generateAvatarUrl(profile.username)} alt="" size={64} className="ring-4 ring-ink/20" />
             <div>
               <h2 className="text-2xl font-bold text-ink">{profile.displayName}</h2>
               <p className="text-sm font-mono text-ink/60">@{profile.username}</p>

@@ -6,6 +6,8 @@ import { useEffect, useState } from 'react';
 export type Theme = 'light' | 'dark' | 'system';
 type ResolvedTheme = 'light' | 'dark';
 
+const themeCycle: Theme[] = ['light', 'dark', 'system'];
+
 export interface UseThemeReturn {
   theme: Theme;
   resolvedTheme: ResolvedTheme | undefined;
@@ -24,11 +26,10 @@ export function useTheme(): UseThemeReturn {
   }, []);
 
   const toggleTheme = () => {
-    if (resolvedTheme === 'dark') {
-      setTheme('light');
-    } else {
-      setTheme('dark');
-    }
+    const currentTheme = (theme as Theme) || 'system';
+    const currentIndex = themeCycle.indexOf(currentTheme);
+    const nextIndex = (currentIndex + 1) % themeCycle.length;
+    setTheme(themeCycle[nextIndex]);
   };
 
   return {

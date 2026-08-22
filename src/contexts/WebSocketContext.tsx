@@ -6,23 +6,16 @@ import React, {
   useEffect,
   useState,
   useCallback,
+  useMemo,
   ReactNode,
 } from "react";
-import toast, { Toaster } from "react-hot-toast";
 
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useNotifications, TipNotification } from "@/hooks/useNotifications";
-import {
-  playNotificationSound,
-  isSoundMuted,
-  setSoundMuted,
-} from "@/utils/soundUtils";
-
-interface TipReceivedPayload {
-  amount: string;
-  from: string;
-  memo?: string;
-}
+import { useToast } from "@/hooks/useToast";
+import { playNotificationSound, isSoundMuted, setSoundMuted } from "@/utils/soundUtils";
+import type { Tip } from "@/lib/websocket/client";
+import { WS_BASE_URL } from "@/config/env";
 
 interface WebSocketContextType {
   notifications: TipNotification[];
@@ -34,22 +27,15 @@ interface WebSocketContextType {
   connectionStatus: string;
 }
 
-const WebSocketContext = createContext<WebSocketContextType | undefined>(
-  undefined
-);
+const WebSocketContext = createContext<WebSocketContextType | undefined>(undefined);
 
-interface WebSocketProviderProps {
-  children: ReactNode;
-}
-
-export function WebSocketProvider({ children }: WebSocketProviderProps) {
-  const wsUrl = process.env.NEXT_PUBLIC_WS_URL;
-
-  const { socketRef, status } = useWebSocket({ url: wsUrl });
+export function WebSocketProvider({ children }: { children: ReactNode }) {
+  const wsUrl = WS_BASE_URL;
+  const { clientRef, status } = useWebSocket({ url: wsUrl });
   const { notifications, unreadCount, addNotification, markAllRead, clearNotifications } =
     useNotifications();
+  const toast = useToast();
 
-  // Lazy initializer reads localStorage only on the client (avoids setState-in-effect)
   const [isMuted, setIsMuted] = useState<boolean>(() =>
     typeof window !== "undefined" ? isSoundMuted() : false
   );
@@ -61,94 +47,72 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 
   // Request browser notification permission on mount
   useEffect(() => {
-    if (
-      typeof window !== "undefined" &&
-      "Notification" in window &&
-      Notification.permission === "default"
-    ) {
+    if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
       Notification.requestPermission();
     }
   }, []);
 
   useEffect(() => {
-    const socket = socketRef.current;
-    if (!socket) return;
+    if (status !== "connected") return;
+    const client = clientRef.current;
+    if (!client) return;
 
-    const handleTipReceived = (tip: TipReceivedPayload) => {
-      const amount = tip.amount ?? "?";
-      const shortFrom = tip.from
-        ? `${tip.from.slice(0, 4)}…${tip.from.slice(-4)}`
-        : "Unknown";
+    const channel = "tips";
 
-      addNotification({ amount, from: tip.from ?? "", memo: tip.memo });
+    const handleTip = (tip: Tip) => {
+      const shortFrom = `${tip.sender_address.slice(0, 4)}…${tip.sender_address.slice(-4)}`;
 
-      // Native OS notification (works even when the tab is in the background)
-      if (
-        typeof window !== "undefined" &&
-        "Notification" in window &&
-        Notification.permission === "granted"
-      ) {
+      addNotification({ amount: String(tip.amount), from: tip.sender_address, memo: tip.memo });
+
+      const message = tip.memo
+        ? `💸 New tip: ${tip.amount} XLM — "${tip.memo}"`
+        : `💸 New tip: ${tip.amount} XLM from ${shortFrom}`;
+
+      toast.success(message, { duration: 6000 });
+
+      if (!isMuted) {
+        playNotificationSound();
+      }
+
+      if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
         new Notification("💸 New tip received!", {
-          body: tip.memo
-            ? `${amount} XLM – "${tip.memo}"`
-            : `${amount} XLM from ${shortFrom}`,
-          icon: "/favicon.ico",
+          body: tip.memo ? `${tip.amount} XLM — "${tip.memo}"` : `${tip.amount} XLM from ${shortFrom}`,
+          icon: "/icons/icon-192x192.png",
           tag: "tip-received",
         });
       }
-
-      toast.success(
-        tip.memo
-          ? `💸 New tip: ${amount} XLM\n"${tip.memo}"`
-          : `💸 New tip: ${amount} XLM from ${shortFrom}`,
-        {
-          duration: 6000,
-          style: {
-            background: "#1e1b4b",
-            color: "#e0e7ff",
-            border: "1px solid #4f46e5",
-            borderRadius: "12px",
-            padding: "12px 16px",
-            fontSize: "14px",
-            fontWeight: "500",
-          },
-          iconTheme: { primary: "#818cf8", secondary: "#1e1b4b" },
-        }
-      );
-
-      playNotificationSound();
     };
 
-    socket.on("tip:received", handleTipReceived);
+    client.subscribe(channel, handleTip);
     return () => {
-      socket.off("tip:received", handleTipReceived);
+      client.unsubscribe(channel, handleTip);
     };
-  }, [socketRef, addNotification]);
+  }, [status, clientRef, addNotification, toast, isMuted]);
+
+  // Memoize context value to prevent unnecessary re-renders
+  // This is important as WebSocket status and notifications update frequently
+  const contextValue = useMemo(
+    () => ({
+      notifications,
+      unreadCount,
+      markAllRead,
+      clearNotifications,
+      isMuted,
+      setMuted,
+      connectionStatus: status,
+    }),
+    [notifications, unreadCount, markAllRead, clearNotifications, isMuted, setMuted, status]
+  );
 
   return (
-    <WebSocketContext.Provider
-      value={{
-        notifications,
-        unreadCount,
-        markAllRead,
-        clearNotifications,
-        isMuted,
-        setMuted,
-        connectionStatus: status,
-      }}
-    >
+    <WebSocketContext.Provider value={contextValue}>
       {children}
-      <Toaster position="bottom-right" />
     </WebSocketContext.Provider>
   );
 }
 
 export function useWebSocketContext(): WebSocketContextType {
   const ctx = useContext(WebSocketContext);
-  if (!ctx) {
-    throw new Error(
-      "useWebSocketContext must be used within a WebSocketProvider"
-    );
-  }
+  if (!ctx) throw new Error("useWebSocketContext must be used within a WebSocketProvider");
   return ctx;
 }

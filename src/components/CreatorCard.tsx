@@ -6,6 +6,8 @@ import { motion } from "framer-motion";
 import { OptimizedImage } from "@/components/OptimizedImage";
 import { generateAvatarUrl } from "@/utils/imageUtils";
 import { Creator } from "@/utils/creatorData";
+import { staggerItemVariants } from "@/utils/animations";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 interface CreatorCardProps {
   creator: Creator;
@@ -14,12 +16,13 @@ interface CreatorCardProps {
 
 export function CreatorCard({ creator, trackInteraction }: CreatorCardProps) {
   const primaryCategory = creator.categories[0] || "Creator";
+  const prefersReduced = useReducedMotion();
 
   return (
     <motion.div
-      whileHover={{ y: -8, transition: { duration: 0.3 } }}
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
+      variants={staggerItemVariants}
+      whileHover={prefersReduced ? undefined : { y: -8, transition: { duration: 0.3 } }}
+      whileTap={prefersReduced ? undefined : { scale: 0.97 }}
       className="group relative h-full"
     >
       <Link

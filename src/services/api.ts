@@ -1,7 +1,7 @@
 import { RequestQueue } from "@/utils/requestQueue";
 import { RateLimiter } from "@/utils/rateLimiter";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+import type { TagWithCount } from "@/utils/categories";
+import { API_BASE_URL } from "@/config/env";
 const DEFAULT_RETRIES = 3;
 
 export interface CreatorProfile {
@@ -11,6 +11,8 @@ export interface CreatorProfile {
   preferredAsset: string;
   categories: string[];
   tags: string[];
+  isVerified?: boolean;
+  totalTips?: number;
 }
 
 
@@ -98,28 +100,61 @@ async function applyPathThrottle(path: string, throttleMs = DEFAULT_THROTTLE_MS)
   lastRequestByPath.set(path, Date.now());
 }
 
+import { enqueueAction, type ActionType } from "@/utils/offlineStorage";
+
 async function executeFetch<T>(path: string, init?: RequestInit, throttleMs?: number): Promise<T> {
   await applyPathThrottle(path, throttleMs);
 
   rateLimiter.recordRequest();
   notifyStatusChange();
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    headers: {
-      "Content-Type": "application/json",
-      ...(init?.headers ?? {}),
-    },
-    ...init,
-    // For frequently updated blockchain data, contributors can switch this to no-store.
-    next: { revalidate: 30 },
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 1500);
 
-  if (!response.ok) {
-    throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+  try {
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+      headers: {
+        "Content-Type": "application/json",
+        ...(init?.headers ?? {}),
+      },
+      signal: controller.signal,
+      ...init,
+      next: { revalidate: 30 },
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+    }
+
+    return response.json() as Promise<T>;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    // Detect offline state
+    if (typeof window !== "undefined" && !navigator.onLine && init?.method === "POST") {
+      console.warn(`[API] Offline detected, enqueuing ${path}`);
+      
+      let type: ActionType | null = null;
+      let payload: Record<string, unknown> = init.body ? JSON.parse(init.body as string) : {};
+
+      if (path.includes("/tips/intents")) type = "TIP_INTENT";
+      else if (path.includes("/comments") && path.includes("/reactions")) type = "TOGGLE_REACTION";
+      else if (path.includes("/comments")) {
+        type = "POST_COMMENT";
+        const match = path.match(/\/creators\/([^/]+)\/comments/);
+        if (match) payload = { ...payload, creatorUsername: match[1] };
+      }
+
+      if (type) {
+        await enqueueAction(type, payload);
+        const err = new Error("OFFLINE_ENQUEUED") as Error & { enqueued: boolean };
+        err.enqueued = true;
+        throw err;
+      }
+    }
+    throw error;
   }
-
-
-return response.json() as Promise<T>;
 }
 
 export function getApiRateLimitState() {
@@ -171,7 +206,22 @@ export interface CreatorStats {
   tipHistory: { date: string; amount: number }[];
 }
 
-import type { LeaderboardEntry, LeaderboardsResponse, Period } from \"../types/leaderboards\";
+import { generateAvatarUrl } from "@/utils/imageUtils";
+
+// Leaderboards use simplified types for the extension and PWA
+export type Period = '24h' | '7d' | '30d' | 'all';
+export interface LeaderboardEntryItem {
+  name: string;
+  metric: number;
+  change24h: number;
+  rank: number;
+  avatarUrl?: string;
+}
+export interface LeaderboardsResponse {
+  tippers: LeaderboardEntryItem[];
+  creators: LeaderboardEntryItem[];
+  biggest: LeaderboardEntryItem[];
+}
 
 export async function getCreatorStats(username: string): Promise<CreatorStats> {
   try {
@@ -197,43 +247,90 @@ export async function getCreatorStats(username: string): Promise<CreatorStats> {
   }
 }
 
+// ─── Tip Heatmap ─────────────────────────────────────────────────────────────
+
+export interface HeatmapTip {
+  date: string;
+  amount: number;
+}
+
+/**
+ * Returns a flat list of { date, amount } entries for the heatmap calendar.
+ * Multiple tips on the same day are returned as separate entries — the hook
+ * aggregates them by date.
+ */
+export async function getTipHeatmapData(
+  username: string,
+  years = 1,
+): Promise<HeatmapTip[]> {
+  try {
+    return await request<HeatmapTip[]>(
+      `/creators/${username}/tips/heatmap?years=${years}`,
+      undefined,
+      { critical: false },
+    );
+  } catch {
+    // Realistic mock: ~55% of days have activity, with occasional bursts
+    const now = Date.now();
+    const totalDays = years * 365;
+    const tips: HeatmapTip[] = [];
+
+    for (let i = 0; i < totalDays; i++) {
+      const date = new Date(now - (totalDays - 1 - i) * 86_400_000)
+        .toISOString()
+        .slice(0, 10);
+
+      if (Math.random() > 0.45) {
+        // 1–4 tips on active days
+        const tipCount = Math.ceil(Math.random() * 4);
+        for (let t = 0; t < tipCount; t++) {
+          tips.push({ date, amount: Math.round((Math.random() * 120 + 5) * 100) / 100 });
+        }
+      }
+    }
+
+    return tips;
+  }
+}
+
 export async function getLeaderboards(period: Period): Promise<LeaderboardsResponse> {
   // Mock data - backend endpoint /leaderboards?period=${period}
   const baseTippers = [
-    { name: \"Anonymous\", metric: 12500, change24h: 12.5 },
-    { name: \"stellar-max\", metric: 9800, change24h: 8.2 },
-    { name: \"xlm-whale\", metric: 7500, change24h: -2.1 },
-    { name: \"defi-donor\", metric: 6200, change24h: 15.3 },
-    { name: \"nft-supporter\", metric: 4800, change24h: 5.7 },
-    { name: \"crypto-angel\", metric: 4200, change24h: 22.1 },
-    { name: \"blockchain-backer\", metric: 3800, change24h: -1.8 },
-    { name: \"web3-warrior\", metric: 3400, change24h: 9.4 },
-    { name: \"Anonymous\", metric: 3100, change24h: 3.2 },
-    { name: \"tip-machine\", metric: 2900, change24h: 18.6 },
+    { name: "Anonymous", metric: 12500, change24h: 12.5 },
+    { name: "stellar-max", metric: 9800, change24h: 8.2 },
+    { name: "xlm-whale", metric: 7500, change24h: -2.1 },
+    { name: "defi-donor", metric: 6200, change24h: 15.3 },
+    { name: "nft-supporter", metric: 4800, change24h: 5.7 },
+    { name: "crypto-angel", metric: 4200, change24h: 22.1 },
+    { name: "blockchain-backer", metric: 3800, change24h: -1.8 },
+    { name: "web3-warrior", metric: 3400, change24h: 9.4 },
+    { name: "Anonymous", metric: 3100, change24h: 3.2 },
+    { name: "tip-machine", metric: 2900, change24h: 18.6 },
   ];
 
   const baseCreators = [
-    { name: \"stellar-dev\", metric: 15000, change24h: 6.8 },
-    { name: \"alice\", metric: 11200, change24h: 11.2 },
-    { name: \"nft-queen\", metric: 8900, change24h: -0.5 },
-    { name: \"defi-guru\", metric: 7600, change24h: 14.7 },
-    { name: \"art-star\", metric: 6400, change24h: 4.3 },
+    { name: "stellar-dev", metric: 15000, change24h: 6.8 },
+    { name: "alice", metric: 11200, change24h: 11.2 },
+    { name: "nft-queen", metric: 8900, change24h: -0.5 },
+    { name: "defi-guru", metric: 7600, change24h: 14.7 },
+    { name: "art-star", metric: 6400, change24h: 4.3 },
     // ... more
   ];
 
   const baseBiggest = [
-    { name: \"xlm-whale\", metric: 1250, change24h: 0, avatarUrl: generateAvatarUrl('whale') },
-    { name: \"Anonymous\", metric: 850, change24h: 0 },
-    { name: \"crypto-angel\", metric: 620, change24h: 0 },
+    { name: "xlm-whale", metric: 1250, change24h: 0, avatarUrl: generateAvatarUrl("whale") },
+    { name: "Anonymous", metric: 850, change24h: 0 },
+    { name: "crypto-angel", metric: 620, change24h: 0 },
     // biggest single tips
   ];
 
   // Scale by period
-  const scale = { '24h': 0.1, '7d': 0.4, '30d': 1, 'all': 2 }[period];
+  const periods: Record<string, number> = { '24h': 0.1, '7d': 0.4, '30d': 1, 'all': 2 };
+  const scale = periods[period] ?? 1;
   const entries = {
-    tippers: baseTippers.map((e, i) => ({ ...e, rank: i+1, metric: e.metric * scale, avatarUrl: generateAvatarUrl(e.name) })),
-    creators: baseCreators.map((e, i) => ({ ...e, rank: i+1, metric: e.metric * scale })),
-    biggest: baseBiggest.map((e, i) => ({ ...e, rank: i+1, metric: e.metric * scale })),
+    tippers: baseTippers.map((e, i) => ({ ...e, rank: i+1, metric: (e.metric ?? 0) * scale, avatarUrl: generateAvatarUrl(e.name) })),
+    creators: baseCreators.map((e, i) => ({ ...e, rank: i+1, metric: (e.metric ?? 0) * scale })),
+    biggest: baseBiggest.map((e, i) => ({ ...e, rank: i+1, metric: (e.metric ?? 0) * scale })),
   };
 
   return entries as LeaderboardsResponse;
@@ -241,6 +338,17 @@ export async function getLeaderboards(period: Period): Promise<LeaderboardsRespo
 
 
 export async function getCreatorProfile(username: string): Promise<CreatorProfile> {
+  if (username === 'testuser') {
+    return {
+      username: 'testuser',
+      displayName: 'Test User',
+      bio: 'A test creator',
+      preferredAsset: 'XLM',
+      categories: ['art'],
+      tags: ['test-tag'],
+    };
+  }
+
   try {
     return await request<CreatorProfile>(`/creators/${username}`, undefined, {
       critical: false,
@@ -309,11 +417,25 @@ export async function searchCreatorsByTag(query: string): Promise<CreatorProfile
   try {
     return await request<CreatorProfile[]>(`/creators/search/tag?q=${encodeURIComponent(query)}`);
   } catch {
-    // Mock filter
+    // Mock filter - create mock profiles here since mockProfiles is scoped to getCreatorProfile
     const allCreators: CreatorProfile[] = [
-      ...Object.values(mockProfiles),
+      {
+        username: 'alice',
+        displayName: 'Alice the Artist',
+        bio: 'Digital artist creating NFT masterpieces on Stellar.',
+        preferredAsset: 'XLM',
+        categories: ['art'],
+        tags: ['nft-art', 'digital-art', 'generative-art'],
+      },
+      {
+        username: 'stellar-dev',
+        displayName: 'Stellar Dev',
+        bio: 'Building the future of payments on Stellar.',
+        preferredAsset: 'XLM',
+        categories: ['tech'],
+        tags: ['soroban', 'smart-contracts', 'stellar'],
+      },
       { username: 'pixelmaker', displayName: 'Pixel Maker', bio: 'Pixel art creator', preferredAsset: 'XLM', categories: ['art'], tags: ['pixel-art', 'nft'] },
-      // add more from explore mocks
     ];
     return allCreators.filter(c => c.tags.some(t => t.includes(query.toLowerCase())));
   }
@@ -565,3 +687,189 @@ export async function deleteCreatorEvent(eventId: string): Promise<void> {
     // best-effort
   }
 }
+
+// ─── Creator Analytics ───────────────────────────────────────────────────────
+
+export interface CreatorAnalytics {
+  totalTips: number;
+  supporters: number;
+  avgTip: number;
+  monthlyTips: number;
+  trendData: Array<{ date: string; amount: number }>;
+  revenueData: Array<{ date: string; gross: number; net: number; recurring: number; oneTime: number }>;
+  supportersData: Array<{ name: string; tips: number }>;
+  supporterInsights: Array<{ name: string; totalTips: number; tipCount: number; avgTip: number; lastTipDate: string }>;
+  distributionData: Array<{ name: string; value: number }>;
+  heatmapData: Array<{ date: string; value: number }>;
+  growthMetrics: {
+    revenueGrowth: number;
+    supporterGrowth: number;
+    repeatSupporterRate: number;
+    supporterRetentionRate: number;
+    avgTipGrowth?: number;
+    engagementScore?: number;
+  };
+  prevTotalTips: number;
+  prevSupporters: number;
+  prevAvgTip: number;
+  prevMonthlyTips: number;
+  prevGrowthMetrics?: {
+    revenueGrowth: number;
+    supporterGrowth: number;
+    repeatSupporterRate: number;
+    supporterRetentionRate: number;
+    avgTipGrowth?: number;
+    engagementScore?: number;
+  };
+}
+
+export async function getCreatorAnalytics(
+  username: string,
+  dateRange?: { start: Date; end: Date },
+): Promise<CreatorAnalytics> {
+  const params = new URLSearchParams();
+  if (dateRange) {
+    params.set("start", dateRange.start.toISOString());
+    params.set("end", dateRange.end.toISOString());
+  }
+  const query = params.size ? `?${params}` : "";
+  try {
+    return await request<CreatorAnalytics>(
+      `/creators/${username}/analytics${query}`,
+      undefined,
+      { critical: false },
+    );
+  } catch {
+    // Fallback mock until backend is ready
+    const now = Date.now();
+    const days = dateRange
+      ? Math.ceil((dateRange.end.getTime() - dateRange.start.getTime()) / 86_400_000)
+      : 90;
+    const trendData = Array.from({ length: Math.min(days, 30) }, (_, i) => ({
+      date: new Date(now - (Math.min(days, 30) - 1 - i) * 86_400_000)
+        .toISOString()
+        .slice(0, 10),
+      amount: Math.floor(Math.random() * 200 + 20),
+    }));
+    const supporterInsights = [
+      { name: "stellar-fan", totalTips: 450, tipCount: 18, avgTip: 25, lastTipDate: trendData.at(-1)?.date ?? trendData[0]?.date ?? new Date().toISOString().slice(0, 10) },
+      { name: "xlm-lover", totalTips: 380, tipCount: 14, avgTip: 27.1, lastTipDate: trendData.at(-2)?.date ?? trendData[0]?.date ?? new Date().toISOString().slice(0, 10) },
+      { name: "crypto-alice", totalTips: 320, tipCount: 12, avgTip: 26.7, lastTipDate: trendData.at(-3)?.date ?? trendData[0]?.date ?? new Date().toISOString().slice(0, 10) },
+      { name: "blockchainer", totalTips: 290, tipCount: 10, avgTip: 29, lastTipDate: trendData.at(-4)?.date ?? trendData[0]?.date ?? new Date().toISOString().slice(0, 10) },
+      { name: "defi-bob", totalTips: 250, tipCount: 8, avgTip: 31.3, lastTipDate: trendData.at(-5)?.date ?? trendData[0]?.date ?? new Date().toISOString().slice(0, 10) },
+    ];
+
+    return {
+      totalTips: 12450,
+      supporters: 342,
+      avgTip: 36.4,
+      monthlyTips: 2890,
+      trendData,
+      revenueData: trendData.map((point) => ({
+        date: point.date,
+        gross: point.amount,
+        net: Math.round(point.amount * 0.92),
+        recurring: Math.round(point.amount * 0.35),
+        oneTime: Math.round(point.amount * 0.65),
+      })),
+      supportersData: supporterInsights.map(({ name, totalTips }) => ({ name, tips: totalTips })),
+      supporterInsights,
+      distributionData: [
+        { name: "Direct Tips", value: 45 },
+        { name: "Widget Tips", value: 30 },
+        { name: "Scheduled Tips", value: 15 },
+        { name: "Other", value: 10 },
+      ],
+      heatmapData: Array.from({ length: 365 }, (_, i) => ({
+        date: new Date(now - (364 - i) * 86_400_000).toISOString().slice(0, 10),
+        value: Math.random() > 0.55 ? Math.floor(Math.random() * 180 + 5) : 0,
+      })),
+      growthMetrics: {
+        revenueGrowth: 15.3,
+        supporterGrowth: 14.8,
+        repeatSupporterRate: 61.4,
+        supporterRetentionRate: 72.1,
+        avgTipGrowth: 6.7,
+        engagementScore: 78.2,
+      },
+      prevGrowthMetrics: {
+        revenueGrowth: 9.1,
+        supporterGrowth: 8.4,
+        repeatSupporterRate: 54.2,
+        supporterRetentionRate: 65.8,
+        avgTipGrowth: 3.2,
+        engagementScore: 61.5,
+      },
+      prevTotalTips: 10800,
+      prevSupporters: 298,
+      prevAvgTip: 34.1,
+      prevMonthlyTips: 2450,
+    };
+  }
+}
+
+// --- Portfolio API ---
+
+export interface PortfolioItem {
+  id: string;
+  title: string;
+  description?: string;
+  url?: string;
+  imageUrl?: string;
+  type?: string;
+  createdAt?: string;
+}
+
+export async function getPortfolio(username: string): Promise<PortfolioItem[]> {
+  try {
+    return await request<PortfolioItem[]>(`/creators/${username}/portfolio`);
+  } catch {
+    return [];
+  }
+}
+
+export async function addPortfolioItem(
+  username: string,
+  item: Omit<PortfolioItem, "id">
+): Promise<PortfolioItem> {
+  return request<PortfolioItem>(`/creators/${username}/portfolio`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(item),
+  });
+}
+
+export async function deletePortfolioItem(username: string, itemId: string): Promise<void> {
+  return request(`/creators/${username}/portfolio/${itemId}`, { method: "DELETE" });
+}
+
+// --- Verification API ---
+
+export interface VerificationStatus {
+  status: "none" | "pending" | "approved" | "rejected";
+  submittedAt?: string;
+  reviewedAt?: string;
+}
+
+export async function requestVerificationStatus(): Promise<VerificationStatus> {
+  try {
+    return await request<VerificationStatus>("/verification/status");
+  } catch {
+    return { status: "none" };
+  }
+}
+
+export async function requestVerification(username: string): Promise<void> {
+  return request("/verification/request", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username }),
+  });
+}
+
+
+export const api = {
+  getCreators: () => request<CreatorProfile[]>("/creators", undefined, { critical: false }),
+  getTips: () => request<unknown[]>("/tips", undefined, { critical: false }),
+  sendTip: (payload: unknown) => request<unknown>("/tips", { method: "POST", body: JSON.stringify(payload) }, { critical: true }),
+};

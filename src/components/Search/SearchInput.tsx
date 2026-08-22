@@ -31,6 +31,7 @@ export function SearchInput({
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
+          aria-hidden="true"
         >
           <path
             strokeLinecap="round"
@@ -42,12 +43,15 @@ export function SearchInput({
       </div>
 
       <input
-        type="text"
+        type="search"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={onKeyDown}
         onFocus={onFocus}
         placeholder={placeholder}
+        aria-label="Search creators"
+        aria-autocomplete="list"
+        autoComplete="off"
         className="w-full pl-12 pr-12 py-3.5 rounded-full border-2 border-ink/10 bg-[color:var(--surface)] text-ink placeholder:text-ink/40 focus:border-wave focus:ring-4 focus:ring-wave/10 outline-none transition-all duration-300 shadow-sm hover:border-ink/20"
       />
 

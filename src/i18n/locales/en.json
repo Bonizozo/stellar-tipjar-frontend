@@ -1,25 +1,39 @@
 {
   "common": {
-    "welcome": "Welcome to Stellar Tip Jar",
-    "tagline": "Tip your favorite creators with Stellar assets.",
-    "loading": "Loading...",
-    "error": "Something went wrong.",
-    "save": "Save",
-    "cancel": "Cancel",
-    "confirm": "Confirm",
-    "close": "Close",
-    "search": "Search",
-    "submit": "Submit"
-  },
-  "nav": {
-    "brandName": "Stellar Tip Jar",
     "home": "Home",
-    "exploreCreators": "Explore Creators",
-    "sendTips": "Send Tips",
-    "widgets": "Widgets"
+    "explore": "Explore",
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Logout",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
   },
-  "languageSwitcher": {
-    "label": "Language",
-    "selectLanguage": "Select language"
+  "tips": {
+    "sendTip": "Send Tip",
+    "receiveTip": "Receive Tip",
+    "amount": "Amount",
+    "message": "Message",
+    "confirm": "Confirm Tip"
+  },
+  "portfolio": {
+    "gallery": "Portfolio Gallery",
+    "addItem": "Add Item",
+    "editItem": "Edit Item",
+    "deleteItem": "Delete Item",
+    "reorder": "Reorder Items"
+  },
+  "receipt": {
+    "download": "Download Receipt",
+    "email": "Email Receipt",
+    "transactionId": "Transaction ID"
+  },
+  "leaderboard": {
+    "topCreators": "Top Creators",
+    "topTippers": "Top Tippers",
+    "trending": "Trending",
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "monthly": "Monthly"
   }
 }
