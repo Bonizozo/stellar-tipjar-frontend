@@ -21,23 +21,22 @@ export const createCreatorSchema = z.object({
   wallet_address: stellarAddressSchema,
 
   displayName: z
-    .string()
-    .min(2, "Display name must be at least 2 characters")
-    .max(50, "Display name must be at most 50 characters")
-    .optional()
-    .or(z.literal("")),
+    .union([
+      z.string().min(2, "Display name must be at least 2 characters").max(50, "Display name must be at most 50 characters"),
+      z.literal(""),
+    ]),
 
   bio: z
-    .string()
-    .max(500, "Bio must be at most 500 characters")
-    .optional()
-    .or(z.literal("")),
+    .union([
+      z.string().max(500, "Bio must be at most 500 characters"),
+      z.literal(""),
+    ]),
 
   email: z
-    .string()
-    .email("Invalid email address")
-    .optional()
-    .or(z.literal("")),
+    .union([
+      z.string().email("Invalid email address"),
+      z.literal(""),
+    ]),
 });
 
 export type CreateCreatorInput = z.infer<typeof createCreatorSchema>;

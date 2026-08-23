@@ -101,7 +101,7 @@ async function applyPathThrottle(path: string, throttleMs = DEFAULT_THROTTLE_MS)
   lastRequestByPath.set(path, Date.now());
 }
 
-import { enqueueAction } from "@/utils/offlineStorage";
+import { enqueueAction, type ActionType } from "@/utils/offlineStorage";
 
 async function executeFetch<T>(path: string, init?: RequestInit, throttleMs?: number): Promise<T> {
   await applyPathThrottle(path, throttleMs);
@@ -136,8 +136,8 @@ async function executeFetch<T>(path: string, init?: RequestInit, throttleMs?: nu
     if (typeof window !== "undefined" && !navigator.onLine && init?.method === "POST") {
       console.warn(`[API] Offline detected, enqueuing ${path}`);
       
-      let type: any = null;
-      let payload = init.body ? JSON.parse(init.body as string) : {};
+      let type: ActionType | null = null;
+      let payload: Record<string, unknown> = init.body ? JSON.parse(init.body as string) : {};
 
       if (path.includes("/tips/intents")) type = "TIP_INTENT";
       else if (path.includes("/comments") && path.includes("/reactions")) type = "TOGGLE_REACTION";
@@ -149,8 +149,8 @@ async function executeFetch<T>(path: string, init?: RequestInit, throttleMs?: nu
 
       if (type) {
         await enqueueAction(type, payload);
-        const err = new Error("OFFLINE_ENQUEUED");
-        (err as any).enqueued = true;
+        const err = new Error("OFFLINE_ENQUEUED") as Error & { enqueued: boolean };
+        err.enqueued = true;
         throw err;
       }
     }
@@ -212,10 +212,17 @@ import { generateAvatarUrl } from "@/utils/imageUtils";
 
 // Leaderboards use simplified types for the extension and PWA
 export type Period = '24h' | '7d' | '30d' | 'all';
+export interface LeaderboardEntryItem {
+  name: string;
+  metric: number;
+  change24h: number;
+  rank: number;
+  avatarUrl?: string;
+}
 export interface LeaderboardsResponse {
-  tippers: any[];
-  creators: any[];
-  biggest: any[];
+  tippers: LeaderboardEntryItem[];
+  creators: LeaderboardEntryItem[];
+  biggest: LeaderboardEntryItem[];
 }
 
 export async function getCreatorStats(username: string): Promise<CreatorStats> {

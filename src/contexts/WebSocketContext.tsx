@@ -6,6 +6,7 @@ import React, {
   useEffect,
   useState,
   useCallback,
+  useMemo,
   ReactNode,
 } from "react";
 
@@ -88,10 +89,23 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
     };
   }, [status, clientRef, addNotification, toast, isMuted]);
 
+  // Memoize context value to prevent unnecessary re-renders
+  // This is important as WebSocket status and notifications update frequently
+  const contextValue = useMemo(
+    () => ({
+      notifications,
+      unreadCount,
+      markAllRead,
+      clearNotifications,
+      isMuted,
+      setMuted,
+      connectionStatus: status,
+    }),
+    [notifications, unreadCount, markAllRead, clearNotifications, isMuted, setMuted, status]
+  );
+
   return (
-    <WebSocketContext.Provider
-      value={{ notifications, unreadCount, markAllRead, clearNotifications, isMuted, setMuted, connectionStatus: status }}
-    >
+    <WebSocketContext.Provider value={contextValue}>
       {children}
     </WebSocketContext.Provider>
   );

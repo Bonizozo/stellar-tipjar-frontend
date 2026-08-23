@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { TeamInvite } from "@/components/TeamInvite";
@@ -17,13 +17,12 @@ describe("TeamInvite Component", () => {
   });
 
   it("shows error when email is empty", async () => {
-    const user = userEvent.setup();
     const handleInvite = vi.fn();
 
-    render(<TeamInvite onInvite={handleInvite} />);
+    const { container } = render(<TeamInvite onInvite={handleInvite} />);
 
-    const button = screen.getByRole("button", { name: /Send Invite/i });
-    await user.click(button);
+    const form = container.querySelector("form")!;
+    fireEvent.submit(form);
 
     expect(screen.getByText(/Please enter an email address/i)).toBeInTheDocument();
     expect(handleInvite).not.toHaveBeenCalled();

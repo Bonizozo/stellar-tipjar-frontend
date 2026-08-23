@@ -71,8 +71,9 @@ export function ProductListingForm({ onSubmit, isSubmitting, initialData }: Prod
         <h3 className="text-lg font-semibold text-ink">Basic Information</h3>
         
         <div>
-          <label className="block text-sm font-medium text-ink mb-2">Product Name *</label>
+          <label htmlFor="product-name" className="block text-sm font-medium text-ink mb-2">Product Name *</label>
           <input
+            id="product-name"
             type="text"
             required
             value={formData.name}
@@ -83,8 +84,9 @@ export function ProductListingForm({ onSubmit, isSubmitting, initialData }: Prod
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-ink mb-2">Short Description *</label>
+          <label htmlFor="short-description" className="block text-sm font-medium text-ink mb-2">Short Description *</label>
           <textarea
+            id="short-description"
             required
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -95,8 +97,9 @@ export function ProductListingForm({ onSubmit, isSubmitting, initialData }: Prod
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-ink mb-2">Long Description</label>
+          <label htmlFor="long-description" className="block text-sm font-medium text-ink mb-2">Long Description</label>
           <textarea
+            id="long-description"
             value={formData.longDescription}
             onChange={(e) => setFormData({ ...formData, longDescription: e.target.value })}
             rows={4}
@@ -112,8 +115,9 @@ export function ProductListingForm({ onSubmit, isSubmitting, initialData }: Prod
         
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-ink mb-2">Price (USD) *</label>
+            <label htmlFor="price-usd" className="block text-sm font-medium text-ink mb-2">Price (USD) *</label>
             <input
+              id="price-usd"
               type="number"
               required
               min="0"
@@ -125,8 +129,9 @@ export function ProductListingForm({ onSubmit, isSubmitting, initialData }: Prod
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-ink mb-2">Inventory *</label>
+            <label htmlFor="inventory" className="block text-sm font-medium text-ink mb-2">Inventory *</label>
             <input
+              id="inventory"
               type="number"
               required
               min="0"
@@ -145,8 +150,9 @@ export function ProductListingForm({ onSubmit, isSubmitting, initialData }: Prod
         
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-ink mb-2">Product Type *</label>
+            <label htmlFor="product-type" className="block text-sm font-medium text-ink mb-2">Product Type *</label>
             <select
+              id="product-type"
               value={formData.type}
               onChange={(e) => setFormData({ ...formData, type: e.target.value as ProductType })}
               className="w-full px-4 py-2 rounded-lg border border-ink/10 bg-[color:var(--surface)] text-ink focus:outline-none focus:ring-2 focus:ring-wave/50 capitalize"
@@ -158,8 +164,9 @@ export function ProductListingForm({ onSubmit, isSubmitting, initialData }: Prod
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-ink mb-2">Category *</label>
+            <label htmlFor="category" className="block text-sm font-medium text-ink mb-2">Category *</label>
             <select
+              id="category"
               value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.target.value as ProductCategory })}
               className="w-full px-4 py-2 rounded-lg border border-ink/10 bg-[color:var(--surface)] text-ink focus:outline-none focus:ring-2 focus:ring-wave/50 capitalize"
@@ -171,8 +178,9 @@ export function ProductListingForm({ onSubmit, isSubmitting, initialData }: Prod
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-ink mb-2">Delivery Method *</label>
+            <label htmlFor="delivery-method" className="block text-sm font-medium text-ink mb-2">Delivery Method *</label>
             <select
+              id="delivery-method"
               value={formData.deliveryMethod}
               onChange={(e) => setFormData({ ...formData, deliveryMethod: e.target.value as DeliveryMethod })}
               className="w-full px-4 py-2 rounded-lg border border-ink/10 bg-[color:var(--surface)] text-ink focus:outline-none focus:ring-2 focus:ring-wave/50 capitalize"
@@ -191,8 +199,9 @@ export function ProductListingForm({ onSubmit, isSubmitting, initialData }: Prod
           <h3 className="text-lg font-semibold text-ink">Digital Product Settings</h3>
           
           <div>
-            <label className="block text-sm font-medium text-ink mb-2">File URL</label>
+            <label htmlFor="file-url" className="block text-sm font-medium text-ink mb-2">File URL</label>
             <input
+              id="file-url"
               type="url"
               value={formData.digitalFileUrl}
               onChange={(e) => setFormData({ ...formData, digitalFileUrl: e.target.value })}
@@ -202,8 +211,9 @@ export function ProductListingForm({ onSubmit, isSubmitting, initialData }: Prod
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-ink mb-2">Download Limit</label>
+            <label htmlFor="download-limit" className="block text-sm font-medium text-ink mb-2">Download Limit</label>
             <input
+              id="download-limit"
               type="number"
               min="1"
               value={formData.downloadLimit}

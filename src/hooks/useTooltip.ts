@@ -2,7 +2,7 @@
 // This hook is provided for cases where you need programmatic control
 // over tooltip visibility outside of the Radix component tree.
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 
 interface UseTooltipOptions {
   delayDuration?: number;
@@ -19,6 +19,12 @@ export function useTooltip({ delayDuration = 400 }: UseTooltipOptions = {}) {
   const hide = useCallback(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
     setIsOpen(false);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
   }, []);
 
   return { isOpen, show, hide };

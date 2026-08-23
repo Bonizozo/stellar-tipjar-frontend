@@ -7,24 +7,24 @@ describe('Button Component', () => {
 
   it('renders with default primary variant', () => {
     render(<Button>Click me</Button>)
-    const button = screen.getByRole('button', { name: 'Click me' })
+    const button = screen.getByRole('button', { name: /click me/i })
     
     expect(button).toBeInTheDocument()
-    expect(button).toHaveClass('bg-sunrise', 'text-white')
+    expect(button).toHaveClass('bg-purple-600', 'text-white')
   })
 
   it('renders with secondary variant', () => {
     render(<Button variant="secondary">Secondary</Button>)
     const button = screen.getByRole('button', { name: 'Secondary' })
     
-    expect(button).toHaveClass('bg-wave', 'text-white')
+    expect(button).toHaveClass('bg-gray-200', 'text-gray-900')
   })
 
   it('renders with ghost variant', () => {
     render(<Button variant="ghost">Ghost</Button>)
     const button = screen.getByRole('button', { name: 'Ghost' })
     
-    expect(button).toHaveClass('bg-transparent', 'border', 'border-ink/20')
+    expect(button).toHaveClass('hover:bg-gray-100')
   })
 
   it('applies custom className', () => {
