@@ -37,8 +37,8 @@ describe("TeamInvite Component", () => {
     const input = screen.getByPlaceholderText(/colleague@example.com/);
     await user.type(input, "not-an-email");
 
-    const form = input.closest("form")!;
-    fireEvent.submit(form);
+    const button = screen.getByRole("button", { name: /Send Invite/i });
+    await user.click(button);
 
     expect(screen.getByText(/Please enter a valid email address/i)).toBeInTheDocument();
     expect(handleInvite).not.toHaveBeenCalled();

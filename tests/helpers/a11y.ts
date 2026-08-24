@@ -102,14 +102,15 @@ export async function forceTheme(page: Page, theme: 'light' | 'dark'): Promise<v
 }
 
 /**
- * Navigate and wait for the page to fully settle (no network activity,
- * no pending animations) before running axe.
+ * Navigate and wait for the document to be ready before running axe.
+ * The application has persistent background connections, so `networkidle`
+ * is not a reliable readiness signal.
  */
 export async function gotoAndSettle(page: Page, path: string): Promise<void> {
-  await page.goto(path);
+  await page.goto(path, { waitUntil: 'domcontentloaded' });
   // Hide Next.js dev overlay so it doesn't intercept pointer events
   await page.addStyleTag({
     content: 'nextjs-portal { display: none !important; }',
   });
-  await page.waitForLoadState('networkidle');
+  await page.locator('body').waitFor({ state: 'visible' });
 }

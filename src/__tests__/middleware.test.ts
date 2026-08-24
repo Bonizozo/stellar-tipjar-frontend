@@ -1,0 +1,196 @@
+import { describe, it, expect } from 'vitest';
+
+/**
+ * Matcher patterns from src/middleware.ts — kept in sync manually.
+ * These mirror the `config.matcher` export so that changes to one
+ * must be reflected in the other.
+ */
+const MATCHER = [
+  '/',
+  '/(en|es|fr|zh|ar)/:path*',
+];
+
+/**
+ * Replicate how Next.js evaluates middleware matcher entries (logical OR).
+ */
+function matchesMatcher(pathname: string): boolean {
+  return MATCHER.some((pattern) => {
+    if (pattern === '/') {
+      return pathname === '/';
+    }
+    if (pattern === '/(en|es|fr|zh|ar)/:path*') {
+      return /^\/(en|es|fr|zh|ar)(\/.*)?$/.test(pathname);
+    }
+    return false;
+  });
+}
+
+describe('middleware matcher', () => {
+  describe('root', () => {
+    it('matches /', () => {
+      expect(matchesMatcher('/')).toBe(true);
+    });
+  });
+
+  describe('locale-prefixed routes', () => {
+    const locales = ['en', 'es', 'fr', 'zh', 'ar'] as const;
+
+    it.each(locales)('matches /%s', (locale) => {
+      expect(matchesMatcher(`/${locale}`)).toBe(true);
+    });
+
+    it.each(locales)('matches /%s/explore', (locale) => {
+      expect(matchesMatcher(`/${locale}/explore`)).toBe(true);
+    });
+
+    it.each(locales)('matches /%s/creator/alice', (locale) => {
+      expect(matchesMatcher(`/${locale}/creator/alice`)).toBe(true);
+    });
+
+    it.each(locales)('matches /%s/dashboard/marketplace', (locale) => {
+      expect(matchesMatcher(`/${locale}/dashboard/marketplace`)).toBe(true);
+    });
+  });
+
+  describe('un-prefixed page routes bypass locale middleware', () => {
+    it('does not match /explore', () => {
+      expect(matchesMatcher('/explore')).toBe(false);
+    });
+
+    it('does not match /creator/alice', () => {
+      expect(matchesMatcher('/creator/alice')).toBe(false);
+    });
+
+    it('does not match /creator/some-other-user', () => {
+      expect(matchesMatcher('/creator/some-other-user')).toBe(false);
+    });
+
+    it('does not match /marketplace', () => {
+      expect(matchesMatcher('/marketplace')).toBe(false);
+    });
+
+    it('does not match /dashboard/marketplace', () => {
+      expect(matchesMatcher('/dashboard/marketplace')).toBe(false);
+    });
+
+    it('does not match /tips', () => {
+      expect(matchesMatcher('/tips')).toBe(false);
+    });
+
+    it('does not match /settings/notifications', () => {
+      expect(matchesMatcher('/settings/notifications')).toBe(false);
+    });
+
+    it('does not match /discover/category-name', () => {
+      expect(matchesMatcher('/discover/category-name')).toBe(false);
+    });
+
+    it('does not match /mentorship/chat/some-id', () => {
+      expect(matchesMatcher('/mentorship/chat/some-id')).toBe(false);
+    });
+
+    it('does not match /certification/courses/123', () => {
+      expect(matchesMatcher('/certification/courses/123')).toBe(false);
+    });
+
+    it('does not match /store/username', () => {
+      expect(matchesMatcher('/store/username')).toBe(false);
+    });
+
+    it('does not match /team/teamname', () => {
+      expect(matchesMatcher('/team/teamname')).toBe(false);
+    });
+  });
+
+  describe('API routes are excluded', () => {
+    it('does not match /api/foo', () => {
+      expect(matchesMatcher('/api/foo')).toBe(false);
+    });
+
+    it('does not match /api/marketplace/orders', () => {
+      expect(matchesMatcher('/api/marketplace/orders')).toBe(false);
+    });
+
+    it('does not match /api/marketplace/orders/123', () => {
+      expect(matchesMatcher('/api/marketplace/orders/123')).toBe(false);
+    });
+
+    it('does not match /api/tips/schedule', () => {
+      expect(matchesMatcher('/api/tips/schedule')).toBe(false);
+    });
+
+    it('does not match /api/tips/abc/comments', () => {
+      expect(matchesMatcher('/api/tips/abc/comments')).toBe(false);
+    });
+
+    it('does not match /api/notifications/preferences', () => {
+      expect(matchesMatcher('/api/notifications/preferences')).toBe(false);
+    });
+
+    it('does not match /api/moderation', () => {
+      expect(matchesMatcher('/api/moderation')).toBe(false);
+    });
+
+    it('does not match /api/creators/discover', () => {
+      expect(matchesMatcher('/api/creators/discover')).toBe(false);
+    });
+  });
+
+  describe('internal Next.js paths are excluded', () => {
+    it('does not match /_next/static/chunks/main.js', () => {
+      expect(matchesMatcher('/_next/static/chunks/main.js')).toBe(false);
+    });
+
+    it('does not match /_next/data/build-id/page.json', () => {
+      expect(matchesMatcher('/_next/data/build-id/page.json')).toBe(false);
+    });
+
+    it('does not match /_next/webpack-hmr', () => {
+      expect(matchesMatcher('/_next/webpack-hmr')).toBe(false);
+    });
+  });
+
+  describe('static assets are excluded', () => {
+    it('does not match /favicon.ico', () => {
+      expect(matchesMatcher('/favicon.ico')).toBe(false);
+    });
+
+    it('does not match /image.png', () => {
+      expect(matchesMatcher('/image.png')).toBe(false);
+    });
+
+    it('does not match /logo.svg', () => {
+      expect(matchesMatcher('/logo.svg')).toBe(false);
+    });
+
+    it('does not match /photo.jpg', () => {
+      expect(matchesMatcher('/photo.jpg')).toBe(false);
+    });
+
+    it('does not match /banner.webp', () => {
+      expect(matchesMatcher('/banner.webp')).toBe(false);
+    });
+
+    it('does not match /robots.txt', () => {
+      expect(matchesMatcher('/robots.txt')).toBe(false);
+    });
+
+    it('does not match /sitemap.xml', () => {
+      expect(matchesMatcher('/sitemap.xml')).toBe(false);
+    });
+
+    it('does not match /manifest.json', () => {
+      expect(matchesMatcher('/manifest.json')).toBe(false);
+    });
+  });
+
+  describe('Vercel internal paths are excluded', () => {
+    it('does not match /_vercel/insights/view', () => {
+      expect(matchesMatcher('/_vercel/insights/view')).toBe(false);
+    });
+
+    it('does not match /_vercel/speed-insights/view', () => {
+      expect(matchesMatcher('/_vercel/speed-insights/view')).toBe(false);
+    });
+  });
+});

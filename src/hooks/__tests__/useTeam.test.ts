@@ -56,7 +56,6 @@ describe("useTeam Hook", () => {
     act(() => {
       result.current.addMember({ name: "Bob", email: "bob@example.com", split: 50 });
     });
-
     expect(result.current.team.members).toHaveLength(1);
     const memberId = result.current.team.members[0].id;
 
@@ -147,7 +146,6 @@ describe("useTeam Hook", () => {
     act(() => {
       result.current.inviteMember("kate@example.com");
     });
-
     expect(result.current.pendingInvitations).toHaveLength(1);
     const invitationId = result.current.team.invitations[0].id;
 

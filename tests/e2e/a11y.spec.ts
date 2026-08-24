@@ -22,6 +22,8 @@ test.setTimeout(120_000);
 for (const theme of THEMES) {
   test.describe(`${theme} theme`, () => {
     test.beforeEach(async ({ page }) => {
+      // Axe scans the stable UI state; entrance animations are not under test.
+      await page.emulateMedia({ reducedMotion: 'reduce' });
       // set theme before navigation so it applies immediately
       await page.goto('/');
       await forceTheme(page, theme);

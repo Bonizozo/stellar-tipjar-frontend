@@ -70,7 +70,14 @@ export function TeamInvite({
       </div>
 
       {/* Invitation form */}
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:flex-row sm:gap-2">
+      {/* noValidate: we own email validation below so our custom error
+          messages always render, instead of the browser silently blocking
+          submission via native `type="email"` constraint validation. */}
+      <form
+        onSubmit={handleSubmit}
+        noValidate
+        className="flex flex-col gap-3 sm:flex-row sm:gap-2"
+      >
         <input
           type="email"
           value={email}
