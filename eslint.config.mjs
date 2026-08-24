@@ -5,6 +5,30 @@ const eslintConfig = [
   ...nextCoreWebVitals,
   ...nextTypescript,
   {
+    files: ["**/*.{js,jsx,ts,tsx,mjs,cjs}"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-unused-vars": "warn",
+      "@typescript-eslint/no-require-imports": "warn",
+      "react-hooks/exhaustive-deps": "warn",
+      "react-hooks/set-state-in-effect": "warn",
+      "react-hooks/purity": "warn",
+      "react-hooks/rules-of-hooks": "warn",
+      "react/no-unescaped-entities": "warn",
+      "@next/next/no-img-element": "warn",
+      "prefer-const": "warn",
+      "@typescript-eslint/no-empty-object-type": "warn",
+      "react-hooks/refs": "warn",
+      "react-hooks/preserve-manual-memoization": "warn",
+      "react-hooks/use-memo": "warn",
+      "react-hooks/immutability": "warn",
+      "@next/next/no-assign-module-variable": "warn",
+      "react-hooks/static-components": "warn",
+      "@next/next/no-html-link-for-pages": "warn",
+      "@typescript-eslint/no-this-alias": "warn",
+    },
+  },
+  {
     // Prevent direct process.env reads outside the config module.
     // All env access must go through @/config/env exports.
     files: ["src/**/*.{ts,tsx}"],

@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi } from "vitest";
 import { RevenueSplit } from "@/components/RevenueSplit";
@@ -53,7 +53,7 @@ describe("RevenueSplit Component", () => {
       <RevenueSplit members={mockMembers} onUpdateSplit={handleUpdateSplit} totalSplit={100} />
     );
 
-    expect(screen.getByText(/Balanced/i)).toBeInTheDocument();
+    expect(screen.getByText(/Revenue split is balanced/i)).toBeInTheDocument();
   });
 
   it("shows warning when split is incomplete", () => {
@@ -62,8 +62,8 @@ describe("RevenueSplit Component", () => {
       <RevenueSplit members={mockMembers} onUpdateSplit={handleUpdateSplit} totalSplit={80} />
     );
 
-    expect(screen.getByText(/incomplete/i)).toBeInTheDocument();
-    expect(screen.getByText(/20% remaining to allocate/i)).toBeInTheDocument();
+    expect(screen.getByText(/Incomplete/i)).toBeInTheDocument();
+    expect(screen.getByText(/20% remaining to allocate/)).toBeInTheDocument();
   });
 
   it("shows overflow warning when split exceeds 100%", () => {
@@ -72,12 +72,11 @@ describe("RevenueSplit Component", () => {
       <RevenueSplit members={mockMembers} onUpdateSplit={handleUpdateSplit} totalSplit={120} />
     );
 
-    expect(screen.getByText(/Overflow/i)).toBeInTheDocument();
-    expect(screen.getByText(/exceed 100%/i)).toBeInTheDocument();
+    expect(screen.getByText(/Splits exceed 100%/)).toBeInTheDocument();
+    expect(screen.getByText(/Reduce splits to reach 100%/)).toBeInTheDocument();
   });
 
   it("calls onUpdateSplit when range input changes", async () => {
-    const user = userEvent.setup();
     const handleUpdateSplit = vi.fn();
 
     render(
@@ -85,13 +84,12 @@ describe("RevenueSplit Component", () => {
     );
 
     const rangeInputs = screen.getAllByRole("slider");
-    await user.click(rangeInputs[0]);
+    fireEvent.change(rangeInputs[0], { target: { value: "60" } });
 
-    expect(handleUpdateSplit).toHaveBeenCalled();
+    expect(handleUpdateSplit).toHaveBeenCalledWith("1", 60);
   });
 
   it("calls onUpdateSplit when number input changes", async () => {
-    const user = userEvent.setup();
     const handleUpdateSplit = vi.fn();
 
     render(
@@ -100,8 +98,13 @@ describe("RevenueSplit Component", () => {
 
     const numberInputs = screen.getAllByDisplayValue(/50/);
     if (numberInputs.length > 0) {
-      await user.clear(numberInputs[0]);
-      await user.type(numberInputs[0], "75");
+      const input = numberInputs[0];
+      const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+        window.HTMLInputElement.prototype,
+        "value"
+      )?.set;
+      nativeInputValueSetter?.call(input, "75");
+      input.dispatchEvent(new Event("change", { bubbles: true }));
 
       expect(handleUpdateSplit).toHaveBeenCalled();
     }
@@ -113,7 +116,7 @@ describe("RevenueSplit Component", () => {
       <RevenueSplit members={mockMembers} onUpdateSplit={handleUpdateSplit} totalSplit={100} />
     );
 
-    screen.getAllByDisplayValue(/50/);
+    expect(screen.getAllByDisplayValue(/50/).length).toBeGreaterThan(0);
   });
 
   it("shows total split at bottom", () => {
@@ -122,7 +125,9 @@ describe("RevenueSplit Component", () => {
       <RevenueSplit members={mockMembers} onUpdateSplit={handleUpdateSplit} totalSplit={100} />
     );
 
+    // The total split is displayed in the total indicator section
     expect(screen.getByText("100%")).toBeInTheDocument();
+    expect(screen.getByText("Total Split")).toBeInTheDocument();
   });
 
   it("disables controls when isLoading is true", () => {
@@ -150,15 +155,15 @@ describe("RevenueSplit Component", () => {
       <RevenueSplit members={mockMembers} onUpdateSplit={handleUpdateSplit} totalSplit={80} />
     );
 
-    let button = screen.getByRole("button", { name: /Configure Split/i });
-    expect(button).toBeDisabled();
+    const unbalancedButton = screen.getByRole("button", { name: /Configure Split to 100%/ });
+    expect(unbalancedButton).toBeDisabled();
 
     // Balanced
     rerender(
       <RevenueSplit members={mockMembers} onUpdateSplit={handleUpdateSplit} totalSplit={100} />
     );
 
-    button = screen.getByRole("button", { name: /Configured/i });
-    expect(button).not.toBeDisabled();
+    const balancedButton = screen.getByRole("button", { name: /✓ Revenue Split Configured/ });
+    expect(balancedButton).not.toBeDisabled();
   });
 });
