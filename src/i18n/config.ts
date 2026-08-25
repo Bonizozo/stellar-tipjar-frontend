@@ -12,4 +12,7 @@ export const localeNames: Record<Locale, string> = {
   zh: '中文',
 };
 
-export const isRTL = (locale: Locale) => locale === 'ar';
+export const isRTL = (locale: string) => locale === 'ar';
+export const getDirection = (locale: string): 'rtl' | 'ltr' =>
+  isRTL(locale) ? 'rtl' : 'ltr';
+
