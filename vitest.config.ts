@@ -22,10 +22,16 @@ export default defineConfig({
         'coverage/',
       ],
     },
+    server: {
+      deps: {
+        inline: ['next-intl'],
+      },
+    },
   },
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),
+      'next/server': resolve(__dirname, './node_modules/next/server.js'),
     },
   },
 })
