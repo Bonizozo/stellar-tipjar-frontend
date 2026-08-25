@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 import createBundleAnalyzer from "@next/bundle-analyzer";
 import { getSecurityHeaders } from "./src/utils/security";
+import "./src/config/env";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n.ts");
 const withBundleAnalyzer = createBundleAnalyzer({
