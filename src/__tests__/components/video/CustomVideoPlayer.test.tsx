@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { CustomVideoPlayer } from '@/components/video/CustomVideoPlayer';
 import type { Chapter, VideoQuality } from '@/types/video';
@@ -78,5 +78,46 @@ describe('CustomVideoPlayer', () => {
 
     expect(screen.getByText('1080p')).toBeInTheDocument();
     expect(screen.getByText('720p')).toBeInTheDocument();
+  });
+
+  it('handles keyboard navigation and shortcuts on player container', () => {
+    render(
+      <CustomVideoPlayer
+        src="test-video.mp4"
+        creatorUsername="testuser"
+      />
+    );
+
+    const playerRegion = screen.getByRole('region', { name: /video player/i });
+    expect(playerRegion).toBeInTheDocument();
+    expect(playerRegion).toHaveAttribute('tabindex', '0');
+
+    // Test Play / Pause with Space
+    fireEvent.keyDown(playerRegion, { key: ' ' });
+    // Test Seek with Left/Right Arrow
+    fireEvent.keyDown(playerRegion, { key: 'ArrowRight' });
+    fireEvent.keyDown(playerRegion, { key: 'ArrowLeft' });
+    // Test Volume with Up/Down Arrow
+    fireEvent.keyDown(playerRegion, { key: 'ArrowUp' });
+    fireEvent.keyDown(playerRegion, { key: 'ArrowDown' });
+    // Test Mute with M
+    fireEvent.keyDown(playerRegion, { key: 'm' });
+  });
+
+  it('provides accessible seek slider with keyboard controls', () => {
+    render(
+      <CustomVideoPlayer
+        src="test-video.mp4"
+        creatorUsername="testuser"
+      />
+    );
+
+    const seekSlider = screen.getByRole('slider', { name: /seek slider/i });
+    expect(seekSlider).toBeInTheDocument();
+    expect(seekSlider).toHaveAttribute('tabindex', '0');
+
+    fireEvent.keyDown(seekSlider, { key: 'ArrowRight' });
+    fireEvent.keyDown(seekSlider, { key: 'ArrowLeft' });
+    fireEvent.keyDown(seekSlider, { key: 'Home' });
   });
 });

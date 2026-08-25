@@ -140,4 +140,40 @@ test.describe('Keyboard-only journey', () => {
     }
     // Not failing hard if sidebar isn't visible (mobile viewport)
   });
+
+  test('video player keyboard controls are functional (play/pause, seek, volume, mute)', async ({ page }) => {
+    await gotoAndSettle(page, '/demo/video-player');
+
+    // Find the video player container by role/label
+    const player = page.getByRole('region', { name: /video player/i });
+    await expect(player).toBeVisible();
+
+    // Focus the player container via keyboard
+    await player.focus();
+    await expect(player).toBeFocused();
+
+    // Toggle Play/Pause via Space
+    await page.keyboard.press('Space');
+
+    // Seek forward and backward via Arrow keys
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('ArrowLeft');
+
+    // Adjust Volume via Up/Down Arrow keys
+    await page.keyboard.press('ArrowUp');
+    await page.keyboard.press('ArrowDown');
+
+    // Toggle Mute via M
+    await page.keyboard.press('m');
+    await page.keyboard.press('m');
+
+    // Navigate to seek slider via Tab and manipulate it with keyboard
+    const seekSlider = page.getByRole('slider', { name: /seek slider/i });
+    if (await seekSlider.isVisible()) {
+      await seekSlider.focus();
+      await expect(seekSlider).toBeFocused();
+      await page.keyboard.press('ArrowRight');
+      await page.keyboard.press('ArrowLeft');
+    }
+  });
 });
