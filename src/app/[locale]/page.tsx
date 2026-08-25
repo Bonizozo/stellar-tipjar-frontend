@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 import { Button } from "@/components/Button";
-import { buildMetadata, websiteJsonLd } from "@/utils/seo";
+import { buildMetadata, safeJsonLdString, websiteJsonLd } from "@/utils/seo";
 import { SocialProofStrip } from "@/components/landing/SocialProofStrip";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { FeaturedCreators } from "@/components/landing/FeaturedCreators";
@@ -19,7 +19,7 @@ export default function Home() {
     <div className="space-y-16 md:space-y-24">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd()) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLdString(websiteJsonLd()) }}
       />
 
       {/* ─── Hero ─── */}

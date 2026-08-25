@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { CreatorPageClient } from "./CreatorPageClient";
 import { creatorUsernameSchema } from "@/schemas/creatorSchema";
 import { getCreatorProfile } from "@/services/api";
-import { buildMetadata, creatorProfileJsonLd } from "@/utils/seo";
+import { buildMetadata, creatorProfileJsonLd, safeJsonLdString } from "@/utils/seo";
 
 interface CreatorPageProps {
   params: Promise<{
@@ -42,7 +42,7 @@ export default async function CreatorPage({ params }: { params: Promise<{ userna
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(
+          __html: safeJsonLdString(
             creatorProfileJsonLd({
               username: profile.username,
               displayName: profile.displayName,
