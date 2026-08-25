@@ -17,18 +17,18 @@ export interface SpeechRecognitionOptions {
 }
 
 class SpeechRecognitionService {
-  private recognition: any;
+  private recognition: SpeechRecognitionInstance | undefined;
   private isListening = false;
   private isSpeaking = false;
 
   constructor() {
-    const SpeechRecognition =
-      typeof window !== 'undefined' &&
-      ((window as any).SpeechRecognition ||
-        (window as any).webkitSpeechRecognition);
+    const SpeechRecognitionClass =
+      typeof window !== 'undefined'
+        ? window.SpeechRecognition || window.webkitSpeechRecognition
+        : undefined;
 
-    if (SpeechRecognition) {
-      this.recognition = new SpeechRecognition();
+    if (SpeechRecognitionClass) {
+      this.recognition = new SpeechRecognitionClass();
     }
   }
 
@@ -41,41 +41,44 @@ class SpeechRecognitionService {
     onError?: (error: string) => void,
     options?: SpeechRecognitionOptions
   ): void {
-    if (!this.isSupported()) {
+    if (!this.isSupported() || !this.recognition) {
       onError?.('Speech recognition not supported in this browser');
       return;
     }
 
     this.isListening = true;
-    this.recognition.language = options?.language || 'en-US';
+    this.recognition.lang = options?.language || 'en-US';
     this.recognition.continuous = options?.continuous || false;
-    this.recognition.interimResults = options?.interimResults || true;
+    this.recognition.interimResults = options?.interimResults ?? true;
     this.recognition.maxAlternatives = options?.maxAlternatives || 1;
 
     this.recognition.onstart = () => {
       this.isListening = true;
     };
 
-    this.recognition.onresult = (event: any) => {
+    this.recognition.onresult = (event: SpeechRecognitionEvent) => {
       let transcript = '';
       let confidence = 0;
 
       for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcriptSegment = event.results[i][0].transcript;
-        transcript += transcriptSegment;
-        if (event.results[i].isFinal) {
-          confidence = event.results[i][0].confidence;
+        const resultItem = event.results[i];
+        if (resultItem && resultItem[0]) {
+          transcript += resultItem[0].transcript;
+          if (resultItem.isFinal) {
+            confidence = resultItem[0].confidence;
+          }
         }
       }
 
+      const lastResult = event.results[event.results.length - 1];
       onResult({
         transcript: transcript.toLowerCase(),
         confidence,
-        isFinal: event.results[event.results.length - 1].isFinal,
+        isFinal: lastResult ? lastResult.isFinal : false,
       });
     };
 
-    this.recognition.onerror = (event: any) => {
+    this.recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       onError?.(event.error);
     };
 
@@ -87,7 +90,7 @@ class SpeechRecognitionService {
   }
 
   stopListening(): void {
-    if (this.isSupported() && this.isListening) {
+    if (this.isSupported() && this.isListening && this.recognition) {
       this.recognition.stop();
       this.isListening = false;
     }
