@@ -97,10 +97,11 @@ export class TeamService {
    */
   static async addTeamMember(
     teamName: string,
-    member: TeamMember | Omit<TeamMember, "id" | "createdAt">
+    member: unknown
   ): Promise<TeamMember> {
     try {
-      const validated = teamMemberSchema.omit({ id: true, createdAt: true }).parse(member);
+      // Validate input against addMemberSchema before making any API calls
+      const validated = addMemberSchema.parse(member);
 
       const response = await fetch(`${API_BASE_URL}/api/teams/${encodeURIComponent(teamName)}/members`, {
         method: "POST",

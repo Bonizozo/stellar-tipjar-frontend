@@ -1,4 +1,17 @@
 import { describe, it, expect } from "vitest";
+import * as marketplaceTypes from "@/types/marketplace";
+import { useMarketplace } from "@/hooks/useMarketplace";
+import { useCreatorMarketplace } from "@/hooks/useCreatorMarketplace";
+import * as CreatorStoreCard from "@/components/marketplace/CreatorStoreCard";
+import * as MarketplaceFilters from "@/components/marketplace/MarketplaceFilters";
+import * as ProductListingForm from "@/components/marketplace/ProductListingForm";
+import * as CheckoutFlow from "@/components/marketplace/CheckoutFlow";
+import * as ShippingAddressForm from "@/components/marketplace/ShippingAddressForm";
+import * as PaymentMethod from "@/components/marketplace/PaymentMethod";
+import * as OrderSummary from "@/components/marketplace/OrderSummary";
+import * as OrderManagement from "@/components/marketplace/OrderManagement";
+import * as OrderDetailsModal from "@/components/marketplace/OrderDetailsModal";
+import * as DigitalDelivery from "@/components/marketplace/DigitalDelivery";
 
 describe("Marketplace Integration", () => {
   it("should have all required types exported", async () => {
@@ -21,16 +34,16 @@ describe("Marketplace Integration", () => {
 
   it("should have all marketplace components available", async () => {
     const components = [
-      "@/components/marketplace/CreatorStoreCard",
-      "@/components/marketplace/MarketplaceFilters",
-      "@/components/marketplace/ProductListingForm",
-      "@/components/marketplace/CheckoutFlow",
-      "@/components/marketplace/ShippingAddressForm",
-      "@/components/marketplace/PaymentMethod",
-      "@/components/marketplace/OrderSummary",
-      "@/components/marketplace/OrderManagement",
-      "@/components/marketplace/OrderDetailsModal",
-      "@/components/marketplace/DigitalDelivery",
+      CreatorStoreCard,
+      MarketplaceFilters,
+      ProductListingForm,
+      CheckoutFlow,
+      ShippingAddressForm,
+      PaymentMethod,
+      OrderSummary,
+      OrderManagement,
+      OrderDetailsModal,
+      DigitalDelivery,
     ];
 
     for (const componentPath of components) {

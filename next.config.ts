@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 import createBundleAnalyzer from "@next/bundle-analyzer";
 import { getSecurityHeaders } from "./src/utils/security";
+import "./src/config/env";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n.ts");
 const withBundleAnalyzer = createBundleAnalyzer({
@@ -9,7 +10,7 @@ const withBundleAnalyzer = createBundleAnalyzer({
 });
 
 // i18n is handled via next-intl with locale routing
-// Supported locales: en, es, fr, zh, ar, he — preference persisted in localStorage
+// Supported locales: en, es, fr, zh, ar — preference persisted in localStorage
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   typedRoutes: true,
@@ -20,6 +21,20 @@ const nextConfig: NextConfig = {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 60 * 60 * 24, // 24 hours
+    /**
+     * Security boundary for Next.js image optimization (`next/image`).
+     *
+     * SECURITY NOTICE:
+     * Next.js image optimization proxies and processes image requests through the application server.
+     * Overly permissive remote patterns (e.g. wildcard subdomains `*.domain.com` or open hosts)
+     * create Server-Side Request Forgery (SSRF) risks where the server can be tricked into fetching
+     * arbitrary external resources.
+     *
+     * GUIDELINES FOR EDITORS:
+     * 1. Always specify exact, fully-qualified hostnames (never use wildcard subdomains unless strictly unavoidable).
+     * 2. Enforce the "https" protocol.
+     * 3. Scope pathnames to specific directories/patterns whenever possible.
+     */
     remotePatterns: [
       {
         protocol: "https",
@@ -27,14 +42,12 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**",
       },
-      // CDN integration — add your CDN hostname here
       {
         protocol: "https",
         hostname: "cdn.stellartipjar.app",
         port: "",
         pathname: "/**",
       },
-      // Allow common avatar/image CDNs used in development
       {
         protocol: "https",
         hostname: "avatars.githubusercontent.com",

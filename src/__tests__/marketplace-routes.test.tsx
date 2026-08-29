@@ -1,4 +1,10 @@
 import { describe, it, expect } from "vitest";
+import MarketplacePage from "@/app/marketplace/page";
+import CreatePage from "@/app/marketplace/create/page";
+import DashboardPage from "@/app/dashboard/marketplace/page";
+import * as productsRoute from "@/app/api/marketplace/products/route";
+import * as ordersRoute from "@/app/api/marketplace/orders/route";
+import * as orderDetailRoute from "@/app/api/marketplace/orders/[orderId]/route";
 
 describe("Marketplace Routes", () => {
   it("should have marketplace page component", async () => {

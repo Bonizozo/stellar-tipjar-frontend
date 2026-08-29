@@ -12,6 +12,8 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "check:bundle-budget": "node scripts/check-bundle-budget.js",
+    "check:i18n": "node scripts/check-locale-catalogs.js",
+    "check:env": "node scripts/validate-env.js",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report",
