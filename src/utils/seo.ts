@@ -5,6 +5,19 @@ const BASE_URL = SITE_BASE_URL;
 
 export const DEFAULT_OG_IMAGE = "/opengraph-image";
 
+/**
+ * Serializes a JSON-LD object for use in dangerouslySetInnerHTML.
+ *
+ * JSON.stringify does not escape "<", so a value containing "</script>"
+ * (e.g. a user-supplied creator bio) would close the surrounding <script>
+ * tag early and let the remaining payload be parsed as new, executable
+ * HTML. Escaping "<" as its unicode sequence keeps the JSON valid while
+ * making that break-out impossible.
+ */
+export function safeJsonLdString(data: unknown): string {
+  return JSON.stringify(data).replace(/</g, "\\u003c");
+}
+
 export function buildMetadata({
   title,
   description,

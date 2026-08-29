@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config'
+import { defineConfig, configDefaults } from 'vitest/config'
 import { resolve } from 'path'
 
 export default defineConfig({
@@ -18,10 +18,16 @@ export default defineConfig({
         'coverage/',
       ],
     },
+    server: {
+      deps: {
+        inline: ['next-intl'],
+      },
+    },
   },
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),
+      'next/server': resolve(__dirname, './node_modules/next/server.js'),
     },
   },
 })

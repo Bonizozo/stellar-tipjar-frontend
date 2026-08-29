@@ -20,6 +20,17 @@ vi.mock('next-intl', () => ({
     };
     return map[key] || key;
   },
+  useLocale: () => 'en',
+}));
+
+// Mock NotificationBadge component
+vi.mock('../NotificationBadge', () => ({
+  NotificationBadge: vi.fn(() => <div data-testid="notification-badge">Badge</div>),
+}));
+
+// Mock NotificationCenter component
+vi.mock('../NotificationCenter', () => ({
+  NotificationCenter: vi.fn(() => <div data-testid="notification-center">Center</div>),
 }));
 
 
@@ -58,7 +69,7 @@ describe('Navbar Component', () => {
     expect(brandLink).toHaveAttribute('href', '/')
   })
 
-  it('renders all navigation links', () => {
+  it('renders all desktop navigation items', () => {
     renderNavbar()
 
     expect(screen.getByRole('link', { name: 'Home' })).toBeInTheDocument()
@@ -98,7 +109,7 @@ describe('Navbar Component', () => {
     expect(header).toHaveClass('sticky', 'top-0', 'z-20', 'border-b', 'border-transparent', 'bg-white/70', 'backdrop-blur-md')
   })
 
-  it('applies correct styling classes to navigation container', () => {
+  it('applies correct styling classes to main navigation container', () => {
     renderNavbar()
 
     const nav = screen.getByRole('navigation', { name: 'Main navigation' })

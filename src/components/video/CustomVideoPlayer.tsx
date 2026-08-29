@@ -70,14 +70,77 @@ export function CustomVideoPlayer({
     actions.seek(timestamp);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement;
+    if (
+      target &&
+      (target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable)
+    ) {
+      return;
+    }
+
+    switch (e.key) {
+      case ' ':
+      case 'k':
+      case 'K':
+        e.preventDefault();
+        actions.togglePlay();
+        actions.showControlsTemporarily();
+        break;
+      case 'ArrowLeft':
+      case 'j':
+      case 'J':
+        e.preventDefault();
+        actions.seek(Math.max(0, state.currentTime - 5));
+        actions.showControlsTemporarily();
+        break;
+      case 'ArrowRight':
+      case 'l':
+      case 'L':
+        e.preventDefault();
+        actions.seek(Math.min(state.duration || Infinity, state.currentTime + 5));
+        actions.showControlsTemporarily();
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        actions.setVolume(Math.min(1, state.volume + 0.1));
+        actions.showControlsTemporarily();
+        break;
+      case 'ArrowDown':
+        e.preventDefault();
+        actions.setVolume(Math.max(0, state.volume - 0.1));
+        actions.showControlsTemporarily();
+        break;
+      case 'm':
+      case 'M':
+        e.preventDefault();
+        actions.toggleMute();
+        actions.showControlsTemporarily();
+        break;
+      case 'f':
+      case 'F':
+        e.preventDefault();
+        actions.toggleFullscreen();
+        break;
+      default:
+        break;
+    }
+  };
+
   return (
     <div className={`flex gap-4 ${className}`}>
       {/* Video Player Container */}
       <div className="flex-1 relative">
         <div
-          className="relative w-full bg-black rounded-2xl overflow-hidden aspect-video"
+          tabIndex={0}
+          role="region"
+          aria-label="Video Player"
+          className="relative w-full bg-black rounded-2xl overflow-hidden aspect-video focus:outline-none focus:ring-2 focus:ring-purple-500"
           onMouseMove={actions.showControlsTemporarily}
           onMouseEnter={actions.showControlsTemporarily}
+          onKeyDown={handleKeyDown}
         >
           {/* Video Element */}
           <video

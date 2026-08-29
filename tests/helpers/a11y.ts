@@ -113,3 +113,33 @@ export async function gotoAndSettle(page: Page, path: string): Promise<void> {
   });
   await page.waitForLoadState('networkidle');
 }
+
+/**
+ * Wait for CSS transitions and framer-motion animations to finish before
+ * running an axe scan on a freshly-opened interactive state (drawer, modal,
+ * etc.).  Waits for the DOM to report no active CSS animations/transitions.
+ *
+ * Falls back to a short fixed delay when the Animation API is unavailable
+ * (e.g. older WebKit builds in CI).
+ */
+export async function waitForAnimations(page: Page, maxMs = 1000): Promise<void> {
+  await page
+    .waitForFunction(
+      () => {
+        // Check every element for running animations / transitions
+        const allEls = Array.from(document.querySelectorAll('*'));
+        const hasRunning = allEls.some((el) => {
+          const anims = el.getAnimations?.() ?? [];
+          return anims.some(
+            (a) => a.playState === 'running' && !(a as CSSAnimation).animationName?.startsWith('__'),
+          );
+        });
+        return !hasRunning;
+      },
+      { timeout: maxMs },
+    )
+    .catch(() => {
+      // Animation API unavailable or timed out — fall back to a fixed pause
+      return page.waitForTimeout(300);
+    });
+}
