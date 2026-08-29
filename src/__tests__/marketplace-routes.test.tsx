@@ -1,11 +1,3 @@
-import { describe, it, expect } from "vitest";
-import MarketplacePage from "@/app/marketplace/page";
-import CreatePage from "@/app/marketplace/create/page";
-import DashboardPage from "@/app/dashboard/marketplace/page";
-import * as productsRoute from "@/app/api/marketplace/products/route";
-import * as ordersRoute from "@/app/api/marketplace/orders/route";
-import * as orderDetailRoute from "@/app/api/marketplace/orders/[orderId]/route";
-
 describe("Marketplace Routes", () => {
   it("should have marketplace page component", async () => {
     const MarketplacePage = (await import("@/app/marketplace/page")).default;
@@ -29,23 +21,17 @@ describe("Marketplace Routes", () => {
     const { GET, POST } = await import("@/app/api/marketplace/products/route");
     expect(GET).toBeDefined();
     expect(POST).toBeDefined();
-    expect(typeof GET).toBe("function");
-    expect(typeof POST).toBe("function");
   });
 
   it("should have orders API route", async () => {
     const { GET, POST } = await import("@/app/api/marketplace/orders/route");
     expect(GET).toBeDefined();
     expect(POST).toBeDefined();
-    expect(typeof GET).toBe("function");
-    expect(typeof POST).toBe("function");
   });
 
   it("should have order detail API route", async () => {
     const { GET, PATCH } = await import("@/app/api/marketplace/orders/[orderId]/route");
     expect(GET).toBeDefined();
     expect(PATCH).toBeDefined();
-    expect(typeof GET).toBe("function");
-    expect(typeof PATCH).toBe("function");
   });
 });

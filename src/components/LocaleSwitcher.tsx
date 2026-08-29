@@ -3,8 +3,8 @@
 import { useI18n } from '@/i18n/provider';
 import { locales, localeNames, type Locale } from '@/i18n/config';
 import { Globe } from 'lucide-react';
-import type { Route } from 'next';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import type { Route } from 'next';
 import { useTransition } from 'react';
 
 export function getLocalizedPath(

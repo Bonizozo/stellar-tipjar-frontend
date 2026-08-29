@@ -186,28 +186,30 @@ export function useTeam(teamName: string) {
       role?: TeamRole;
       walletAddress?: string;
     }) => {
-      flushSync(() => setProfiles((prev) => {
-        const current = prev[teamName] ?? team;
-        const newMember: TeamMember = {
-          id: `member_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-          name: member.name,
-          email: member.email,
-          split: member.split,
-          role: member.role ?? "member",
-          walletAddress: member.walletAddress,
-          createdAt: fmt(),
-          isActive: true,
-          earnings: 0,
-        };
-        return {
-          ...prev,
-          [teamName]: {
-            ...current,
-            members: [...current.members, newMember],
-            updatedAt: fmt(),
-          },
-        };
-      }));
+      flushSync(() => {
+        setProfiles((prev) => {
+          const current = prev[teamName] ?? team;
+          const newMember: TeamMember = {
+            id: `member_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+            name: member.name,
+            email: member.email,
+            split: member.split,
+            role: member.role ?? "member",
+            walletAddress: member.walletAddress,
+            createdAt: fmt(),
+            isActive: true,
+            earnings: 0,
+          };
+          return {
+            ...prev,
+            [teamName]: {
+              ...current,
+              members: [...current.members, newMember],
+              updatedAt: fmt(),
+            },
+          };
+        });
+      });
     },
     [teamName, team],
   );
@@ -231,16 +233,18 @@ export function useTeam(teamName: string) {
 
   const updateMember = useCallback(
     (memberId: string, updates: Partial<TeamMember>) => {
-      flushSync(() => setProfiles((prev) => {
-        const current = prev[teamName] ?? team;
-        const newMembers = current.members.map((m) =>
-          m.id === memberId ? { ...m, ...updates } : m,
-        );
-        return {
-          ...prev,
-          [teamName]: { ...current, members: newMembers, updatedAt: fmt() },
-        };
-      }));
+      flushSync(() => {
+        setProfiles((prev) => {
+          const current = prev[teamName] ?? team;
+          const newMembers = current.members.map((m) =>
+            m.id === memberId ? { ...m, ...updates } : m,
+          );
+          return {
+            ...prev,
+            [teamName]: { ...current, members: newMembers, updatedAt: fmt() },
+          };
+        });
+      });
     },
     [teamName],
   );
@@ -268,29 +272,31 @@ export function useTeam(teamName: string) {
 
   const inviteMember = useCallback(
     (email: string) => {
-      flushSync(() => setProfiles((prev) => {
-        const current = prev[teamName] ?? team;
-        const newInvitation: TeamInvitation = {
-          id: `invite_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-          email,
-          sentAt: fmt(),
-          status: "pending",
-          expiredAt: new Date(
-            Date.now() + 7 * 24 * 60 * 60 * 1000,
-          ).toISOString(),
-        };
-        return {
-          ...prev,
-          [teamName]: {
-            ...current,
-            invitations: [
-              ...current.invitations.filter((inv) => inv.email !== email),
-              newInvitation,
-            ],
-            updatedAt: fmt(),
-          },
-        };
-      }));
+      flushSync(() => {
+        setProfiles((prev) => {
+          const current = prev[teamName] ?? team;
+          const newInvitation: TeamInvitation = {
+            id: `invite_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+            email,
+            sentAt: fmt(),
+            status: "pending",
+            expiredAt: new Date(
+              Date.now() + 7 * 24 * 60 * 60 * 1000,
+            ).toISOString(),
+          };
+          return {
+            ...prev,
+            [teamName]: {
+              ...current,
+              invitations: [
+                ...current.invitations.filter((inv) => inv.email !== email),
+                newInvitation,
+              ],
+              updatedAt: fmt(),
+            },
+          };
+        });
+      });
     },
     [teamName, team],
   );
