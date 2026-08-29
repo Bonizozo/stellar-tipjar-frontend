@@ -41,7 +41,7 @@ export function TeamInvite({
 
     // Check if already invited
     if (pendingInvitations.some((inv) => inv.email === email.trim())) {
-      setMessage({ type: "error", text: "This email has already been invited." });
+      flushSync(() => setMessage({ type: "error", text: "This email has already been invited." }));
       return;
     }
 

@@ -216,7 +216,7 @@ export function useTeam(teamName: string) {
 
   const removeMember = useCallback(
     (memberId: string) => {
-      setProfiles((prev) => {
+      flushSync(() => setProfiles((prev) => {
         const current = prev[teamName] ?? team;
         return {
           ...prev,
@@ -226,7 +226,7 @@ export function useTeam(teamName: string) {
             updatedAt: fmt(),
           },
         };
-      });
+      }));
     },
     [teamName],
   );
@@ -303,7 +303,7 @@ export function useTeam(teamName: string) {
 
   const cancelInvitation = useCallback(
     (invitationId: string) => {
-      setProfiles((prev) => {
+      flushSync(() => setProfiles((prev) => {
         const current = prev[teamName] ?? team;
         return {
           ...prev,
@@ -315,7 +315,7 @@ export function useTeam(teamName: string) {
             updatedAt: fmt(),
           },
         };
-      });
+      }));
     },
     [teamName],
   );

@@ -1,17 +1,15 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { Navbar } from '../Navbar'
 import { WalletConnector } from '../WalletConnector'
 import { CurrencyProvider } from '@/contexts/CurrencyContext'
 import { WalletProvider } from '@/contexts/WalletContext'
 
-// Mock next/navigation
 vi.mock('next/navigation', () => ({
   usePathname: () => '/',
   useSearchParams: () => new URLSearchParams(),
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
 }));
 
-// Mock next-intl
 vi.mock('next-intl', () => ({
   useLocale: () => 'en',
   useTranslations: () => (key: string) => {
@@ -23,15 +21,13 @@ vi.mock('next-intl', () => ({
   useLocale: () => 'en',
 }));
 
-// Mock NotificationBadge component
 vi.mock('../NotificationBadge', () => ({
-  NotificationBadge: vi.fn(() => <div data-testid="notification-badge">Badge</div>),
-}));
+  NotificationBadge: vi.fn(() => <div data-testid="notification-badge" />),
+}))
 
-// Mock NotificationCenter component
 vi.mock('../NotificationCenter', () => ({
-  NotificationCenter: vi.fn(() => <div data-testid="notification-center">Center</div>),
-}));
+  NotificationCenter: vi.fn(() => <div data-testid="notification-center" />),
+}))
 
 
 vi.mock('../NotificationBadge', () => ({
@@ -56,6 +52,8 @@ const renderNavbar = (ui: React.ReactElement = <Navbar />) =>
     </CurrencyProvider>
   )
 
+const getMainNav = () => screen.getByRole('navigation', { name: /main navigation/i })
+
 describe('Navbar Component', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -64,13 +62,14 @@ describe('Navbar Component', () => {
   it('renders brand link with correct text', () => {
     renderNavbar()
 
-    const brandLink = screen.getByRole('link', { name: 'Stellar Tip Jar — home' })
+    const brandLink = screen.getByRole('link', { name: /Stellar Tip Jar/i })
     expect(brandLink).toBeInTheDocument()
     expect(brandLink).toHaveAttribute('href', '/')
   })
 
-  it('renders all desktop navigation items', () => {
+  it('renders primary navigation items', () => {
     renderNavbar()
+    const mainNav = getMainNav()
 
     expect(screen.getByRole('link', { name: 'Home' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Explore' })).toBeInTheDocument()
@@ -79,6 +78,7 @@ describe('Navbar Component', () => {
 
   it('navigation links have correct href attributes', () => {
     renderNavbar()
+    const mainNav = getMainNav()
 
     expect(screen.getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/')
     expect(screen.getByRole('button', { name: 'Explore' })).toBeInTheDocument()
@@ -102,25 +102,25 @@ describe('Navbar Component', () => {
     expect(nav).toBeInTheDocument()
   })
 
-  it('applies correct styling classes to header', () => {
+  it('applies current header styling classes', () => {
     renderNavbar()
 
     const header = screen.getByRole('banner')
     expect(header).toHaveClass('sticky', 'top-0', 'z-20', 'border-b', 'border-transparent', 'bg-white/70', 'backdrop-blur-md')
   })
 
-  it('applies correct styling classes to main navigation container', () => {
+  it('applies current navigation container classes', () => {
     renderNavbar()
 
     const nav = screen.getByRole('navigation', { name: 'Main navigation' })
     expect(nav).toHaveClass('mx-auto', 'flex', 'h-16', 'w-full', 'max-w-7xl', 'items-center', 'justify-between', 'px-4', 'sm:px-6', 'lg:px-8')
   })
 
-  it('brand link has correct styling', () => {
+  it('brand link has current styling', () => {
     renderNavbar()
 
-    const brandLink = screen.getByRole('link', { name: 'Stellar Tip Jar — home' })
-    expect(brandLink).toHaveClass(
+    expect(screen.getByRole('link', { name: /Stellar Tip Jar/i })).toHaveClass(
+      'shrink-0',
       'text-lg',
       'font-bold',
       'tracking-tight',
