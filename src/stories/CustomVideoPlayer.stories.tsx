@@ -111,7 +111,7 @@ export const AutoPlay: Story = {
   },
 };
 
-function InteractiveVideoPlayer() {
+function InteractiveStory() {
   const [tips, setTips] = useState<TimestampTip[]>(demoTips);
 
   const handleTipSubmit = async (
@@ -120,7 +120,7 @@ function InteractiveVideoPlayer() {
     timestamp: number
   ) => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    
+
     const newTip: TimestampTip = {
       id: Date.now().toString(),
       timestamp,
@@ -149,5 +149,5 @@ function InteractiveVideoPlayer() {
 }
 
 export const Interactive: Story = {
-  render: () => <InteractiveVideoPlayer />,
+  render: () => <InteractiveStory />,
 };

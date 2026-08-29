@@ -36,6 +36,26 @@ export type WalletStatus =
   | "error";
 
 // ── Persisted shape ────────────────────────────────────────────────────────────
+//
+// SECURITY: Only non-sensitive, non-secret values are persisted to localStorage.
+//
+//   publicKey   — the Stellar *public* key, a non-secret identifier. Knowing it
+//                 lets an observer view on-chain history (already public on the
+//                 ledger) but does NOT allow signing transactions or moving
+//                 funds. The private key never leaves the Freighter extension
+//                 and is never accessible to this application.
+//   network     — a non-sensitive configuration string ("testnet"/"mainnet").
+//   wasConnected — a boolean flag that triggers lightweight Freighter
+//                  revalidation on the next page load. Cleared immediately if
+//                  the extension is no longer connected or the address changed.
+//
+// No session token, auth cookie, wallet secret, seed phrase, or other
+// material that could allow an attacker to act on behalf of the user is
+// ever written here. An XSS payload reading this key learns only a public
+// Stellar address — the same data visible in any block explorer.
+//
+// If a server-side auth layer is added in future, any session/auth token MUST
+// live in an httpOnly cookie (not localStorage) so JS cannot read it.
 
 interface PersistedSession {
   publicKey: string | null;

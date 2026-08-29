@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { flushSync } from "react-dom";
 import { createNamespacedStorage } from "@/lib/storage";
 import { z } from "zod";
 
@@ -185,27 +186,29 @@ export function useTeam(teamName: string) {
       role?: TeamRole;
       walletAddress?: string;
     }) => {
-      setProfiles((prev) => {
-        const current = prev[teamName] ?? team;
-        const newMember: TeamMember = {
-          id: `member_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-          name: member.name,
-          email: member.email,
-          split: member.split,
-          role: member.role ?? "member",
-          walletAddress: member.walletAddress,
-          createdAt: fmt(),
-          isActive: true,
-          earnings: 0,
-        };
-        return {
-          ...prev,
-          [teamName]: {
-            ...current,
-            members: [...current.members, newMember],
-            updatedAt: fmt(),
-          },
-        };
+      flushSync(() => {
+        setProfiles((prev) => {
+          const current = prev[teamName] ?? team;
+          const newMember: TeamMember = {
+            id: `member_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+            name: member.name,
+            email: member.email,
+            split: member.split,
+            role: member.role ?? "member",
+            walletAddress: member.walletAddress,
+            createdAt: fmt(),
+            isActive: true,
+            earnings: 0,
+          };
+          return {
+            ...prev,
+            [teamName]: {
+              ...current,
+              members: [...current.members, newMember],
+              updatedAt: fmt(),
+            },
+          };
+        });
       });
     },
     [teamName, team],
@@ -213,7 +216,7 @@ export function useTeam(teamName: string) {
 
   const removeMember = useCallback(
     (memberId: string) => {
-      setProfiles((prev) => {
+      flushSync(() => setProfiles((prev) => {
         const current = prev[teamName] ?? team;
         return {
           ...prev,
@@ -223,22 +226,24 @@ export function useTeam(teamName: string) {
             updatedAt: fmt(),
           },
         };
-      });
+      }));
     },
     [teamName],
   );
 
   const updateMember = useCallback(
     (memberId: string, updates: Partial<TeamMember>) => {
-      setProfiles((prev) => {
-        const current = prev[teamName] ?? team;
-        const newMembers = current.members.map((m) =>
-          m.id === memberId ? { ...m, ...updates } : m,
-        );
-        return {
-          ...prev,
-          [teamName]: { ...current, members: newMembers, updatedAt: fmt() },
-        };
+      flushSync(() => {
+        setProfiles((prev) => {
+          const current = prev[teamName] ?? team;
+          const newMembers = current.members.map((m) =>
+            m.id === memberId ? { ...m, ...updates } : m,
+          );
+          return {
+            ...prev,
+            [teamName]: { ...current, members: newMembers, updatedAt: fmt() },
+          };
+        });
       });
     },
     [teamName],
@@ -267,28 +272,30 @@ export function useTeam(teamName: string) {
 
   const inviteMember = useCallback(
     (email: string) => {
-      setProfiles((prev) => {
-        const current = prev[teamName] ?? team;
-        const newInvitation: TeamInvitation = {
-          id: `invite_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-          email,
-          sentAt: fmt(),
-          status: "pending",
-          expiredAt: new Date(
-            Date.now() + 7 * 24 * 60 * 60 * 1000,
-          ).toISOString(),
-        };
-        return {
-          ...prev,
-          [teamName]: {
-            ...current,
-            invitations: [
-              ...current.invitations.filter((inv) => inv.email !== email),
-              newInvitation,
-            ],
-            updatedAt: fmt(),
-          },
-        };
+      flushSync(() => {
+        setProfiles((prev) => {
+          const current = prev[teamName] ?? team;
+          const newInvitation: TeamInvitation = {
+            id: `invite_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+            email,
+            sentAt: fmt(),
+            status: "pending",
+            expiredAt: new Date(
+              Date.now() + 7 * 24 * 60 * 60 * 1000,
+            ).toISOString(),
+          };
+          return {
+            ...prev,
+            [teamName]: {
+              ...current,
+              invitations: [
+                ...current.invitations.filter((inv) => inv.email !== email),
+                newInvitation,
+              ],
+              updatedAt: fmt(),
+            },
+          };
+        });
       });
     },
     [teamName, team],
@@ -296,7 +303,7 @@ export function useTeam(teamName: string) {
 
   const cancelInvitation = useCallback(
     (invitationId: string) => {
-      setProfiles((prev) => {
+      flushSync(() => setProfiles((prev) => {
         const current = prev[teamName] ?? team;
         return {
           ...prev,
@@ -308,7 +315,7 @@ export function useTeam(teamName: string) {
             updatedAt: fmt(),
           },
         };
-      });
+      }));
     },
     [teamName],
   );

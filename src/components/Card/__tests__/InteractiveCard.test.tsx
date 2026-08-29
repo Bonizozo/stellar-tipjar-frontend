@@ -119,4 +119,100 @@ describe('InteractiveCard Component', () => {
     const card = container.querySelector('.shadow-xl.p-8.rounded-3xl')
     expect(card).toBeInTheDocument()
   })
+
+  it('handles keyboard navigation with Enter and Space', async () => {
+    const handleClick = vi.fn()
+    render(
+      <InteractiveCard onClick={handleClick}>
+        <div>Keyboard navigable</div>
+      </InteractiveCard>
+    )
+
+    const card = screen.getByRole('button', { name: /keyboard navigable/i })
+    card.focus()
+    expect(card).toHaveFocus()
+
+    await user.keyboard('{Enter}')
+    expect(handleClick).toHaveBeenCalled()
+
+    handleClick.mockClear()
+    await user.keyboard(' ')
+    expect(handleClick).toHaveBeenCalled()
+  })
+
+  it('triggers onSelectionChange when selectable card is clicked', async () => {
+    const onSelectionChange = vi.fn()
+    render(
+      <InteractiveCard
+        title="Selectable Card"
+        selectable
+        selected={false}
+        onSelectionChange={onSelectionChange}
+      >
+        <div>Card body</div>
+      </InteractiveCard>
+    )
+
+    const card = screen.getByRole('button', { name: /Selectable Card/i })
+    await user.click(card)
+
+    expect(onSelectionChange).toHaveBeenCalledWith(true)
+  })
+
+  it('handles expandable toggle and renders expanded content', async () => {
+    const onExpandChange = vi.fn()
+    const { rerender } = render(
+      <InteractiveCard
+        title="Expandable Card"
+        expandable
+        expanded={false}
+        onExpandChange={onExpandChange}
+        expandedContent={<div data-testid="expanded-body">More details</div>}
+      >
+        <div>Summary</div>
+      </InteractiveCard>
+    )
+
+    expect(screen.queryByTestId('expanded-body')).not.toBeInTheDocument()
+
+    const expandBtn = screen.getByLabelText('Expand')
+    await user.click(expandBtn)
+    expect(onExpandChange).toHaveBeenCalledWith(true)
+
+    rerender(
+      <InteractiveCard
+        title="Expandable Card"
+        expandable
+        expanded={true}
+        onExpandChange={onExpandChange}
+        expandedContent={<div data-testid="expanded-body">More details</div>}
+      >
+        <div>Summary</div>
+      </InteractiveCard>
+    )
+
+    expect(screen.getByTestId('expanded-body')).toBeInTheDocument()
+  })
+
+  it('renders status styles correctly for success, warning, error, info', () => {
+    const statuses = ['success', 'warning', 'error', 'info'] as const
+    statuses.forEach((status) => {
+      const { container } = render(
+        <InteractiveCard status={status}>
+          <div>Status {status}</div>
+        </InteractiveCard>
+      )
+      expect(container.querySelector(`[class*="ring-2 ring-${status === 'info' ? 'blue' : status === 'success' ? 'green' : status === 'warning' ? 'yellow' : 'red'}"]`)).toBeInTheDocument()
+    })
+  })
+
+  it('renders badge in top right corner', () => {
+    render(
+      <InteractiveCard badge={<span data-testid="test-badge">New</span>}>
+        <div>Card with badge</div>
+      </InteractiveCard>
+    )
+
+    expect(screen.getByTestId('test-badge')).toBeInTheDocument()
+  })
 })
