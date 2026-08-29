@@ -43,6 +43,11 @@ vi.mock('../WalletConnector', () => ({
   WalletConnector: vi.fn(() => <div data-testid="wallet-connector">Wallet Connector</div>)
 }))
 
+// Mock NotificationBadge component
+vi.mock('../NotificationBadge', () => ({
+  NotificationBadge: vi.fn(() => <div data-testid="notification-badge">Badge</div>)
+}))
+
 const mockWalletConnector = vi.mocked(WalletConnector)
 
 const renderNavbar = (ui: React.ReactElement = <Navbar />) =>
