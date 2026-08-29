@@ -3,6 +3,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useVideoPlayer } from '@/hooks/useVideoPlayer';
 import type { Chapter } from '@/types/video';
 
+// Mock next-intl
+vi.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => key,
+}));
+
 describe('useVideoPlayer', () => {
   beforeEach(() => {
     // Mock HTMLVideoElement
