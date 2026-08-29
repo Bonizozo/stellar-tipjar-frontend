@@ -8,6 +8,11 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { createZustandStorage } from "@/lib/storage";
 
+// SECURITY: Only display / profile fields are persisted here.
+// No passwords, session tokens, or auth credentials are stored.
+// `email` is PII used for display only — not a credential.
+// If a server-side auth layer is added, any session/auth token MUST live in
+// an httpOnly cookie so JavaScript (including XSS payloads) cannot read it.
 export interface User {
   id: string;
   username: string;

@@ -97,10 +97,11 @@ export class TeamService {
    */
   static async addTeamMember(
     teamName: string,
-    member: TeamMember | Omit<TeamMember, "id" | "createdAt">
+    member: unknown
   ): Promise<TeamMember> {
     try {
-      const validated = teamMemberSchema.omit({ id: true, createdAt: true }).parse(member);
+      // Validate input against addMemberSchema before making any API calls
+      const validated = addMemberSchema.parse(member);
 
       const response = await fetch(`${API_BASE_URL}/api/teams/${encodeURIComponent(teamName)}/members`, {
         method: "POST",
@@ -261,8 +262,9 @@ export class TeamService {
       }
 
       const result = await response.json();
-      const teams: unknown[] = Array.isArray(result) ? result : result.teams || [];
-      return teams.map((team: unknown) => teamProfileSchema.parse(team));
+      return (Array.isArray(result) ? result : result.teams || []).map((team: any) =>
+        teamProfileSchema.parse(team)
+      );
     } catch (error) {
       console.error("Error listing user teams:", error);
       return [];

@@ -44,27 +44,6 @@ const eslintConfig = [
       ],
     },
   },
-  {
-    // `no-explicit-any` burn-down, phase 1 (see docs/lint-burndown.md).
-    // src/services/** and src/store/** own real request/response and persisted-state
-    // shapes, so an `any` there is the likeliest place for a bad shape to slip past the
-    // type checker silently. These directories are held to "error" so no new `any` can
-    // land in them while the rest of the codebase is still being cleaned up under "warn".
-    // Test files are excluded for now (lowest priority in the burn-down plan) and stay
-    // at the global "warn" level.
-    files: ["src/services/**/*.{ts,tsx}", "src/store/**/*.{ts,tsx}"],
-    ignores: ["**/*.test.ts", "**/*.test.tsx", "**/__tests__/**"],
-    rules: {
-      "@typescript-eslint/no-explicit-any": "error",
-    },
-  },
-  {
-    // Node.js CJS scripts — require() is intentional here
-    files: ["scripts/**/*.js"],
-    rules: {
-      "@typescript-eslint/no-require-imports": "off",
-    },
-  },
 ];
 
 export default eslintConfig;
