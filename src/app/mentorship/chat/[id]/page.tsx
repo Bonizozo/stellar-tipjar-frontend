@@ -1,5 +1,6 @@
 'use client';
 import React, { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { MENTORS } from '@/lib/mentorship-data';
 import { MentorshipProgress } from '@/components/Mentorship/MentorshipComponents';
@@ -58,7 +59,7 @@ export default function MentorshipChatPage() {
               <button onClick={() => router.push('/mentorship')} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}>
                 <ChevronLeft size={24} />
               </button>
-              <img src={mentor.avatar} alt={mentor.name} style={{ width: '40px', height: '40px', borderRadius: '12px' }} />
+              <Image src={mentor.avatar} alt={mentor.name} width={40} height={40} style={{ borderRadius: '12px' }} unoptimized />
               <div>
                 <h4 style={{ margin: 0 }}>{mentor.name}</h4>
                 <span style={{ fontSize: '0.8rem', color: 'var(--mentor-primary)' }}>Active Session</span>

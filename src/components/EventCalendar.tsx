@@ -274,7 +274,12 @@ export function EventCalendar({ creatorUsername, isOwner = false }: EventCalenda
 
       {/* Loading */}
       {isLoading && (
-        <div className="space-y-3" aria-busy="true" aria-label="Loading events">
+        <div
+          role="status"
+          className="space-y-3"
+          aria-busy="true"
+          aria-label="Loading events"
+        >
           {[1, 2].map((i) => (
             <div key={i} className="h-28 animate-pulse rounded-2xl border border-ink/10 bg-ink/5" />
           ))}

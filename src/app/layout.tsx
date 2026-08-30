@@ -18,7 +18,16 @@ import { ToastContainer } from "@/components/Toast";
 import { Footer } from "@/components/Footer";
 import { ProductTour } from "@/components/ProductTour";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import type { Metadata } from "next";
 import "@/styles/globals.css";
+
+export const metadata: Metadata = {
+  title: {
+    default: "Stellar Tip Jar",
+    template: "%s | Stellar Tip Jar",
+  },
+  description: "Support creators with fast, borderless Stellar payments.",
+};
 
 export default async function RootLayout({
   children,

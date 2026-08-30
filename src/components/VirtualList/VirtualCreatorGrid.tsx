@@ -196,11 +196,12 @@ export function VirtualCreatorGrid({
             >
               <AnimatePresence mode="popLayout">
                 {rowCreators.map((creator) => (
-                  <CreatorCard
-                    key={creator.username}
-                    creator={creator}
-                    trackInteraction={trackInteraction}
-                  />
+                  <div key={creator.username} role="listitem">
+                    <CreatorCard
+                      creator={creator}
+                      trackInteraction={trackInteraction}
+                    />
+                  </div>
                 ))}
               </AnimatePresence>
             </div>

@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import type { HeatmapStats } from "@/hooks/useTipHeatmap";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import {
   FireIcon,
   CalendarDaysIcon,
@@ -25,11 +26,13 @@ interface StatItemProps {
 }
 
 function StatItem({ icon, label, value, sub, delay = 0 }: StatItemProps) {
+  const prefersReduced = useReducedMotion();
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
+      initial={prefersReduced ? false : { opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay }}
+      transition={{ duration: prefersReduced ? 0 : 0.3, delay: prefersReduced ? 0 : delay }}
       className="flex items-start gap-3 rounded-xl border border-ink/10 bg-[color:var(--surface)] p-4"
     >
       <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-wave/10 text-wave">

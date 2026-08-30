@@ -12,7 +12,6 @@ import { locales, defaultLocale, isRTL, getDirection } from '@/i18n/config';
 const MATCHER = [
   '/',
   '/(en|es|fr|zh|ar)/:path*',
-  '/((?!api|_next|_vercel|.*\\..*).*)',
 ];
 
 /**
@@ -25,9 +24,6 @@ function matchesMatcher(pathname: string): boolean {
     }
     if (pattern === '/(en|es|fr|zh|ar)/:path*') {
       return /^\/(en|es|fr|zh|ar)(\/.*)?$/.test(pathname);
-    }
-    if (pattern === '/((?!api|_next|_vercel|.*\\..*).*)') {
-      return /^\/((?!api|_next|_vercel|.*\..*).*)$/.test(pathname);
     }
     return false;
   });
@@ -60,53 +56,53 @@ describe('middleware matcher', () => {
     });
   });
 
-  describe('un-prefixed page routes', () => {
-    it('matches /explore', () => {
-      expect(matchesMatcher('/explore')).toBe(true);
+  describe('un-prefixed page routes bypass locale middleware', () => {
+    it('does not match /explore', () => {
+      expect(matchesMatcher('/explore')).toBe(false);
     });
 
-    it('matches /creator/alice', () => {
-      expect(matchesMatcher('/creator/alice')).toBe(true);
+    it('does not match /creator/alice', () => {
+      expect(matchesMatcher('/creator/alice')).toBe(false);
     });
 
-    it('matches /creator/some-other-user', () => {
-      expect(matchesMatcher('/creator/some-other-user')).toBe(true);
+    it('does not match /creator/some-other-user', () => {
+      expect(matchesMatcher('/creator/some-other-user')).toBe(false);
     });
 
-    it('matches /marketplace', () => {
-      expect(matchesMatcher('/marketplace')).toBe(true);
+    it('does not match /marketplace', () => {
+      expect(matchesMatcher('/marketplace')).toBe(false);
     });
 
-    it('matches /dashboard/marketplace', () => {
-      expect(matchesMatcher('/dashboard/marketplace')).toBe(true);
+    it('does not match /dashboard/marketplace', () => {
+      expect(matchesMatcher('/dashboard/marketplace')).toBe(false);
     });
 
-    it('matches /tips', () => {
-      expect(matchesMatcher('/tips')).toBe(true);
+    it('does not match /tips', () => {
+      expect(matchesMatcher('/tips')).toBe(false);
     });
 
-    it('matches /settings/notifications', () => {
-      expect(matchesMatcher('/settings/notifications')).toBe(true);
+    it('does not match /settings/notifications', () => {
+      expect(matchesMatcher('/settings/notifications')).toBe(false);
     });
 
-    it('matches /discover/category-name', () => {
-      expect(matchesMatcher('/discover/category-name')).toBe(true);
+    it('does not match /discover/category-name', () => {
+      expect(matchesMatcher('/discover/category-name')).toBe(false);
     });
 
-    it('matches /mentorship/chat/some-id', () => {
-      expect(matchesMatcher('/mentorship/chat/some-id')).toBe(true);
+    it('does not match /mentorship/chat/some-id', () => {
+      expect(matchesMatcher('/mentorship/chat/some-id')).toBe(false);
     });
 
-    it('matches /certification/courses/123', () => {
-      expect(matchesMatcher('/certification/courses/123')).toBe(true);
+    it('does not match /certification/courses/123', () => {
+      expect(matchesMatcher('/certification/courses/123')).toBe(false);
     });
 
-    it('matches /store/username', () => {
-      expect(matchesMatcher('/store/username')).toBe(true);
+    it('does not match /store/username', () => {
+      expect(matchesMatcher('/store/username')).toBe(false);
     });
 
-    it('matches /team/teamname', () => {
-      expect(matchesMatcher('/team/teamname')).toBe(true);
+    it('does not match /team/teamname', () => {
+      expect(matchesMatcher('/team/teamname')).toBe(false);
     });
   });
 
