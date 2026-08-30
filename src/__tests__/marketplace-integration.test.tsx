@@ -20,8 +20,7 @@ describe("Marketplace Integration", () => {
       import("@/components/marketplace/OrderManagement"),
     ]);
 
-    for (const componentPath of components) {
-      const component = await import(componentPath);
+    for (const component of components) {
       expect(component).toBeDefined();
     }
   });

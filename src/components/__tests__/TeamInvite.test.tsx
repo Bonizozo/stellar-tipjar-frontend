@@ -20,7 +20,7 @@ describe("TeamInvite Component", () => {
     const handleInvite = vi.fn();
 
     const user = userEvent.setup();
-    render(<TeamInvite onInvite={handleInvite} />);
+    const { container } = render(<TeamInvite onInvite={handleInvite} />);
 
     const form = container.querySelector("form")!;
     fireEvent.submit(form);

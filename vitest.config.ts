@@ -1,4 +1,4 @@
-import { defineConfig, configDefaults } from 'vitest/config'
+import { defineConfig } from 'vitest/config'
 import { resolve } from 'path'
 
 export default defineConfig({
@@ -12,6 +12,7 @@ export default defineConfig({
       reporter: ['text', 'json', 'html'],
       exclude: [
         'node_modules/',
+        'tests/e2e/**',
         'src/test/',
         '**/*.d.ts',
         '**/*.config.*',
