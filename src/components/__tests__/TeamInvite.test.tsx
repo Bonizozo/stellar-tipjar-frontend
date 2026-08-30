@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { TeamInvite } from "@/components/TeamInvite";
@@ -19,6 +19,7 @@ describe("TeamInvite Component", () => {
   it("shows error when email is empty", async () => {
     const handleInvite = vi.fn();
 
+    const user = userEvent.setup();
     const { container } = render(<TeamInvite onInvite={handleInvite} />);
 
     const form = container.querySelector("form")!;

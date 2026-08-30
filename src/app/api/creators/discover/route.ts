@@ -3,9 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const category = searchParams.get('category');
-    const tags = searchParams.get('tags')?.split(',');
-    const featured = searchParams.get('featured') === 'true';
+    const _category = searchParams.get('category');
+    const _tags = searchParams.get('tags')?.split(',');
+    const _featured = searchParams.get('featured') === 'true';
 
     // TODO: Implement discovery algorithm with database
     // const creators = await db.creator.findMany({

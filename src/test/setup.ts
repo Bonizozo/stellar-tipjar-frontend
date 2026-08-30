@@ -57,5 +57,3 @@ if (typeof window !== 'undefined') {
     configurable: true,
   })
 }
-
-
