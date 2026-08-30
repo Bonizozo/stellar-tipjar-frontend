@@ -24,7 +24,8 @@ export function HeatmapLegend({ theme, cellSize }: HeatmapLegendProps) {
             borderRadius: Math.max(2, cellSize * 0.18),
           }}
           title={LABELS[level]}
-          aria-hidden="true"
+          role="img"
+          aria-label={`Level ${level}: ${LABELS[level]}`}
         />
       ))}
       <span className="text-xs text-ink/40">More</span>

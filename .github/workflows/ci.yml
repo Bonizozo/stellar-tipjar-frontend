@@ -30,6 +30,24 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
+  i18n:
+    name: i18n Catalog Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Check translation-catalog coverage
+        run: npm run check:i18n
+
   typecheck:
     name: Typecheck (tsc --noEmit)
     runs-on: ubuntu-latest
@@ -96,16 +114,18 @@ jobs:
         uses: actions/cache@v4
         id: playwright-cache
         with:
-          path: ~/.cache/ms-playwright
+          path: ${{ runner.temp }}/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
           restore-keys: |
             playwright-${{ runner.os }}-
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps
 
       - name: Run E2E tests
-        run: npm run test:e2e -- --project=chromium
+        run: npm run test:e2e
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/ms-playwright
 
       - name: Upload Playwright HTML report on failure
         if: failure()
@@ -133,3 +153,6 @@ jobs:
 
       - name: Build Next.js app
         run: npm run build
+
+      - name: Check bundle budget
+        run: npm run check:bundle-budget

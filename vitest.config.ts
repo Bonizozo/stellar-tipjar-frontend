@@ -1,4 +1,4 @@
-import { configDefaults, defineConfig } from 'vitest/config'
+import { defineConfig } from 'vitest/config'
 import { resolve } from 'path'
 
 export default defineConfig({
@@ -6,7 +6,7 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
-    exclude: [...configDefaults.exclude, 'tests/e2e/**'],
+    exclude: ['tests/e2e/**', 'node_modules/**', 'dist/**', '.next/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -18,10 +18,16 @@ export default defineConfig({
         'coverage/',
       ],
     },
+    server: {
+      deps: {
+        inline: ['next-intl'],
+      },
+    },
   },
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),
+      'next/server': resolve(__dirname, './node_modules/next/server.js'),
     },
   },
 })

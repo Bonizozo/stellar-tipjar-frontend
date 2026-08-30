@@ -1,4 +1,8 @@
 import { describe, it, expect } from 'vitest';
+import createMiddleware from 'next-intl/middleware';
+import { NextRequest } from 'next/server';
+import { routing } from '@/i18n/routing';
+import { locales, defaultLocale, isRTL, getDirection } from '@/i18n/config';
 
 /**
  * Matcher patterns from src/middleware.ts — kept in sync manually.
@@ -33,21 +37,21 @@ describe('middleware matcher', () => {
   });
 
   describe('locale-prefixed routes', () => {
-    const locales = ['en', 'es', 'fr', 'zh', 'ar'] as const;
+    const testLocales = ['en', 'es', 'fr', 'zh', 'ar'] as const;
 
-    it.each(locales)('matches /%s', (locale) => {
+    it.each(testLocales)('matches /%s', (locale) => {
       expect(matchesMatcher(`/${locale}`)).toBe(true);
     });
 
-    it.each(locales)('matches /%s/explore', (locale) => {
+    it.each(testLocales)('matches /%s/explore', (locale) => {
       expect(matchesMatcher(`/${locale}/explore`)).toBe(true);
     });
 
-    it.each(locales)('matches /%s/creator/alice', (locale) => {
+    it.each(testLocales)('matches /%s/creator/alice', (locale) => {
       expect(matchesMatcher(`/${locale}/creator/alice`)).toBe(true);
     });
 
-    it.each(locales)('matches /%s/dashboard/marketplace', (locale) => {
+    it.each(testLocales)('matches /%s/dashboard/marketplace', (locale) => {
       expect(matchesMatcher(`/${locale}/dashboard/marketplace`)).toBe(true);
     });
   });
@@ -191,6 +195,70 @@ describe('middleware matcher', () => {
 
     it('does not match /_vercel/speed-insights/view', () => {
       expect(matchesMatcher('/_vercel/speed-insights/view')).toBe(false);
+    });
+  });
+});
+
+describe('next-intl locale routing & direction', () => {
+  const middleware = createMiddleware(routing);
+
+  describe('RTL / LTR direction', () => {
+    it('identifies Arabic (ar) as RTL', () => {
+      expect(isRTL('ar')).toBe(true);
+      expect(getDirection('ar')).toBe('rtl');
+    });
+
+    it('identifies Latin/CJK locales as LTR', () => {
+      expect(isRTL('en')).toBe(false);
+      expect(getDirection('en')).toBe('ltr');
+
+      expect(isRTL('es')).toBe(false);
+      expect(getDirection('es')).toBe('ltr');
+
+      expect(isRTL('fr')).toBe(false);
+      expect(getDirection('fr')).toBe('ltr');
+
+      expect(isRTL('zh')).toBe(false);
+      expect(getDirection('zh')).toBe('ltr');
+    });
+  });
+
+  describe('Canonical URL redirect & localePrefix: "as-needed"', () => {
+    it('redirects default locale prefixed URL /en to un-prefixed root /', () => {
+      const req = new NextRequest('http://localhost:3000/en');
+      const res = middleware(req);
+
+      expect(res.status).toBe(307);
+      expect(res.headers.get('location')).toBe('http://localhost:3000/');
+    });
+
+    it('redirects default locale prefixed URL /en/explore to un-prefixed /explore', () => {
+      const req = new NextRequest('http://localhost:3000/en/explore');
+      const res = middleware(req);
+
+      expect(res.status).toBe(307);
+      expect(res.headers.get('location')).toBe('http://localhost:3000/explore');
+    });
+
+    it('serves un-prefixed default locale URL / without redirecting', () => {
+      const req = new NextRequest('http://localhost:3000/');
+      const res = middleware(req);
+
+      expect(res.status).toBe(200);
+      expect(res.headers.get('location')).toBeNull();
+    });
+
+    it('serves non-default locale prefixed URLs with canonical alternate link headers', () => {
+      const req = new NextRequest('http://localhost:3000/es/explore');
+      const res = middleware(req);
+
+      expect(res.status).toBe(200);
+      const linkHeader = res.headers.get('link');
+      expect(linkHeader).toBeDefined();
+      expect(linkHeader).toContain('hreflang="en"');
+      expect(linkHeader).toContain('hreflang="es"');
+      expect(linkHeader).toContain('hreflang="ar"');
+      expect(linkHeader).toContain('hreflang="x-default"');
     });
   });
 });

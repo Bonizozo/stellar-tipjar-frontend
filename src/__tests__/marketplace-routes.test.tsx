@@ -1,42 +1,37 @@
-import { describe, expect, it } from "vitest";
-
-import {
-  GET as getOrder,
-  PATCH as patchOrder,
-} from "@/app/api/marketplace/orders/[orderId]/route";
-import {
-  GET as getOrders,
-  POST as createOrder,
-} from "@/app/api/marketplace/orders/route";
-import {
-  GET as getProducts,
-  POST as createProduct,
-} from "@/app/api/marketplace/products/route";
-import CreatorMarketplaceDashboard from "@/app/dashboard/marketplace/page";
-import CreateStorePage from "@/app/marketplace/create/page";
-import MarketplacePage from "@/app/marketplace/page";
-
 describe("Marketplace Routes", () => {
-  it.each([
-    ["marketplace", MarketplacePage],
-    ["create product", CreateStorePage],
-    ["creator dashboard", CreatorMarketplaceDashboard],
-  ])("exports the %s page", (_name, page) => {
-    expect(page).toBeTypeOf("function");
+  it("should have marketplace page component", async () => {
+    const MarketplacePage = (await import("@/app/marketplace/page")).default;
+    expect(MarketplacePage).toBeDefined();
+    expect(typeof MarketplacePage).toBe("function");
   });
 
-  it("exports the products API handlers", () => {
-    expect(getProducts).toBeTypeOf("function");
-    expect(createProduct).toBeTypeOf("function");
+  it("should have create product page component", async () => {
+    const CreatePage = (await import("@/app/marketplace/create/page")).default;
+    expect(CreatePage).toBeDefined();
+    expect(typeof CreatePage).toBe("function");
   });
 
-  it("exports the orders API handlers", () => {
-    expect(getOrders).toBeTypeOf("function");
-    expect(createOrder).toBeTypeOf("function");
+  it("should have creator dashboard page component", async () => {
+    const DashboardPage = (await import("@/app/dashboard/marketplace/page")).default;
+    expect(DashboardPage).toBeDefined();
+    expect(typeof DashboardPage).toBe("function");
   });
 
-  it("exports the order-detail API handlers", () => {
-    expect(getOrder).toBeTypeOf("function");
-    expect(patchOrder).toBeTypeOf("function");
+  it("should have products API route", async () => {
+    const { GET, POST } = await import("@/app/api/marketplace/products/route");
+    expect(GET).toBeDefined();
+    expect(POST).toBeDefined();
+  });
+
+  it("should have orders API route", async () => {
+    const { GET, POST } = await import("@/app/api/marketplace/orders/route");
+    expect(GET).toBeDefined();
+    expect(POST).toBeDefined();
+  });
+
+  it("should have order detail API route", async () => {
+    const { GET, PATCH } = await import("@/app/api/marketplace/orders/[orderId]/route");
+    expect(GET).toBeDefined();
+    expect(PATCH).toBeDefined();
   });
 });

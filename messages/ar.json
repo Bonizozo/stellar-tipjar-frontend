@@ -15,13 +15,19 @@
     "confirm": "تأكيد"
   },
   "nav": {
+    "brandName": "Stellar Tip Jar",
     "home": "الرئيسية",
     "explore": "استكشاف المبدعين",
     "tips": "إرسال إكرامية",
     "about": "حول",
     "dashboard": "لوحة التحكم",
     "settings": "الإعدادات",
-    "profile": "الملف الشخصي"
+    "profile": "الملف الشخصي",
+    "searchPlaceholder": "ابحث عن المبدعين...",
+    "openMenu": "فتح القائمة",
+    "achievements": "الإنجازات",
+    "widgets": "الودجتس",
+    "marketplace": "السوق"
   },
   "wallet": {
     "connect": "ربط المحفظة",

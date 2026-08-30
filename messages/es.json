@@ -15,13 +15,19 @@
     "confirm": "Confirmar"
   },
   "nav": {
+    "brandName": "Stellar Tip Jar",
     "home": "Inicio",
     "explore": "Explorar Creadores",
     "tips": "Enviar una Propina",
     "about": "Acerca de",
     "dashboard": "Panel",
     "settings": "Configuración",
-    "profile": "Perfil"
+    "profile": "Perfil",
+    "searchPlaceholder": "Buscar creadores...",
+    "openMenu": "Abrir menú móvil",
+    "achievements": "Logros",
+    "widgets": "Widgets",
+    "marketplace": "Marketplace"
   },
   "wallet": {
     "connect": "Conectar Billetera",

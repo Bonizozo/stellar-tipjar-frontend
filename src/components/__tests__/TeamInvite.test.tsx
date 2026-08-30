@@ -19,6 +19,7 @@ describe("TeamInvite Component", () => {
   it("shows error when email is empty", () => {
     const handleInvite = vi.fn();
 
+    const user = userEvent.setup();
     const { container } = render(<TeamInvite onInvite={handleInvite} />);
 
     const form = container.querySelector("form")!;
