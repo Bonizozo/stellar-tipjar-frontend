@@ -23,31 +23,37 @@ global.ResizeObserver = vi.fn().mockImplementation(() => ({
   disconnect: vi.fn(),
 }))
 
-const localStorageMock = (function () {
+// Ensure localStorage is accessible on globalThis and window in jsdom / Node 22+
+const createStorageMock = () => {
   let store: Record<string, string> = {}
   return {
-    getItem: function (key: string) {
-      return store[key] || null
-    },
-    setItem: function (key: string, value: string) {
-      store[key] = value.toString()
-    },
-    removeItem: function (key: string) {
+    getItem: vi.fn((key: string) => store[key] ?? null),
+    setItem: vi.fn((key: string, value: string) => {
+      store[key] = String(value)
+    }),
+    removeItem: vi.fn((key: string) => {
       delete store[key]
-    },
-    clear: function () {
+    }),
+    clear: vi.fn(() => {
       store = {}
-    },
-    key: function (i: number) {
-      const keys = Object.keys(store)
-      return keys[i] || null
-    },
+    }),
+    key: vi.fn((i: number) => Object.keys(store)[i] ?? null),
     get length() {
       return Object.keys(store).length
     },
   }
-})()
+}
 
-Object.defineProperty(window, 'localStorage', {
-  value: localStorageMock,
+const mockLocalStorage = createStorageMock()
+Object.defineProperty(globalThis, 'localStorage', {
+  value: mockLocalStorage,
+  writable: true,
+  configurable: true,
 })
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'localStorage', {
+    value: mockLocalStorage,
+    writable: true,
+    configurable: true,
+  })
+}
