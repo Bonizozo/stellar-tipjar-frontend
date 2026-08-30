@@ -1,14 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import { TipHeatmapCalendar } from "@/components/TipHeatmapCalendar";
 import { useHeatmapData } from "@/hooks/queries/useHeatmapData";
 import { exportToCSV } from "@/utils/exportCSV";
 
 export default function HeatmapPage() {
-  const [years, setYears] = useState<1 | 2 | 3>(1);
   // "me" resolves to the authenticated user — swap for a real username prop when auth is wired
-  const { data: tips = [], isPending } = useHeatmapData("me", years);
+  const { data: tips = [], isPending } = useHeatmapData("me", 1);
 
   const handleExport = () => {
     exportToCSV(

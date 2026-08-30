@@ -1,4 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { validateConfig, AppConfigSchema } from "@/config/env";
+import { register } from "@/instrumentation";
+import { GET as healthGet } from "@/app/api/health/route";
 
 /**
  * Startup-failure integration tests for AppConfig.
@@ -8,6 +11,8 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
  *    not a panic/crash with no context.
  * 2. Valid configuration loads cleanly.
  * 3. The error message lists ALL invalid variables, not just the first.
+ * 4. Validation runs at top-level module load time, server startup (instrumentation),
+ *    and can be checked via the health endpoint.
  */
 describe("AppConfig — startup validation", () => {
   const originalEnv = process.env;
@@ -92,5 +97,52 @@ describe("AppConfig — startup validation", () => {
 
     const { STELLAR_HORIZON_URL } = await import("@/config/env");
     expect(STELLAR_HORIZON_URL).toBe("https://horizon-testnet.stellar.org");
+  });
+
+  it("validateConfig function validates directly with custom env record", () => {
+    const valid = validateConfig({
+      NEXT_PUBLIC_API_URL: "https://api.example.com",
+      NEXT_PUBLIC_WS_URL: "wss://api.example.com/ws",
+      NEXT_PUBLIC_STELLAR_NETWORK: "public",
+      NEXT_PUBLIC_SITE_URL: "https://example.com",
+      NODE_ENV: "production",
+    });
+
+    expect(valid.apiUrl).toBe("https://api.example.com");
+    expect(valid.stellarNetwork).toBe("PUBLIC");
+    expect(valid.wsUrl).toBe("wss://api.example.com/ws");
+
+    expect(() =>
+      validateConfig({
+        NEXT_PUBLIC_API_URL: "invalid-url",
+        NEXT_PUBLIC_SITE_URL: "invalid-url",
+      })
+    ).toThrow(/Application configuration is invalid/);
+  });
+
+  it("instrumentation register() executes startup validation in nodejs runtime", async () => {
+    process.env.NEXT_RUNTIME = "nodejs";
+    process.env.NEXT_PUBLIC_API_URL = "http://valid.api.com";
+    await expect(register()).resolves.toBeUndefined();
+
+    process.env.NEXT_PUBLIC_API_URL = "invalid-url";
+    await expect(register()).rejects.toThrow(
+      /NEXT_PUBLIC_API_URL must be a valid URL/
+    );
+  });
+
+  it("health check endpoint returns 200 on valid config and 500 on invalid config", async () => {
+    process.env.NEXT_PUBLIC_API_URL = "https://valid.api.com";
+    const successRes = await healthGet();
+    expect(successRes.status).toBe(200);
+    const successData = await successRes.json();
+    expect(successData.status).toBe("ok");
+
+    process.env.NEXT_PUBLIC_API_URL = "bad-url";
+    const failRes = await healthGet();
+    expect(failRes.status).toBe(500);
+    const failData = await failRes.json();
+    expect(failData.status).toBe("error");
+    expect(failData.message).toMatch(/Application configuration is invalid/);
   });
 });

@@ -2,6 +2,11 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { TagCloud } from '../TagCloud';
 
+// Mock next-intl
+vi.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => key,
+}));
+
 const mockTags = [
   { tag: 'web3', count: 45 },
   { tag: 'nft', count: 38 },
@@ -14,16 +19,16 @@ describe('TagCloud', () => {
     render(<TagCloud tags={mockTags} />);
     
     expect(screen.getByText('Popular Tags')).toBeInTheDocument();
-    expect(screen.getByText(/#web3/)).toBeInTheDocument();
-    expect(screen.getByText(/#nft/)).toBeInTheDocument();
+    expect(screen.getByText('#web3')).toBeInTheDocument();
+    expect(screen.getByText('#nft')).toBeInTheDocument();
   });
 
   it('limits visible tags by maxVisible prop', () => {
     render(<TagCloud tags={mockTags} maxVisible={2} />);
     
-    expect(screen.getByText(/#web3/)).toBeInTheDocument();
-    expect(screen.getByText(/#nft/)).toBeInTheDocument();
-    expect(screen.queryByText(/#defi/)).not.toBeInTheDocument();
+    expect(screen.getByText('#web3')).toBeInTheDocument();
+    expect(screen.getByText('#nft')).toBeInTheDocument();
+    expect(screen.queryByText('#defi')).not.toBeInTheDocument();
     
     // Should show "Show all" button
     expect(screen.getByText('Show all 4')).toBeInTheDocument();
@@ -35,8 +40,8 @@ describe('TagCloud', () => {
     const showAllButton = screen.getByText('Show all 4');
     fireEvent.click(showAllButton);
     
-    expect(screen.getByText(/#defi/)).toBeInTheDocument();
-    expect(screen.getByText(/#dao/)).toBeInTheDocument();
+    expect(screen.getByText('#defi')).toBeInTheDocument();
+    expect(screen.getByText('#dao')).toBeInTheDocument();
     expect(screen.getByText('Show less')).toBeInTheDocument();
   });
 
@@ -44,7 +49,7 @@ describe('TagCloud', () => {
     const onTagClick = vi.fn();
     render(<TagCloud tags={mockTags} onTagClick={onTagClick} />);
     
-    const web3Tag = screen.getByText(/#web3/);
+    const web3Tag = screen.getByText('#web3');
     fireEvent.click(web3Tag);
     
     expect(onTagClick).toHaveBeenCalledWith('web3');

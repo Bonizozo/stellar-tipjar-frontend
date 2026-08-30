@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CATEGORIES } from "@/utils/categories";
 import type { Category } from "@/utils/categories";
 
 export const creatorUsernameSchema = z
@@ -13,9 +14,15 @@ export const creatorUsernameSchema = z
 
 export const creatorSchema = z.object({
   username: creatorUsernameSchema,
-  categories: z.array(z.string()).optional().default([]),
+  categories: z
+    .array(z.enum(CATEGORIES))
+    .optional()
+    .default([]),
   tags: z.array(z.string()).max(10).optional().default([]),
 });
 
 export type CreatorSchemaValues = z.infer<typeof creatorSchema>;
 export type CreatorWithCategoriesTags = z.infer<typeof creatorSchema>;
+
+// Re-export Category so consumers can import from this schema module
+export type { Category };

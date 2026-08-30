@@ -70,18 +70,24 @@ export type AppConfig = z.infer<typeof AppConfigSchema>;
 // Loader — runs once at module load
 // ---------------------------------------------------------------------------
 
-function loadConfig(): AppConfig {
+/**
+ * Validates environment variables against AppConfigSchema and returns typed configuration.
+ * Throws an aggregated Error listing all misconfigurations if invalid.
+ */
+export function validateConfig(
+  rawEnv: Record<string, string | undefined> = process.env
+): AppConfig {
   const raw = {
-    apiUrl: process.env.NEXT_PUBLIC_API_URL,
-    wsUrl: process.env.NEXT_PUBLIC_WS_URL,
-    stellarNetwork: process.env.NEXT_PUBLIC_STELLAR_NETWORK,
-    stellarHorizonUrl: process.env.NEXT_PUBLIC_STELLAR_HORIZON_URL,
-    siteUrl: process.env.NEXT_PUBLIC_SITE_URL,
-    appUrl: process.env.NEXT_PUBLIC_APP_URL,
-    gaId: process.env.NEXT_PUBLIC_GA_ID,
-    sentryDsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-    vapidPublicKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
-    nodeEnv: process.env.NODE_ENV,
+    apiUrl: rawEnv.NEXT_PUBLIC_API_URL,
+    wsUrl: rawEnv.NEXT_PUBLIC_WS_URL,
+    stellarNetwork: rawEnv.NEXT_PUBLIC_STELLAR_NETWORK,
+    stellarHorizonUrl: rawEnv.NEXT_PUBLIC_STELLAR_HORIZON_URL,
+    siteUrl: rawEnv.NEXT_PUBLIC_SITE_URL,
+    appUrl: rawEnv.NEXT_PUBLIC_APP_URL,
+    gaId: rawEnv.NEXT_PUBLIC_GA_ID,
+    sentryDsn: rawEnv.NEXT_PUBLIC_SENTRY_DSN,
+    vapidPublicKey: rawEnv.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+    nodeEnv: rawEnv.NODE_ENV,
   };
 
   const result = AppConfigSchema.safeParse(raw);
@@ -104,11 +110,15 @@ function loadConfig(): AppConfig {
   return result.data;
 }
 
+export const loadConfig = validateConfig;
+
 /**
  * Validated, typed application configuration.
  * Throws at module load if any required variable is missing or invalid.
  */
-export const appConfig: AppConfig = loadConfig();
+export const appConfig: AppConfig = validateConfig();
+
+export { AppConfigSchema };
 
 // ---------------------------------------------------------------------------
 // Convenience re-exports (mirrors the old scattered constants)

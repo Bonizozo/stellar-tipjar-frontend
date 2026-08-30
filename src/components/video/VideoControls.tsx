@@ -52,8 +52,34 @@ export function VideoControls({
       {/* Progress Bar */}
       <div
         ref={progressRef}
-        className="w-full h-1.5 bg-white/20 rounded-full cursor-pointer mb-4 group hover:h-2 transition-all"
+        role="slider"
+        tabIndex={0}
+        aria-label="Seek slider"
+        aria-valuemin={0}
+        aria-valuemax={Math.round(state.duration) || 100}
+        aria-valuenow={Math.round(state.currentTime)}
+        aria-valuetext={`${formatTime(state.currentTime)} of ${formatTime(state.duration)}`}
+        className="relative w-full h-1.5 bg-white/20 rounded-full cursor-pointer mb-4 group hover:h-2 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all"
         onClick={handleProgressClick}
+        onKeyDown={(e) => {
+          if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+            e.preventDefault();
+            e.stopPropagation();
+            onSeek(Math.max(0, state.currentTime - 5));
+          } else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            e.stopPropagation();
+            onSeek(Math.min(state.duration || Infinity, state.currentTime + 5));
+          } else if (e.key === 'Home') {
+            e.preventDefault();
+            e.stopPropagation();
+            onSeek(0);
+          } else if (e.key === 'End') {
+            e.preventDefault();
+            e.stopPropagation();
+            onSeek(state.duration);
+          }
+        }}
       >
         {/* Buffered Progress */}
         <div

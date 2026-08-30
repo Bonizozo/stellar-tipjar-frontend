@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { preferences, quietHours } = body;
+    const { preferences: _preferences, quietHours: _quietHours } = body;
 
     // TODO: Save to database
     // await db.notificationPreferences.upsert({
