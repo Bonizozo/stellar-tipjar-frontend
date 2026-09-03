@@ -1,8 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import createMiddleware from 'next-intl/middleware';
 import { NextRequest } from 'next/server';
-import { routing } from '@/i18n/routing';
-import { locales, defaultLocale, isRTL, getDirection } from '@/i18n/config';
+import { routing, isRTL, getDirection } from '@/i18n/routing';
 
 /**
  * Matcher patterns from src/middleware.ts — kept in sync manually.

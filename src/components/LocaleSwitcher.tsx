@@ -1,12 +1,13 @@
-'use client';
+import { routing } from '@/i18n/routing';
 
-import { useI18n } from '@/i18n/provider';
-import { locales, localeNames, type Locale } from '@/i18n/config';
-import { Globe } from 'lucide-react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import type { Route } from 'next';
-import { useTransition } from 'react';
+type Locale = (typeof routing.locales)[number];
 
+/**
+ * Rewrites `pathname` to carry `newLocale`'s prefix instead of whatever
+ * locale prefix (if any) it currently has, preserving the rest of the route,
+ * query string, and hash. `newLocale === routing.defaultLocale` produces an
+ * un-prefixed path, matching this app's `localePrefix: 'as-needed'` routing.
+ */
 export function getLocalizedPath(
   pathname: string,
   newLocale: Locale,
@@ -16,52 +17,17 @@ export function getLocalizedPath(
   const normalizedPathname = pathname.startsWith('/') ? pathname : `/${pathname}`;
   const segments = normalizedPathname.split('/');
 
-  if (locales.includes(segments[1] as Locale)) {
+  if ((routing.locales as readonly string[]).includes(segments[1])) {
     segments.splice(1, 1);
   }
 
   const unprefixedPath = segments.join('/') || '/';
   const localizedPath =
-    newLocale === 'en' ? unprefixedPath : `/${newLocale}${unprefixedPath === '/' ? '' : unprefixedPath}`;
+    newLocale === routing.defaultLocale
+      ? unprefixedPath
+      : `/${newLocale}${unprefixedPath === '/' ? '' : unprefixedPath}`;
   const normalizedSearch = search && !search.startsWith('?') ? `?${search}` : search;
   const normalizedHash = hash && !hash.startsWith('#') ? `#${hash}` : hash;
 
   return `${localizedPath}${normalizedSearch}${normalizedHash}`;
 }
-
-export const LocaleSwitcher = () => {
-  const { locale, setLocale } = useI18n();
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [isPending, startTransition] = useTransition();
-
-  const switchLocale = (newLocale: Locale) => {
-    setLocale(newLocale);
-
-    startTransition(() => {
-      const search = searchParams.toString();
-      const hash = window.location.hash;
-      router.replace(getLocalizedPath(pathname, newLocale, search, hash) as Route, { scroll: false });
-    });
-  };
-
-  return (
-    <div className="flex items-center gap-2">
-      <Globe className="w-4 h-4" />
-      <select
-        value={locale}
-        onChange={(e) => switchLocale(e.target.value as Locale)}
-        disabled={isPending}
-        aria-label="Select locale"
-        className="px-2 py-1 border border-gray-300 rounded text-sm bg-white"
-      >
-        {locales.map((loc) => (
-          <option key={loc} value={loc}>
-            {localeNames[loc]}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-};
