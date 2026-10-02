@@ -4,10 +4,10 @@
   "private": true,
   "description": "Open-source frontend for the Stellar Tip Jar project.",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "node init && next dev",
+    "build": "node init && next build",
     "analyze": "ANALYZE=true next build --webpack",
-    "start": "next start",
+    "start": "node init && next start",
     "lint": "eslint .",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
