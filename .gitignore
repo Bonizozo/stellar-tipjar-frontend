@@ -40,3 +40,4 @@ pnpm-debug.log*
 /test-results
 /playwright-report
 
+config.bat
